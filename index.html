@@ -23,9 +23,22 @@
           </div>
         </div>
 
+        <label class="name-field">
+          <span>Spielername</span>
+          <input id="playerName" type="text" maxlength="16" placeholder="Dein Name" autocomplete="nickname" />
+        </label>
+
         <div class="menu-score">
           <span>Highscore</span>
           <strong id="menuHighScore">0</strong>
+        </div>
+
+        <div class="leaderboard">
+          <div class="leaderboard-title">
+            <span>Rangliste</span>
+            <strong>Top 5</strong>
+          </div>
+          <ol id="leaderboardList"></ol>
         </div>
 
         <div class="fighters" aria-label="Figur auswaehlen">
