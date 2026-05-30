@@ -110,10 +110,13 @@ document.querySelectorAll(".fighter").forEach((button) => {
   });
 });
 
+playerNameInput.addEventListener("keydown", (event) => event.stopPropagation());
+playerNameInput.addEventListener("keyup", (event) => event.stopPropagation());
 startBtn.addEventListener("click", startGame);
 pauseBtn.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => {
   if (isTyping(event.target)) return;
+  if (!state.running && event.code !== "Escape") return;
   if (["KeyW", "KeyA", "KeyS", "KeyD", "Space"].includes(event.code)) event.preventDefault();
   state.keys.add(event.code);
   if (event.code === "KeyP" || event.code === "Escape") togglePause();
@@ -121,6 +124,7 @@ window.addEventListener("keydown", (event) => {
 });
 window.addEventListener("keyup", (event) => {
   if (isTyping(event.target)) return;
+  if (!state.running) return;
   state.keys.delete(event.code);
 });
 canvas.addEventListener("pointermove", updatePointer);
