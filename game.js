@@ -10,6 +10,7 @@ const touchStick = document.querySelector("#touchStick");
 const touchKnob = document.querySelector("#touchKnob");
 const touchFire = document.querySelector("#touchFire");
 const touchSpecial = document.querySelector("#touchSpecial");
+const playerNameInput = document.querySelector("#playerName");
 const moveHint = document.querySelector("#moveHint");
 const aimHint = document.querySelector("#aimHint");
 const fireHint = document.querySelector("#fireHint");
@@ -21,7 +22,9 @@ const highScoreText = document.querySelector("#highScore");
 const menuHighScoreText = document.querySelector("#menuHighScore");
 const healthBar = document.querySelector("#healthBar");
 const specialBar = document.querySelector("#specialBar");
+const leaderboardList = document.querySelector("#leaderboardList");
 const highScoreKey = "neon-bot-arena-high-score";
+const leaderboardKey = "neon-bot-arena-leaderboard";
 
 const heroes = {
   volt: {
@@ -71,6 +74,9 @@ const state = {
   wave: 1,
   score: 0,
   highScore: Number(localStorage.getItem(highScoreKey)) || 0,
+  startHighScore: Number(localStorage.getItem(highScoreKey)) || 0,
+  playerName: "Spieler",
+  leaderboard: loadLeaderboard(),
   time: 0,
   shake: 0,
   mouse: { x: 640, y: 360, down: false },
@@ -86,6 +92,7 @@ const state = {
 
 menuHighScoreText.textContent = state.highScore;
 highScoreText.textContent = state.highScore;
+renderLeaderboard();
 
 document.querySelectorAll(".device-btn").forEach((button) => {
   button.addEventListener("click", () => {
@@ -182,11 +189,14 @@ function stopTouchMove(event) {
 
 function startGame() {
   const hero = heroes[state.selectedHero];
+  state.playerName = cleanName(playerNameInput.value);
+  playerNameInput.value = state.playerName;
   state.running = true;
   state.paused = false;
   state.over = false;
   state.wave = 1;
   state.score = 0;
+  state.startHighScore = state.highScore;
   state.time = 0;
   state.bullets = [];
   state.enemyBullets = [];
@@ -232,7 +242,7 @@ function togglePause() {
   state.paused = !state.paused;
   pauseBtn.textContent = state.paused ? ">" : "II";
   if (state.paused) {
-    showMessage("<strong>Pause</strong>Druecke Escape oder P, um weiterzuspielen.");
+    showPauseMenu();
   } else {
     message.classList.add("hidden");
   }
@@ -241,6 +251,14 @@ function togglePause() {
 function showMessage(html) {
   message.innerHTML = html;
   message.classList.remove("hidden");
+}
+
+function showPauseMenu() {
+  showMessage(
+    `<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmenue</button></div>`
+  );
+  document.querySelector("#resumeBtn").addEventListener("click", togglePause);
+  document.querySelector("#menuBtn").addEventListener("click", returnToMenu);
 }
 
 function spawnWave() {
@@ -498,11 +516,14 @@ function updatePickups(dt) {
 
 function endGame() {
   state.over = true;
-  const isRecord = saveHighScore();
+  const isRecord = state.score > state.startHighScore;
+  saveHighScore();
+  saveLeaderboardEntry();
   showMessage(
-    `<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>Du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Highscore: ${state.highScore}<br><button id="againBtn">Nochmal</button>`
+    `<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenue</button></div>`
   );
   document.querySelector("#againBtn").addEventListener("click", startGame);
+  document.querySelector("#gameOverMenuBtn").addEventListener("click", returnToMenu);
 }
 
 function saveHighScore() {
@@ -512,6 +533,66 @@ function saveHighScore() {
   menuHighScoreText.textContent = state.highScore;
   highScoreText.textContent = state.highScore;
   return true;
+}
+
+function saveLeaderboardEntry() {
+  state.leaderboard.push({
+    name: state.playerName,
+    score: state.score,
+    wave: state.wave,
+    date: new Date().toISOString()
+  });
+  state.leaderboard.sort((a, b) => b.score - a.score || b.wave - a.wave);
+  state.leaderboard = state.leaderboard.slice(0, 10);
+  localStorage.setItem(leaderboardKey, JSON.stringify(state.leaderboard));
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const topScores = state.leaderboard.slice(0, 5);
+  if (topScores.length === 0) {
+    leaderboardList.innerHTML = `<li><span>--</span><b>Noch kein Score</b><em>0</em></li>`;
+    return;
+  }
+  leaderboardList.innerHTML = topScores
+    .map((entry, index) => `<li><span>#${index + 1}</span><b>${escapeHtml(entry.name)}</b><em>${entry.score}</em></li>`)
+    .join("");
+}
+
+function returnToMenu() {
+  state.running = false;
+  state.paused = false;
+  state.over = false;
+  state.player = null;
+  state.bullets = [];
+  state.enemyBullets = [];
+  state.robots = [];
+  state.particles = [];
+  state.pickups = [];
+  pauseBtn.textContent = "II";
+  message.classList.add("hidden");
+  gamePanel.classList.add("hidden");
+  touchControls.classList.add("hidden");
+  menu.classList.remove("hidden");
+  renderLeaderboard();
+}
+
+function loadLeaderboard() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(leaderboardKey) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((entry) => entry && entry.name && Number.isFinite(entry.score)).slice(0, 10) : [];
+  } catch {
+    return [];
+  }
+}
+
+function cleanName(name) {
+  const cleaned = name.trim().replace(/\s+/g, " ").slice(0, 16);
+  return cleaned || "Spieler";
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 }
 
 function updateHud() {
