@@ -1,0 +1,473 @@
+:root {
+  color-scheme: dark;
+  --bg: #090b10;
+  --panel: rgba(13, 18, 28, 0.82);
+  --line: rgba(255, 255, 255, 0.16);
+  --text: #f6f7fb;
+  --muted: #aeb7c8;
+  --cyan: #38d8ff;
+  --lime: #b7ff4a;
+  --rose: #ff4f92;
+  --amber: #ffc857;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(56, 216, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 78% 15%, rgba(255, 79, 146, 0.14), transparent 30%), var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+canvas,
+button,
+.touch-stick {
+  touch-action: none;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.menu,
+.game-panel {
+  width: min(1120px, 100%);
+}
+
+.menu {
+  display: grid;
+  gap: 22px;
+}
+
+.title-block {
+  max-width: 760px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--lime);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.7rem, 7vw, 6.8rem);
+  line-height: 0.9;
+}
+
+.intro {
+  color: var(--muted);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.55;
+  max-width: 620px;
+}
+
+.device-choice {
+  display: grid;
+  gap: 10px;
+  width: min(430px, 100%);
+}
+
+.device-choice p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.device-choice div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.device-btn {
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.74);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.device-btn:hover,
+.device-btn:focus-visible,
+.device-btn.selected {
+  border-color: var(--lime);
+  background: rgba(183, 255, 74, 0.16);
+  outline: none;
+}
+
+.menu-score {
+  width: min(220px, 100%);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(13, 18, 28, 0.72);
+}
+
+.menu-score span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.menu-score strong {
+  display: block;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  color: var(--lime);
+}
+
+.fighters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.fighter {
+  min-height: 238px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.74);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.fighter:hover,
+.fighter:focus-visible,
+.fighter.selected {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
+  background: rgba(17, 28, 43, 0.9);
+  outline: none;
+}
+
+.portrait {
+  width: 100%;
+  aspect-ratio: 1.8;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  position: relative;
+  overflow: hidden;
+}
+
+.portrait::before,
+.portrait::after {
+  content: "";
+  position: absolute;
+  inset: 18% 35% 10%;
+  border-radius: 45% 45% 8px 8px;
+  background: currentColor;
+  box-shadow: 0 0 28px currentColor;
+}
+
+.portrait::after {
+  inset: 37% 22% auto;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.volt {
+  color: var(--cyan);
+  background: linear-gradient(135deg, rgba(56, 216, 255, 0.1), rgba(183, 255, 74, 0.2));
+}
+
+.titan {
+  color: var(--amber);
+  background: linear-gradient(135deg, rgba(255, 200, 87, 0.12), rgba(56, 216, 255, 0.15));
+}
+
+.nova {
+  color: var(--rose);
+  background: linear-gradient(135deg, rgba(255, 79, 146, 0.14), rgba(183, 255, 74, 0.12));
+}
+
+.fighter-name {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.fighter-role,
+.stats {
+  color: var(--muted);
+}
+
+.stats {
+  font-size: 0.9rem;
+}
+
+.start-btn {
+  width: min(320px, 100%);
+  min-height: 54px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--lime);
+  color: #11160c;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 34px rgba(183, 255, 74, 0.22);
+}
+
+.game-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #05070c;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+}
+
+canvas {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 9;
+}
+
+.hud {
+  position: absolute;
+  display: flex;
+  gap: 12px;
+  z-index: 2;
+}
+
+.top {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+}
+
+.top > div,
+.controls,
+.message {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+}
+
+.top > div {
+  min-width: 96px;
+  padding: 8px 12px;
+}
+
+.label,
+.bar-wrap span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.bars {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: minmax(140px, 260px) minmax(140px, 260px);
+}
+
+.bar-wrap {
+  display: grid;
+  gap: 5px;
+}
+
+.bar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rose), var(--amber));
+}
+
+.bar.special i {
+  background: linear-gradient(90deg, var(--cyan), var(--lime));
+}
+
+.controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  color: var(--muted);
+  z-index: 2;
+}
+
+.controls span,
+.controls button {
+  min-width: 34px;
+  height: 30px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.controls button {
+  cursor: pointer;
+}
+
+.touch-controls {
+  position: absolute;
+  inset: auto 14px 14px 14px;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.touch-stick {
+  width: 128px;
+  height: 128px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(13, 18, 28, 0.56);
+  backdrop-filter: blur(10px);
+  position: relative;
+  pointer-events: auto;
+}
+
+.touch-stick i {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  left: 36px;
+  top: 36px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 26px rgba(56, 216, 255, 0.42);
+}
+
+.touch-actions {
+  display: grid;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.touch-actions button {
+  width: 96px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: #07121b;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.touch-fire {
+  background: var(--rose);
+}
+
+.touch-special {
+  background: var(--lime);
+}
+
+.message {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100% - 32px));
+  padding: 22px;
+  text-align: center;
+  z-index: 3;
+}
+
+.message strong {
+  display: block;
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+}
+
+.message button {
+  margin-top: 14px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cyan);
+  color: #061219;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding: 14px;
+    align-items: start;
+  }
+
+  .fighters {
+    grid-template-columns: 1fr;
+  }
+
+  .top {
+    flex-wrap: wrap;
+  }
+
+  .top > div {
+    flex: 1;
+    min-width: 88px;
+  }
+
+  .bars {
+    grid-template-columns: 1fr;
+    right: 128px;
+  }
+
+  .controls span {
+    display: none;
+  }
+
+  .game-panel.mobile-mode .controls {
+    display: none;
+  }
+
+  .game-panel.mobile-mode .bars {
+    right: 12px;
+    bottom: 154px;
+  }
+}
