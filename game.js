@@ -113,12 +113,16 @@ document.querySelectorAll(".fighter").forEach((button) => {
 startBtn.addEventListener("click", startGame);
 pauseBtn.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => {
+  if (isTyping(event.target)) return;
   if (["KeyW", "KeyA", "KeyS", "KeyD", "Space"].includes(event.code)) event.preventDefault();
   state.keys.add(event.code);
   if (event.code === "KeyP" || event.code === "Escape") togglePause();
   if (event.code === "Space") useSpecial();
 });
-window.addEventListener("keyup", (event) => state.keys.delete(event.code));
+window.addEventListener("keyup", (event) => {
+  if (isTyping(event.target)) return;
+  state.keys.delete(event.code);
+});
 canvas.addEventListener("pointermove", updatePointer);
 canvas.addEventListener("pointerdown", (event) => {
   if (state.device === "mobile") return;
@@ -589,6 +593,10 @@ function loadLeaderboard() {
 function cleanName(name) {
   const cleaned = name.trim().replace(/\s+/g, " ").slice(0, 16);
   return cleaned || "Spieler";
+}
+
+function isTyping(target) {
+  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
 }
 
 function escapeHtml(value) {
