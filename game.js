@@ -90,8 +90,8 @@ const state = {
   pickups: []
 };
 
-menuHighScoreText.textContent = state.highScore;
-highScoreText.textContent = state.highScore;
+if (menuHighScoreText) menuHighScoreText.textContent = state.highScore;
+if (highScoreText) highScoreText.textContent = state.highScore;
 renderLeaderboard();
 
 document.querySelectorAll(".device-btn").forEach((button) => {
@@ -110,8 +110,8 @@ document.querySelectorAll(".fighter").forEach((button) => {
   });
 });
 
-playerNameInput.addEventListener("keydown", (event) => event.stopPropagation());
-playerNameInput.addEventListener("keyup", (event) => event.stopPropagation());
+playerNameInput?.addEventListener("keydown", (event) => event.stopPropagation());
+playerNameInput?.addEventListener("keyup", (event) => event.stopPropagation());
 startBtn.addEventListener("click", startGame);
 pauseBtn.addEventListener("click", togglePause);
 window.addEventListener("keydown", (event) => {
@@ -136,24 +136,24 @@ canvas.addEventListener("pointerdown", (event) => {
 window.addEventListener("pointerup", () => {
   state.mouse.down = false;
 });
-touchSpecial.addEventListener("pointerdown", (event) => {
+touchSpecial?.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   useSpecial();
 });
-touchFire.addEventListener("pointerdown", (event) => {
+touchFire?.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   state.touch.fire = true;
 });
-touchFire.addEventListener("pointerup", () => {
+touchFire?.addEventListener("pointerup", () => {
   state.touch.fire = false;
 });
-touchFire.addEventListener("pointercancel", () => {
+touchFire?.addEventListener("pointercancel", () => {
   state.touch.fire = false;
 });
-touchStick.addEventListener("pointerdown", startTouchMove);
-touchStick.addEventListener("pointermove", updateTouchMove);
-touchStick.addEventListener("pointerup", stopTouchMove);
-touchStick.addEventListener("pointercancel", stopTouchMove);
+touchStick?.addEventListener("pointerdown", startTouchMove);
+touchStick?.addEventListener("pointermove", updateTouchMove);
+touchStick?.addEventListener("pointerup", stopTouchMove);
+touchStick?.addEventListener("pointercancel", stopTouchMove);
 
 function updatePointer(event) {
   if (state.device === "mobile") return;
@@ -197,8 +197,8 @@ function stopTouchMove(event) {
 
 function startGame() {
   const hero = heroes[state.selectedHero];
-  state.playerName = cleanName(playerNameInput.value);
-  playerNameInput.value = state.playerName;
+  state.playerName = cleanName(playerNameInput?.value || state.playerName);
+  if (playerNameInput) playerNameInput.value = state.playerName;
   state.running = true;
   state.paused = false;
   state.over = false;
@@ -234,11 +234,11 @@ function startGame() {
 function applyDeviceMode() {
   const mobile = state.device === "mobile";
   gamePanel.classList.toggle("mobile-mode", mobile);
-  touchControls.classList.toggle("hidden", !mobile);
-  moveHint.textContent = mobile ? "Stick" : "WASD";
-  aimHint.textContent = mobile ? "Auto-Ziel" : "Maus";
-  fireHint.textContent = mobile ? "Feuer" : "Klick";
-  specialHint.textContent = mobile ? "Spezial" : "Leertaste";
+  touchControls?.classList.toggle("hidden", !mobile);
+  if (moveHint) moveHint.textContent = mobile ? "Stick" : "WASD";
+  if (aimHint) aimHint.textContent = mobile ? "Auto-Ziel" : "Maus";
+  if (fireHint) fireHint.textContent = mobile ? "Feuer" : "Klick";
+  if (specialHint) specialHint.textContent = mobile ? "Spezial" : "Leertaste";
   state.mouse.down = false;
   state.touch.fire = false;
   state.touch.moveX = 0;
@@ -538,8 +538,8 @@ function saveHighScore() {
   if (state.score <= state.highScore) return false;
   state.highScore = state.score;
   localStorage.setItem(highScoreKey, String(state.highScore));
-  menuHighScoreText.textContent = state.highScore;
-  highScoreText.textContent = state.highScore;
+  if (menuHighScoreText) menuHighScoreText.textContent = state.highScore;
+  if (highScoreText) highScoreText.textContent = state.highScore;
   return true;
 }
 
@@ -559,12 +559,13 @@ function saveLeaderboardEntry() {
     existing.date = new Date().toISOString();
   }
   state.leaderboard.sort((a, b) => b.score - a.score || b.wave - a.wave);
-  state.leaderboard = state.leaderboard.slice(0, 10);
+  state.leaderboard = normalizeLeaderboard(state.leaderboard).slice(0, 10);
   localStorage.setItem(leaderboardKey, JSON.stringify(state.leaderboard));
   renderLeaderboard();
 }
 
 function renderLeaderboard() {
+  if (!leaderboardList) return;
   const topScores = state.leaderboard.slice(0, 5);
   if (topScores.length === 0) {
     leaderboardList.innerHTML = `<li><span>--</span><b>Noch kein Score</b><em>0</em></li>`;
@@ -588,7 +589,7 @@ function returnToMenu() {
   pauseBtn.textContent = "II";
   message.classList.add("hidden");
   gamePanel.classList.add("hidden");
-  touchControls.classList.add("hidden");
+  touchControls?.classList.add("hidden");
   menu.classList.remove("hidden");
   renderLeaderboard();
 }
@@ -596,10 +597,33 @@ function returnToMenu() {
 function loadLeaderboard() {
   try {
     const parsed = JSON.parse(localStorage.getItem(leaderboardKey) || "[]");
-    return Array.isArray(parsed) ? parsed.filter((entry) => entry && entry.name && Number.isFinite(entry.score)).slice(0, 10) : [];
+    return Array.isArray(parsed) ? normalizeLeaderboard(parsed).slice(0, 10) : [];
   } catch {
     return [];
   }
+}
+
+function normalizeLeaderboard(entries) {
+  const bestByName = new Map();
+  for (const entry of entries) {
+    if (!entry || !entry.name) continue;
+    const score = Number(entry.score);
+    const wave = Number(entry.wave);
+    if (!Number.isFinite(score)) continue;
+    const name = cleanName(entry.name);
+    const key = name.toLowerCase();
+    const normalized = {
+      name,
+      score,
+      wave: Number.isFinite(wave) ? wave : 1,
+      date: entry.date || new Date().toISOString()
+    };
+    const current = bestByName.get(key);
+    if (!current || normalized.score > current.score || (normalized.score === current.score && normalized.wave > current.wave)) {
+      bestByName.set(key, normalized);
+    }
+  }
+  return [...bestByName.values()].sort((a, b) => b.score - a.score || b.wave - a.wave);
 }
 
 function cleanName(name) {
@@ -620,11 +644,11 @@ function updateHud() {
   if (state.score > state.highScore) {
     state.highScore = state.score;
     localStorage.setItem(highScoreKey, String(state.highScore));
-    menuHighScoreText.textContent = state.highScore;
+    if (menuHighScoreText) menuHighScoreText.textContent = state.highScore;
   }
   waveText.textContent = state.wave;
   scoreText.textContent = state.score;
-  highScoreText.textContent = state.highScore;
+  if (highScoreText) highScoreText.textContent = state.highScore;
   healthBar.style.width = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
   specialBar.style.width = `${clamp(100 - (state.player.specialTimer / state.player.hero.specialCooldown) * 100, 0, 100)}%`;
 }
