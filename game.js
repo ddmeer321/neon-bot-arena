@@ -544,12 +544,20 @@ function saveHighScore() {
 }
 
 function saveLeaderboardEntry() {
-  state.leaderboard.push({
-    name: state.playerName,
-    score: state.score,
-    wave: state.wave,
-    date: new Date().toISOString()
-  });
+  const existing = state.leaderboard.find((entry) => entry.name.toLowerCase() === state.playerName.toLowerCase());
+  if (!existing) {
+    state.leaderboard.push({
+      name: state.playerName,
+      score: state.score,
+      wave: state.wave,
+      date: new Date().toISOString()
+    });
+  } else if (state.score > existing.score || (state.score === existing.score && state.wave > existing.wave)) {
+    existing.name = state.playerName;
+    existing.score = state.score;
+    existing.wave = state.wave;
+    existing.date = new Date().toISOString();
+  }
   state.leaderboard.sort((a, b) => b.score - a.score || b.wave - a.wave);
   state.leaderboard = state.leaderboard.slice(0, 10);
   localStorage.setItem(leaderboardKey, JSON.stringify(state.leaderboard));
