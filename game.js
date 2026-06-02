@@ -264,7 +264,7 @@ function showMessage(html) {
 
 function showPauseMenu() {
   showMessage(
-    `<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmenue</button></div>`
+    `<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmenü</button></div>`
   );
   document.querySelector("#resumeBtn").addEventListener("click", togglePause);
   document.querySelector("#menuBtn").addEventListener("click", returnToMenu);
@@ -529,7 +529,7 @@ function endGame() {
   saveHighScore();
   saveLeaderboardEntry();
   showMessage(
-    `<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenue</button></div>`
+    `<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`
   );
   document.querySelector("#againBtn").addEventListener("click", startGame);
   document.querySelector("#gameOverMenuBtn").addEventListener("click", returnToMenu);

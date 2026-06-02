@@ -337,7 +337,7 @@ h1 {
   border-radius: 8px;
   background: #05070c;
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
-  width: 100%;
+  width: calc(100% - 2px);
   height: 100dvh;
   border-radius: 0;
 }
@@ -368,9 +368,9 @@ h1 {
 }
 
 .top > div {
-  flex: 1 1 92px;
+  flex: 1 1 86px;
   min-width: 0;
-  padding: 8px 12px;
+  padding: 7px 10px;
 }
 
 .top strong {
@@ -658,6 +658,27 @@ canvas {
     width: 84px;
     height: 52px;
     font-size: 0.82rem;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .top {
+    left: 8px;
+    right: 8px;
+    gap: 7px;
+  }
+
+  .top > div {
+    flex-basis: 74px;
+    padding: 6px 8px;
+  }
+
+  .top strong {
+    font-size: 0.9rem;
+  }
+
+  .label {
+    font-size: 0.62rem;
   }
 }
 
