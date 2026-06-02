@@ -478,8 +478,9 @@ h1 {
 canvas {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
+  height: 100%;
+  position: absolute;
+  inset: 0;
 }
 
 
