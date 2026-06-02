@@ -479,6 +479,13 @@ canvas {
   font-weight: 900;
 }
 
+canvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  }
+
+
 .touch-fire {
   background: var(--rose);
 }
@@ -565,8 +572,66 @@ canvas {
     display: none;
   }
 
+  .game-panel.mobile-mode .top {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
+  }
+
+  .game-panel.mobile-mode .top > div {
+    min-width: 70px;
+    padding: 5px 7px;
+  }
+
+  .game-panel.mobile-mode .top > div:first-child {
+    display: none;
+  }
+
+  .game-panel.mobile-mode .top strong {
+    font-size: 0.86rem;
+  }
+
+  .game-panel.mobile-mode .label,
+  .game-panel.mobile-mode .bar-wrap span {
+    font-size: 0.62rem;
+  }
+
   .game-panel.mobile-mode .bars {
-    right: 12px;
-    bottom: 154px;
+    top: 64px;
+    left: 8px;
+    right: 8px;
+    bottom: auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .game-panel.mobile-mode .bar {
+    height: 8px;
+  }
+
+  .game-panel.mobile-mode .touch-controls {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .game-panel.mobile-mode .touch-stick {
+    width: 108px;
+    height: 108px;
+  }
+
+  .game-panel.mobile-mode .touch-stick i {
+    width: 46px;
+    height: 46px;
+    left: 30px;
+    top: 30px;
+  }
+
+  .game-panel.mobile-mode .touch-actions button {
+    width: 84px;
+    height: 52px;
+    font-size: 0.82rem;
   }
 }

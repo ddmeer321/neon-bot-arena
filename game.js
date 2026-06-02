@@ -58,8 +58,8 @@ const heroes = {
     hp: 90,
     speed: 275,
     fireRate: 0.34,
-    bulletDamage: 36,
-    bulletSpeed: 900,
+    bulletDamage: 32,
+    bulletSpeed: 870,
     specialCooldown: 7,
     specialName: "Teleportpuls"
   }
@@ -168,6 +168,16 @@ function startTouchMove(event) {
   touchStick.setPointerCapture(event.pointerId);
   updateTouchMove(event);
 }
+
+
+function resizeCanavas() { 
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight
+}
+
+window.addEventListener('resize', resizeCanavas);
+resizeCanavas();
+
 
 function updateTouchMove(event) {
   if (state.touch.stickPointer !== event.pointerId) return;
