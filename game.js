@@ -169,23 +169,6 @@ function startTouchMove(event) {
   updateTouchMove(event);
 }
 
-
-function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-
-  canvas.style.width = window.innerWidth + "px";
-  canvas.style.height = window.innerHeight + "px";
-
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-
 function updateTouchMove(event) {
   if (state.touch.stickPointer !== event.pointerId) return;
   const rect = touchStick.getBoundingClientRect();
@@ -242,6 +225,7 @@ function startGame() {
   };
   heroName.textContent = hero.name;
   applyDeviceMode();
+  document.body.classList.add("playing");
   menu.classList.add("hidden");
   gamePanel.classList.remove("hidden");
   message.classList.add("hidden");
@@ -607,6 +591,7 @@ function returnToMenu() {
   message.classList.add("hidden");
   gamePanel.classList.add("hidden");
   touchControls?.classList.add("hidden");
+  document.body.classList.remove("playing");
   menu.classList.remove("hidden");
   renderLeaderboard();
 }

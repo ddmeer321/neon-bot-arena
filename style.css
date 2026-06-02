@@ -19,6 +19,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  overflow-x: hidden;
   background: radial-gradient(circle at 30% 20%, rgba(56, 216, 255, 0.16), transparent 34%),
     radial-gradient(circle at 78% 15%, rgba(255, 79, 146, 0.14), transparent 30%), var(--bg);
   color: var(--text);
@@ -36,10 +37,18 @@ button,
 }
 
 .shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px;
+}
+
+body.playing {
+  overflow: hidden;
+}
+
+body.playing .shell {
+  padding: 0;
 }
 
 .menu
@@ -326,7 +335,8 @@ h1 {
   background: #05070c;
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
+  border-radius: 0;
 }
 
 
@@ -543,6 +553,11 @@ canvas {
   .shell {
     padding: 14px;
     align-items: start;
+  }
+
+  body.playing .shell {
+    padding: 0;
+    place-items: center;
   }
 
   .fighters {
