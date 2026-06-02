@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="UTF-8">
     <title>Neon Bot Arena</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -13,7 +12,7 @@
         <div class="title-block">
           <p class="eyebrow">Browser Kampfspiel</p>
           <h1>Neon Bot Arena</h1>
-          <p class="intro">Wähle eine Figur, zerlege Roboterwellen und setze deine Spezialfähigkeit im richtigen Moment ein.</p>
+          <p class="intro">Waehle eine Figur, zerlege Roboterwellen und setze deine Spezialfaehigkeit im richtigen Moment ein.</p>
         </div>
 
         <div class="device-choice" aria-label="Geraet auswaehlen">
@@ -41,18 +40,6 @@
           </div>
           <ol id="leaderboardList"></ol>
         </div>
-
-<div id="heroMenu" class="hidden">
-  <h2>Wähle deinen Hero</h2>
-
-  <div class="hero-grid">
-    <button class="hero-card" data-hero="volt">Volt</button>
-    <button class="hero-card" data-hero="titan">Titan</button>
-    <button class="hero-card" data-hero="nova">Nova</button>
-  </div>
-
-  <button id="backToMenu">Zurück</button>
-</div>
 
         <div class="fighters" aria-label="Figur auswaehlen">
           <button class="fighter selected" data-hero="volt">
@@ -128,6 +115,6 @@
       </section>
     </main>
 
-    <script src="game.js"></script>
+    <script type="module" src="game.js"></script>
   </body>
 </html>
