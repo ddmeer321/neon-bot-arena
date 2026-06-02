@@ -170,13 +170,20 @@ function startTouchMove(event) {
 }
 
 
-function resizeCanavas() { 
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
-window.addEventListener('resize', resizeCanavas);
-resizeCanavas();
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 
 function updateTouchMove(event) {
