@@ -1,5 +1,10 @@
 export function getDom() {
   const canvas = document.querySelector("#game");
+
+  if (!canvas) {
+    throw new Error("Canvas #game nicht gefunden");
+  }
+
   return {
     canvas,
     ctx: canvas.getContext("2d"),
