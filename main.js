@@ -4,6 +4,9 @@ import { escapeHtml } from "./utils.js";
 import { setupInput } from "./input.js";
 import { createGameplay } from "./gameplay.js";
 import { draw } from "./render.js";
+import { createFPSCounter } from "./fps.js";
+
+
 
 export function bootGame() {
   const dom = getDom();
@@ -42,6 +45,8 @@ export function bootGame() {
     draw(dom, state);
     requestAnimationFrame(() => loop(now));
   }
+
+createFPSCounter();
 
   loop();
 }
