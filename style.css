@@ -32,7 +32,6 @@ button {
 }
 
 canvas,
-button,
 .touch-stick {
   touch-action: none;
 }
@@ -177,6 +176,66 @@ h1 {
   color: var(--lime);
 }
 
+.coins-box strong {
+  color: var(--amber);
+}
+
+.menu-actions {
+  width: min(430px, 100%);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.menu-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.hero-details,
+.empty-shop {
+  width: min(720px, 100%);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(13, 18, 28, 0.72);
+  color: var(--muted);
+}
+
+.hero-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero-details strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.hero-details p {
+  margin: 4px 0 0;
+}
+
+.hero-details button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--amber);
+  color: #11160c;
+  cursor: pointer;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.hero-details button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .leaderboard {
   width: min(430px, 100%);
   border: 1px solid var(--line);
@@ -261,6 +320,28 @@ h1 {
   border-color: var(--cyan);
   background: rgba(17, 28, 43, 0.9);
   outline: none;
+}
+
+.fighter.locked {
+  opacity: 0.72;
+}
+
+.fighter.locked:hover,
+.fighter.locked:focus-visible {
+  border-color: var(--amber);
+}
+
+.hero-status {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--lime);
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .portrait {
@@ -576,6 +657,11 @@ canvas {
 
   .fighters {
     grid-template-columns: 1fr;
+  }
+
+  .hero-details {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .top > div {

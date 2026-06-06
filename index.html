@@ -33,6 +33,11 @@
           <strong id="menuHighScore">0</strong>
         </div>
 
+        <div class="menu-score coins-box">
+          <span>Muenzen</span>
+          <strong id="coinCount">0</strong>
+        </div>
+
         <div class="leaderboard">
           <div class="leaderboard-title">
             <span>Lokale Rangliste</span>
@@ -41,26 +46,19 @@
           <ol id="leaderboardList"></ol>
         </div>
 
-        <div class="fighters" aria-label="Figur auswaehlen">
-          <button class="fighter selected" data-hero="volt">
-            <span class="portrait volt"></span>
-            <span class="fighter-name">Volt Runner</span>
-            <span class="fighter-role">Schnell, Blitzkette</span>
-            <span class="stats">Tempo +++ | Leben ++ | Schaden ++</span>
-          </button>
-          <button class="fighter" data-hero="titan">
-            <span class="portrait titan"></span>
-            <span class="fighter-name">Shield Titan</span>
-            <span class="fighter-role">Stark, Energieschild</span>
-            <span class="stats">Tempo + | Leben +++ | Schaden +++</span>
-          </button>
-          <button class="fighter" data-hero="nova">
-            <span class="portrait nova"></span>
-            <span class="fighter-name">Nova Shade</span>
-            <span class="fighter-role">Praezise, Teleportpuls</span>
-            <span class="stats">Tempo ++ | Leben + | Schaden +++</span>
-          </button>
+        <div class="menu-actions">
+          <button id="heroMenuBtn" class="device-btn selected">Heros</button>
+          <button id="shopMenuBtn" class="device-btn">Shop</button>
         </div>
+
+        <section id="heroPanel" class="menu-panel">
+          <div id="heroList" class="fighters" aria-label="Figur auswaehlen"></div>
+          <div id="heroDetails" class="hero-details"></div>
+        </section>
+
+        <section id="shopPanel" class="menu-panel hidden">
+          <div id="shopList" class="fighters" aria-label="Shop Helden"></div>
+        </section>
 
         <button id="startBtn" class="start-btn">Spiel starten</button>
       </section>
