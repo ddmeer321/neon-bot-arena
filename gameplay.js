@@ -119,7 +119,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shooter,
       bruiser,
       boss,
-      hit: 0
+      hit: 0,
+      burning: 0,
+      burnTick: 0
     };
   }
 
@@ -195,9 +197,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       player.invincible = 0.9;
       pulse(player.x, player.y, "#ff4f92", 58);
     }
-    if (state.selectedHero === "ember") {
-      state.robots.filter((robot) => distance(player, robot) < 210).forEach((robot) => damageRobot(robot, 95, "#ff7a3d"));
-      pulse(player.x, player.y, "#ff7a3d", 72);
+   if (state.selectedHero === "ember") {
+   state.robots
+    .filter((robot) => distance(player, robot) < 210)
+    .forEach((robot) => {
+      damageRobot(robot, 95, "#ff7a3d");
+      robot.burning = 5;
+      robot.burnTick = 1;
+    });
+
+   pulse(player.x, player.y, "#ff7a3d", 72);
     }
     if (state.selectedHero === "frost") {
       state.robots.filter((robot) => distance(player, robot) < 230).forEach((robot) => {
@@ -258,6 +267,19 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       const angle = Math.atan2(player.y - robot.y, player.x - robot.x);
       const close = distance(robot, player) < robot.radius + player.radius + 5;
       robot.hit = Math.max(0, robot.hit - dt);
+      if (robot.burning > 0) {
+      robot.burning -= dt;
+     robot.burnTick -= dt;
+
+     if (robot.burnTick <= 0) {
+     robot.hp -= 3;
+     robot.burnTick = 1;
+
+      for (let j = 0; j < 3; j++) {
+      addParticle(robot.x, robot.y, "#ff7a3d", 2);
+    }
+  }
+}
       if (!close) {
         robot.x += Math.cos(angle) * robot.speed * dt;
         robot.y += Math.sin(angle) * robot.speed * dt;
