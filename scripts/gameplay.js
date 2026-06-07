@@ -31,6 +31,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       specialTimer: 0,
       shield: 0,
       invincible: 0,
+      healFlash: 0,
       hero
     };
     dom.heroName.textContent = hero.name;
@@ -152,6 +153,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.specialTimer = Math.max(0, player.specialTimer - dt);
     player.shield = Math.max(0, player.shield - dt);
     player.invincible = Math.max(0, player.invincible - dt);
+    player.healFlash = Math.max(0, player.healFlash - dt);
     if ((state.mouse.down || state.touch.fire) && player.fireTimer <= 0) shoot();
   }
 
@@ -220,9 +222,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (state.selectedHero === "ember") {
       state.robots.filter((robot) => distance(player, robot) < 210).forEach((robot) => {
         robot.burnTimer = 3.0;
+        robot.burnFlash = 0.55;
+        robot.burnSparkTimer = 0;
         damageRobot(robot, 95, "#ff7a3d");
+        for (let i = 0; i < 10; i++) addParticle(robot.x, robot.y - robot.radius * 0.5, "#ff7a3d", 2.3);
       });
-      state.emberRing = { x: player.x, y: player.y, timer: 0.45 };
+      state.emberRing = { x: player.x, y: player.y, timer: 0.58 };
+      state.emberBurst = { x: player.x, y: player.y, timer: 0.5 };
       pulse(player.x, player.y, "#ff7a3d", 72);
     }
 
@@ -237,10 +243,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
 
     if (state.selectedHero === "pulse") {
-      player.hp = Math.min(player.maxHp, player.hp + Math.round(player.maxHp * 0.35));
+      const healed = Math.min(player.maxHp - player.hp, Math.round(player.maxHp * 0.35));
+      player.hp += healed;
+      player.healFlash = 1.0;
+      player.invincible = Math.max(player.invincible, 0.35);
       state.robots.filter((robot) => distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
-      state.pulseRing = { x: player.x, y: player.y, timer: 0.45 };
-      pulse(player.x, player.y, "#b7ff4a", 80);
+      state.pulseRing = { x: player.x, y: player.y, timer: 0.62 };
+      state.healWave = { x: player.x, y: player.y, timer: 0.9, amount: healed };
+      pulse(player.x, player.y, "#b7ff4a", 96);
     }
   }
 
@@ -305,7 +315,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       // Burn-Tick (Ember)
       if (robot.burnTimer > 0) {
         robot.burnTimer -= dt;
+        robot.burnFlash = Math.max(0, (robot.burnFlash || 0) - dt);
+        robot.burnSparkTimer = Math.max(0, (robot.burnSparkTimer || 0) - dt);
         robot.hp -= 8 * dt;
+        if (robot.burnSparkTimer <= 0) {
+          robot.burnSparkTimer = 0.12 + Math.random() * 0.08;
+          addParticle(robot.x + (Math.random() - 0.5) * robot.radius, robot.y - robot.radius * 0.75, "#ff7a3d", 0.9);
+          if (Math.random() < 0.45) addParticle(robot.x, robot.y, "#ffc857", 0.6);
+        }
       }
 
       if (!close) {
