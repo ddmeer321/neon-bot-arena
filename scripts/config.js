@@ -49,7 +49,7 @@ export const heroes = {
     hp: 90,
     speed: 275,
     fireRate: 0.34,
-    bulletDamage: 22,
+    bulletDamage: 18,
     bulletSpeed: 870,
     specialCooldown: 7,
     specialName: "Teleportpuls",
