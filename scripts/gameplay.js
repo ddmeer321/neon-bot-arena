@@ -395,7 +395,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Belohnung: +${reward} Muenzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Belohnung: +${reward} MÃ¼nzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
     const againBtn = document.querySelector("#againBtn");
     const menuBtn = document.querySelector("#gameOverMenuBtn");
     againBtn.replaceWith(againBtn.cloneNode(true));
