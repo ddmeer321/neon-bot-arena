@@ -1,7 +1,7 @@
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
-  document.querySelectorAll(".device-btn").forEach((button) => {
+  document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll(".device-btn").forEach((item) => item.classList.remove("selected"));
+      document.querySelectorAll(".device-btn[data-device]").forEach((item) => item.classList.remove("selected"));
       button.classList.add("selected");
       state.device = button.dataset.device;
     });
