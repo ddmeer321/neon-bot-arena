@@ -42,7 +42,7 @@ export const heroes = {
   nova: {
     id: "nova",
     name: "Nova Shade",
-    role: "Praezise, Teleportpuls",
+    role: "PrÃ¤zise, Teleportpuls",
     statsLabel: "Tempo ++ | Leben + | Schaden +++",
     color: "#ff4f92",
     glow: "#b7ff4a",
@@ -74,7 +74,7 @@ export const heroes = {
   frost: {
     id: "frost",
     name: "Frost Byte",
-    role: "Kontrolle, Kaeltefeld",
+    role: "Kontrolle, KÃ¤ltefeld",
     statsLabel: "Tempo ++ | Leben ++ | Schaden ++",
     color: "#8ee7ff",
     glow: "#f6f7fb",
@@ -84,7 +84,7 @@ export const heroes = {
     bulletDamage: 20,
     bulletSpeed: 700,
     specialCooldown: 8,
-    specialName: "Kaeltefeld",
+    specialName: "KÃ¤ltefeld",
     price: 550
   },
   pulse: {
