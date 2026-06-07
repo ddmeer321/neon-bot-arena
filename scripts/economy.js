@@ -121,7 +121,7 @@ export function showShopPanel(dom) {
 function renderHeroCard(state, hero, unlocked, selectable) {
   const level = getHeroLevel(state, hero.id);
   const selected = state.selectedHero === hero.id;
-  const status = unlocked ? `Stufe ${level}` : `${hero.price} Muenzen`;
+  const status = unlocked ? `Stufe ${level}` : `${hero.price} MÃ¼nzen`;
   const action = selectable ? `data-hero="${hero.id}"` : `data-buy-hero="${hero.id}"`;
   return `
     <button class="fighter ${selected ? "selected" : ""} ${unlocked ? "" : "locked"}" ${action}>
@@ -143,10 +143,10 @@ function renderHeroDetails(state, dom) {
   const cost = getUpgradeCost(level);
   dom.heroDetails.innerHTML = `
     <div>
-      <span class="label">Ausgewaehlt</span>
+      <span class="label">AusgewÃ¤hlt</span>
       <strong>${escapeHtml(hero.name)}</strong>
       <p>Stufe ${level}/${maxUpgradeLevel} | Leben ${upgraded.hp} | Schaden ${upgraded.bulletDamage} | Tempo ${upgraded.speed}</p>
     </div>
-    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} Muenzen`}</button>
+    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} MÃ¼nzen`}</button>
   `;
 }
