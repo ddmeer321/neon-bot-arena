@@ -1,10 +1,10 @@
-import { heroes } from "./config.js";
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   function startGame() {
-    const hero = heroes[state.selectedHero];
+    const hero = getSelectedHeroStats(state);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
     if (dom.playerNameInput) dom.playerNameInput.value = state.playerName;
     Object.assign(state, {
@@ -71,6 +71,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function showPauseMenu() {
     showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    const resumeBtn = document.querySelector("#resumeBtn");
+    const menuBtn = document.querySelector("#menuBtn");
+    resumeBtn.replaceWith(resumeBtn.cloneNode(true));
+    menuBtn.replaceWith(menuBtn.cloneNode(true));
     document.querySelector("#resumeBtn").addEventListener("click", togglePause);
     document.querySelector("#menuBtn").addEventListener("click", returnToMenu);
   }
@@ -107,19 +111,24 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function makeRobot(x, y, shooter, bruiser, boss = false) {
+    const speed = boss ? 86 : bruiser ? 96 : 135 + state.wave * 4;
     return {
       x,
       y,
       radius: boss ? 34 : bruiser ? 25 : 18,
       hp: boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8,
       maxHp: boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8,
-      speed: boss ? 86 : bruiser ? 96 : 135 + state.wave * 4,
+      speed,
+      baseSpeed: speed,
       damage: boss ? 28 : bruiser ? 20 : 13,
       fireTimer: Math.random() * 2,
       shooter,
       bruiser,
       boss,
-      hit: 0
+      hit: 0,
+      stunTimer: 0,
+      frozenTimer: 0,
+      burnTimer: 0
     };
   }
 
@@ -178,22 +187,60 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (player.specialTimer > 0) return;
     player.specialTimer = player.hero.specialCooldown;
     state.shake = 0.7;
+
     if (state.selectedHero === "volt") {
-      state.robots.sort((a, b) => distance(player, a) - distance(player, b)).slice(0, 5).forEach((robot) => damageRobot(robot, 70, "#38d8ff"));
-      pulse(player.x, player.y, "#38d8ff", 34);
+      const targets = state.robots
+        .slice()
+        .sort((a, b) => distance(player, a) - distance(player, b))
+        .slice(0, 5);
+      targets.forEach((robot) => {
+        damageRobot(robot, 70, "#38d8ff");
+        robot.stunTimer = 0.45;
+      });
+      state.lightningChain = { targets: targets.map(r => ({ x: r.x, y: r.y })), timer: 0.4 };
+      pulse(player.x, player.y, "#38d8ff", 60);
     }
+
     if (state.selectedHero === "titan") {
-      player.shield = 4.4;
+      player.shield = 3.0;
       player.invincible = 0.7;
       pulse(player.x, player.y, "#ffc857", 54);
     }
+
     if (state.selectedHero === "nova") {
       const angle = getAimAngle();
+      state.novaGhost = { x: player.x, y: player.y, timer: 0.45, color: player.hero.color };
       player.x = clamp(player.x + Math.cos(angle) * 190, 28, dom.canvas.width - 28);
       player.y = clamp(player.y + Math.sin(angle) * 190, 78, dom.canvas.height - 42);
       state.robots.filter((robot) => distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 84, "#ff4f92"));
-      player.invincible = 0.9;
-      pulse(player.x, player.y, "#ff4f92", 58);
+      player.invincible = 1.2;
+      pulse(player.x, player.y, "#ff4f92", 90);
+    }
+
+    if (state.selectedHero === "ember") {
+      state.robots.filter((robot) => distance(player, robot) < 210).forEach((robot) => {
+        robot.burnTimer = 3.0;
+        damageRobot(robot, 95, "#ff7a3d");
+      });
+      state.emberRing = { x: player.x, y: player.y, timer: 0.45 };
+      pulse(player.x, player.y, "#ff7a3d", 72);
+    }
+
+    if (state.selectedHero === "frost") {
+      state.robots.filter((robot) => distance(player, robot) < 230).forEach((robot) => {
+        robot.speed = robot.baseSpeed * 0.3;
+        robot.frozenTimer = 3.0;
+        damageRobot(robot, 55, "#8ee7ff");
+      });
+      state.frostRing = { x: player.x, y: player.y, timer: 0.45 };
+      pulse(player.x, player.y, "#8ee7ff", 64);
+    }
+
+    if (state.selectedHero === "pulse") {
+      player.hp = Math.min(player.maxHp, player.hp + Math.round(player.maxHp * 0.35));
+      state.robots.filter((robot) => distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
+      state.pulseRing = { x: player.x, y: player.y, timer: 0.45 };
+      pulse(player.x, player.y, "#b7ff4a", 80);
     }
   }
 
@@ -242,6 +289,25 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       const angle = Math.atan2(player.y - robot.y, player.x - robot.x);
       const close = distance(robot, player) < robot.radius + player.radius + 5;
       robot.hit = Math.max(0, robot.hit - dt);
+
+      // Stun (Volt)
+      if (robot.stunTimer > 0) {
+        robot.stunTimer -= dt;
+        continue;
+      }
+
+      // Frost-Verlangsamung
+      if (robot.frozenTimer > 0) {
+        robot.frozenTimer -= dt;
+        if (robot.frozenTimer <= 0) robot.speed = robot.baseSpeed;
+      }
+
+      // Burn-Tick (Ember)
+      if (robot.burnTimer > 0) {
+        robot.burnTimer -= dt;
+        robot.hp -= 8 * dt;
+      }
+
       if (!close) {
         robot.x += Math.cos(angle) * robot.speed * dt;
         robot.y += Math.sin(angle) * robot.speed * dt;
@@ -306,10 +372,17 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function endGame() {
     state.over = true;
     const isRecord = state.score > state.startHighScore;
+    const reward = calculateCoinReward(state);
+    state.lastCoinReward = reward;
+    addCoins(state, reward, dom);
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Belohnung: +${reward} Muenzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    const againBtn = document.querySelector("#againBtn");
+    const menuBtn = document.querySelector("#gameOverMenuBtn");
+    againBtn.replaceWith(againBtn.cloneNode(true));
+    menuBtn.replaceWith(menuBtn.cloneNode(true));
     document.querySelector("#againBtn").addEventListener("click", startGame);
     document.querySelector("#gameOverMenuBtn").addEventListener("click", returnToMenu);
   }
