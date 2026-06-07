@@ -173,7 +173,7 @@ function drawSpecialEffects(ctx, state) {
     ctx.globalAlpha = 1;
   }
 
-  
+  // Ember & Frost & Pulse Radius-Ringe
   for (const [key, color, maxR] of [
     ["emberRing", "#ff7a3d", 210],
     ["frostRing", "#8ee7ff", 230],
