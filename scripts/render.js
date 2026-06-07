@@ -10,6 +10,7 @@ export function draw(dom, state) {
     drawRobots(ctx, state);
     drawPlayer(ctx, state);
     drawParticles(ctx, state);
+    drawSpecialEffects(ctx, state);
   }
   ctx.restore();
 }
@@ -37,8 +38,10 @@ function drawPlayer(ctx, state) {
   ctx.save();
   ctx.translate(player.x, player.y);
   if (player.shield > 0) {
-    ctx.strokeStyle = "rgba(255,200,87,0.75)";
-    ctx.lineWidth = 5;
+    const shieldWarn = player.shield < 1.0;
+    const blink = shieldWarn ? Math.sin(state.time * 18) * 0.4 + 0.6 : 1;
+    ctx.strokeStyle = shieldWarn ? `rgba(255,80,80,${0.8 * blink})` : "rgba(255,200,87,0.75)";
+    ctx.lineWidth = shieldWarn ? 3 : 5;
     ctx.beginPath();
     ctx.arc(0, 0, 35 + Math.sin(state.time * 9) * 3, 0, Math.PI * 2);
     ctx.stroke();
@@ -72,6 +75,16 @@ function drawRobots(ctx, state) {
     ctx.fillRect(-robot.radius, robot.radius + 8, robot.radius * 2, 5);
     ctx.fillStyle = "#b7ff4a";
     ctx.fillRect(-robot.radius, robot.radius + 8, robot.radius * 2 * (robot.hp / robot.maxHp), 5);
+    if (robot.frozenTimer > 0) {
+      const blink = Math.sin(state.time * 8) * 0.3 + 0.7;
+      ctx.fillStyle = `rgba(142,231,255,${blink})`;
+      ctx.fillRect(-robot.radius, -robot.radius - 12, 9, 9);
+    }
+    if (robot.burnTimer > 0) {
+      const flicker = Math.sin(state.time * 14) * 0.4 + 0.6;
+      ctx.fillStyle = `rgba(255,80,20,${flicker})`;
+      ctx.fillRect(-robot.radius, -robot.radius - 12, 9, 9);
+    }
     ctx.restore();
   }
 }
@@ -88,7 +101,7 @@ function drawBullets(ctx, state) {
 
 function drawParticles(ctx, state) {
   state.particles.forEach((p) => {
-    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
     ctx.fillStyle = p.color;
     ctx.fillRect(p.x, p.y, p.size, p.size);
     ctx.globalAlpha = 1;
@@ -131,4 +144,53 @@ function line(ctx, x1, y1, x2, y2) {
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
+}
+
+function drawSpecialEffects(ctx, state) {
+  // Nova Geisterbild
+  if (state.novaGhost?.timer > 0) {
+    state.novaGhost.timer -= 0.016;
+    const alpha = Math.max(0, state.novaGhost.timer / 0.45) * 0.55;
+    glowCircle(ctx, state.novaGhost.x, state.novaGhost.y, 26, state.novaGhost.color, alpha);
+  }
+
+  // Volt Blitzkette
+  if (state.lightningChain?.timer > 0) {
+    state.lightningChain.timer -= 0.016;
+    const alpha = Math.max(0, state.lightningChain.timer / 0.4);
+    const pts = [{ x: state.player?.x ?? 0, y: state.player?.y ?? 0 }, ...state.lightningChain.targets];
+    ctx.strokeStyle = "#38d8ff";
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = alpha * 0.8;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i+1].x) / 2 + (Math.random() - 0.5) * 30;
+      const my = (pts[i].y + pts[i+1].y) / 2 + (Math.random() - 0.5) * 30;
+      ctx.beginPath();
+      ctx.moveTo(pts[i].x, pts[i].y);
+      ctx.quadraticCurveTo(mx, my, pts[i+1].x, pts[i+1].y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  
+  for (const [key, color, maxR] of [
+    ["emberRing", "#ff7a3d", 210],
+    ["frostRing", "#8ee7ff", 230],
+    ["pulseRing", "#b7ff4a", 200],
+  ]) {
+    const ring = state[key];
+    if (ring?.timer > 0) {
+      ring.timer -= 0.016;
+      const progress = 1 - ring.timer / 0.45;
+      const r = progress * maxR;
+      ctx.globalAlpha = Math.max(0, (1 - progress) * 0.65);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(ring.x, ring.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
 }
