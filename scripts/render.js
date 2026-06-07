@@ -37,6 +37,20 @@ function drawPlayer(ctx, state) {
   const angle = getPlayerAngle(state);
   ctx.save();
   ctx.translate(player.x, player.y);
+  if (player.healFlash > 0) {
+    const alpha = Math.min(1, player.healFlash);
+    glowCircle(ctx, 0, 0, player.radius + 42 + Math.sin(state.time * 13) * 4, "#b7ff4a", 0.18 * alpha);
+    ctx.globalAlpha = 0.65 * alpha;
+    ctx.strokeStyle = "#b7ff4a";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius + 22, -Math.PI * 0.2, Math.PI * 1.35);
+    ctx.stroke();
+    ctx.fillStyle = "#b7ff4a";
+    ctx.fillRect(-4, -player.radius - 35, 8, 22);
+    ctx.fillRect(-11, -player.radius - 28, 22, 8);
+    ctx.globalAlpha = 1;
+  }
   if (player.shield > 0) {
     const shieldWarn = player.shield < 1.0;
     const blink = shieldWarn ? Math.sin(state.time * 18) * 0.4 + 0.6 : 1;
@@ -81,9 +95,25 @@ function drawRobots(ctx, state) {
       ctx.fillRect(-robot.radius, -robot.radius - 12, 9, 9);
     }
     if (robot.burnTimer > 0) {
-      const flicker = Math.sin(state.time * 14) * 0.4 + 0.6;
-      ctx.fillStyle = `rgba(255,80,20,${flicker})`;
-      ctx.fillRect(-robot.radius, -robot.radius - 12, 9, 9);
+      const burnAlpha = Math.min(1, robot.burnTimer / 0.7);
+      const flicker = Math.sin(state.time * 18 + robot.x * 0.03) * 0.28 + 0.72;
+      glowCircle(ctx, 0, 0, robot.radius + 24 + flicker * 4, "#ff7a3d", 0.16 * burnAlpha);
+      ctx.globalAlpha = burnAlpha;
+      ctx.strokeStyle = "#ff7a3d";
+      ctx.lineWidth = robot.burnFlash > 0 ? 4 : 2;
+      ctx.strokeRect(-robot.radius - 3, -robot.radius - 3, robot.radius * 2 + 6, robot.radius * 2 + 6);
+      ctx.fillStyle = `rgba(255,122,61,${flicker})`;
+      ctx.beginPath();
+      ctx.moveTo(robot.radius - 8, -robot.radius - 4);
+      ctx.lineTo(robot.radius + 2, -robot.radius - 22 - flicker * 5);
+      ctx.lineTo(robot.radius + 12, -robot.radius - 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = `rgba(255,200,87,${0.8 * flicker})`;
+      ctx.beginPath();
+      ctx.arc(robot.radius + 2, -robot.radius - 8, 4 + flicker * 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }
@@ -177,20 +207,73 @@ function drawSpecialEffects(ctx, state) {
   for (const [key, color, maxR] of [
     ["emberRing", "#ff7a3d", 210],
     ["frostRing", "#8ee7ff", 230],
-    ["pulseRing", "#b7ff4a", 200],
+    ["pulseRing", "#b7ff4a", 185],
   ]) {
     const ring = state[key];
     if (ring?.timer > 0) {
+      const duration = key === "pulseRing" ? 0.62 : key === "emberRing" ? 0.58 : 0.45;
       ring.timer -= 0.016;
-      const progress = 1 - ring.timer / 0.45;
+      const progress = 1 - ring.timer / duration;
       const r = progress * maxR;
       ctx.globalAlpha = Math.max(0, (1 - progress) * 0.65);
       ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = key === "pulseRing" ? 5 : 3;
       ctx.beginPath();
       ctx.arc(ring.x, ring.y, r, 0, Math.PI * 2);
       ctx.stroke();
+      if (key === "emberRing") {
+        ctx.globalAlpha = Math.max(0, (1 - progress) * 0.32);
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 14; i++) {
+          const a = (Math.PI * 2 * i) / 14 + progress * 1.4;
+          ctx.beginPath();
+          ctx.moveTo(ring.x + Math.cos(a) * (r - 10), ring.y + Math.sin(a) * (r - 10));
+          ctx.lineTo(ring.x + Math.cos(a) * (r + 22), ring.y + Math.sin(a) * (r + 22));
+          ctx.stroke();
+        }
+      }
+      if (key === "pulseRing") {
+        ctx.globalAlpha = Math.max(0, (1 - progress) * 0.28);
+        glowCircle(ctx, ring.x, ring.y, r * 0.72, color, 0.2);
+      }
       ctx.globalAlpha = 1;
     }
+  }
+
+  if (state.emberBurst?.timer > 0) {
+    state.emberBurst.timer -= 0.016;
+    const progress = 1 - state.emberBurst.timer / 0.5;
+    ctx.globalAlpha = Math.max(0, 1 - progress) * 0.5;
+    ctx.strokeStyle = "#ffc857";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 18; i++) {
+      const a = (Math.PI * 2 * i) / 18;
+      const inner = 34 + progress * 55;
+      const outer = 76 + progress * 130 + Math.sin(state.time * 12 + i) * 8;
+      ctx.beginPath();
+      ctx.moveTo(state.emberBurst.x + Math.cos(a) * inner, state.emberBurst.y + Math.sin(a) * inner);
+      ctx.lineTo(state.emberBurst.x + Math.cos(a) * outer, state.emberBurst.y + Math.sin(a) * outer);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  if (state.healWave?.timer > 0) {
+    state.healWave.timer -= 0.016;
+    const progress = 1 - state.healWave.timer / 0.9;
+    const alpha = Math.max(0, 1 - progress);
+    ctx.globalAlpha = alpha * 0.7;
+    ctx.strokeStyle = "#b7ff4a";
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(state.healWave.x, state.healWave.y, 28 + progress * 130 + i * 20, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#b7ff4a";
+    const bob = Math.sin(state.time * 9) * 3;
+    ctx.fillRect(state.healWave.x - 5, state.healWave.y - 56 + bob, 10, 26);
+    ctx.fillRect(state.healWave.x - 13, state.healWave.y - 48 + bob, 26, 10);
+    ctx.globalAlpha = 1;
   }
 }
