@@ -1,7 +1,8 @@
-import { loadHighScore, loadLeaderboard } from "./storage.js";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js";
 
 export function createState() {
   const highScore = loadHighScore();
+  const progression = loadProgression();
   return {
     device: "pc",
     selectedHero: "volt",
@@ -12,6 +13,10 @@ export function createState() {
     score: 0,
     highScore,
     startHighScore: highScore,
+    coins: loadCoins(),
+    unlockedHeroes: progression.unlockedHeroes,
+    upgrades: progression.upgrades,
+    lastCoinReward: 0,
     playerName: "Spieler",
     leaderboard: loadLeaderboard(),
     time: 0,
