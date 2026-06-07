@@ -7,14 +7,6 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     });
   });
 
-  document.querySelectorAll(".fighter").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".fighter").forEach((item) => item.classList.remove("selected"));
-      button.classList.add("selected");
-      state.selectedHero = button.dataset.hero;
-    });
-  });
-
   dom.playerNameInput?.addEventListener("keydown", (event) => event.stopPropagation());
   dom.playerNameInput?.addEventListener("keyup", (event) => event.stopPropagation());
   dom.startBtn.addEventListener("click", startGame);
