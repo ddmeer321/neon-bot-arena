@@ -1,8 +1,40 @@
-import { highScoreKey, leaderboardKey } from "./config.js";
+import { coinKey, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js";
 import { cleanName } from "./utils.js";
 
 export function loadHighScore() {
   return Number(localStorage.getItem(highScoreKey)) || 0;
+}
+
+export function loadCoins() {
+  return Number(localStorage.getItem(coinKey)) || 0;
+}
+
+export function saveCoins(coins) {
+  localStorage.setItem(coinKey, String(coins));
+}
+
+export function loadProgression() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(progressionKey) || "{}");
+    const unlocked = Array.isArray(parsed.unlockedHeroes) ? parsed.unlockedHeroes : starterHeroes;
+    const upgrades = parsed.upgrades && typeof parsed.upgrades === "object" ? parsed.upgrades : {};
+    return {
+      unlockedHeroes: [...new Set([...starterHeroes, ...unlocked])],
+      upgrades
+    };
+  } catch {
+    return { unlockedHeroes: [...starterHeroes], upgrades: {} };
+  }
+}
+
+export function saveProgression(state) {
+  localStorage.setItem(
+    progressionKey,
+    JSON.stringify({
+      unlockedHeroes: state.unlockedHeroes,
+      upgrades: state.upgrades
+    })
+  );
 }
 
 export function saveHighScore(state, dom) {
