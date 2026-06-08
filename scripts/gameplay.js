@@ -110,8 +110,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (!state.running || state.over) return;
     state.paused = !state.paused;
     dom.pauseBtn.textContent = state.paused ? ">" : "II";
-    if (state.paused) showPauseMenu();
-    else dom.message.classList.add("hidden");
+    if (state.paused) {
+      state.touch.fire = false;
+      dom.touchControls?.classList.add("hidden");
+      showPauseMenu();
+    } else {
+      dom.message.classList.add("hidden");
+      applyDeviceMode();
+    }
   }
 
   function showMessage(html) {
@@ -119,14 +125,27 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.message.classList.remove("hidden");
   }
 
+  function bindOverlayButton(selector, handler) {
+    const button = document.querySelector(selector);
+    if (!button) return;
+    let lastRun = 0;
+    const run = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const now = performance.now();
+      if (now - lastRun < 350) return;
+      lastRun = now;
+      handler();
+    };
+    button.addEventListener("click", run);
+    button.addEventListener("pointerdown", run);
+    button.addEventListener("touchend", run, { passive: false });
+  }
+
   function showPauseMenu() {
-    showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmenü</button></div>`);
-    const resumeBtn = document.querySelector("#resumeBtn");
-    const menuBtn = document.querySelector("#menuBtn");
-    resumeBtn.replaceWith(resumeBtn.cloneNode(true));
-    menuBtn.replaceWith(menuBtn.cloneNode(true));
-    document.querySelector("#resumeBtn").addEventListener("click", togglePause);
-    document.querySelector("#menuBtn").addEventListener("click", returnToMenu);
+    showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmen?</button></div>`);
+    bindOverlayButton("#resumeBtn", togglePause);
+    bindOverlayButton("#menuBtn", returnToMenu);
   }
 
   function update(dt) {
@@ -476,6 +495,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function endGame() {
     state.over = true;
+    state.touch.fire = false;
+    state.touch.moveX = 0;
+    state.touch.moveY = 0;
+    dom.touchControls?.classList.add("hidden");
     const isRecord = state.score > state.startHighScore;
     const reward = calculateCoinReward(state);
     state.lastCoinReward = reward;
@@ -484,12 +507,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveLeaderboardEntry(state);
     renderLeaderboard();
     showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} Münzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
-    const againBtn = document.querySelector("#againBtn");
-    const menuBtn = document.querySelector("#gameOverMenuBtn");
-    againBtn.replaceWith(againBtn.cloneNode(true));
-    menuBtn.replaceWith(menuBtn.cloneNode(true));
-    document.querySelector("#againBtn").addEventListener("click", startGame);
-    document.querySelector("#gameOverMenuBtn").addEventListener("click", returnToMenu);
+    bindOverlayButton("#againBtn", startGame);
+    bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
 
   function returnToMenu() {
