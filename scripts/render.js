@@ -161,9 +161,19 @@ function drawPickups(ctx, state) {
     ctx.lineWidth = 3;
     ctx.globalAlpha = item.life < 2 ? 0.55 + Math.sin(state.time * 18) * 0.35 : 1;
     if (item.type === "damage") {
-      ctx.rotate(Math.PI / 4);
-      ctx.strokeRect(-9, -9, 18, 18);
-      ctx.fillRect(-3, -13, 6, 26);
+      ctx.fillRect(-10, -4, 18, 14);
+      ctx.fillRect(-7, -12, 5, 9);
+      ctx.fillRect(-1, -13, 5, 10);
+      ctx.fillRect(5, -12, 5, 9);
+      ctx.fillRect(10, -8, 5, 11);
+      ctx.fillRect(-6, 9, 11, 7);
+      ctx.fillStyle = "rgba(255,255,255,0.42)";
+      ctx.fillRect(-6, -10, 3, 4);
+      ctx.fillRect(0, -11, 3, 4);
+      ctx.fillRect(6, -10, 3, 4);
+      ctx.strokeStyle = "#ffc857";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-11, -13, 27, 30);
     } else if (item.type === "speed") {
       ctx.beginPath();
       ctx.moveTo(-11, -10);
