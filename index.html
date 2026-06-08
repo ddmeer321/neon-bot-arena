@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=difficulty1" />
   </head>
   <body>
     <main class="shell">
@@ -20,6 +20,24 @@
           <div>
             <button class="device-btn selected" data-device="pc">PC</button>
             <button class="device-btn" data-device="mobile">Handy</button>
+          </div>
+        </div>
+
+        <div class="difficulty-choice" aria-label="Schwierigkeitsgrad auswählen">
+          <p>Schwierigkeit</p>
+          <div>
+            <button class="difficulty-btn" data-difficulty="easy">
+              <span>Einfach</span>
+              <small>weniger Gegner, kaum Münzen</small>
+            </button>
+            <button class="difficulty-btn selected" data-difficulty="normal">
+              <span>Normal</span>
+              <small>normale Belohnung</small>
+            </button>
+            <button class="difficulty-btn" data-difficulty="hard">
+              <span>Schwer</span>
+              <small>stärkere Gegner, mehr Münzen</small>
+            </button>
           </div>
         </div>
 
@@ -113,6 +131,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js"></script>
+    <script type="module" src="game.js?v=difficulty1"></script>
   </body>
 </html>
