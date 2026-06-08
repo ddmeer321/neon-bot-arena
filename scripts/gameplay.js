@@ -32,6 +32,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shield: 0,
       invincible: 0,
       healFlash: 0,
+      damageBoostTimer: 0,
+      speedBoostTimer: 0,
+      pickupFlash: null,
       hero
     };
     dom.heroName.textContent = hero.name;
@@ -154,6 +157,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.shield = Math.max(0, player.shield - dt);
     player.invincible = Math.max(0, player.invincible - dt);
     player.healFlash = Math.max(0, player.healFlash - dt);
+    player.damageBoostTimer = Math.max(0, player.damageBoostTimer - dt);
+    player.speedBoostTimer = Math.max(0, player.speedBoostTimer - dt);
+    if (player.pickupFlash) {
+      player.pickupFlash.timer -= dt;
+      if (player.pickupFlash.timer <= 0) player.pickupFlash = null;
+    }
     if ((state.mouse.down || state.touch.fire) && player.fireTimer <= 0) shoot();
   }
 
@@ -342,7 +351,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         state.robots.splice(i, 1);
         state.score += robot.boss ? 500 : robot.bruiser ? 90 : 45;
         pulse(robot.x, robot.y, robot.boss ? "#ffc857" : "#38d8ff", robot.boss ? 46 : 24);
-        if (Math.random() < 0.12) state.pickups.push({ x: robot.x, y: robot.y, radius: 11, life: 8 });
+        if (Math.random() < 0.14) state.pickups.push(makePickup(robot.x, robot.y));
       }
     }
   }
