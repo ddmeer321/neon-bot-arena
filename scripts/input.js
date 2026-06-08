@@ -92,7 +92,7 @@ function setupAdminPanel(dom, state) {
   const syncVisibility = () => {
     const active = dom.playerNameInput.value.trim() === adminCode;
     panel.classList.toggle("hidden", !active);
-    if (active) setStatus("Admin aktiv. ?nderungen gelten nur auf diesem Ger?t.");
+    if (active) setStatus("Admin aktiv. \u00c4nderungen gelten nur auf diesem Ger\u00e4t.");
   };
 
   dom.playerNameInput.addEventListener("input", syncVisibility);
@@ -108,7 +108,7 @@ function setupAdminPanel(dom, state) {
       state.coins += 500;
       saveCoins(state.coins);
       updateCoinDisplay(state, dom);
-      setStatus("+500 M?nzen hinzugef?gt.");
+      setStatus("+500 M\u00fcnzen hinzugef\u00fcgt.");
     }
 
     if (action === "unlock") {
@@ -129,7 +129,7 @@ function setupAdminPanel(dom, state) {
     }
 
     if (action === "reset") {
-      if (!confirm("Lokalen Spielstand auf diesem Ger?t zur?cksetzen?")) return;
+      if (!confirm("Lokalen Spielstand auf diesem Ger\u00e4t zur\u00fccksetzen?")) return;
       localStorage.removeItem(coinKey);
       localStorage.removeItem(highScoreKey);
       localStorage.removeItem(leaderboardKey);
@@ -145,7 +145,7 @@ function setupAdminPanel(dom, state) {
       if (dom.highScoreText) dom.highScoreText.textContent = 0;
       renderHeroMenu(state, dom);
       renderShop(state, dom);
-      setStatus("Lokaler Spielstand zur?ckgesetzt.");
+      setStatus("Lokaler Spielstand zur\u00fcckgesetzt.");
     }
   });
 }
