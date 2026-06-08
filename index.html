@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=difficulty1" />
+    <link rel="stylesheet" href="style.css?v=admin1" />
   </head>
   <body>
     <main class="shell">
@@ -55,6 +55,20 @@
           <span>Münzen</span>
           <strong id="coinCount">0</strong>
         </div>
+
+        <section id="adminPanel" class="admin-panel hidden" aria-label="Admin Test Panel">
+          <div class="admin-panel-title">
+            <span>Test Panel</span>
+            <strong>Admin aktiv</strong>
+          </div>
+          <div class="admin-actions">
+            <button data-admin-action="coins">+500 M?nzen</button>
+            <button data-admin-action="unlock">Alle Helden</button>
+            <button data-admin-action="max-upgrades">Max Upgrades</button>
+            <button data-admin-action="reset">Reset</button>
+          </div>
+          <p id="adminStatus">Bereit f?r iPad-Tests.</p>
+        </section>
 
         <div class="leaderboard">
           <div class="leaderboard-title">
@@ -131,6 +145,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=difficulty1"></script>
+    <script type="module" src="game.js?v=admin1"></script>
   </body>
 </html>

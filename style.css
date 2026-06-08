@@ -299,6 +299,64 @@ h1 {
   opacity: 0.5;
 }
 
+.admin-panel {
+  width: min(620px, 100%);
+  border: 1px solid rgba(255, 200, 87, 0.36);
+  border-radius: 8px;
+  background: rgba(31, 22, 10, 0.76);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-panel-title span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-panel-title strong {
+  color: var(--amber);
+}
+
+.admin-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-actions button {
+  min-height: 42px;
+  border: 1px solid rgba(255, 200, 87, 0.34);
+  border-radius: 8px;
+  background: rgba(255, 200, 87, 0.16);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.admin-actions button:hover,
+.admin-actions button:focus-visible {
+  border-color: var(--amber);
+  background: rgba(255, 200, 87, 0.28);
+  outline: none;
+}
+
+.admin-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .leaderboard {
   width: min(430px, 100%);
   border: 1px solid var(--line);
@@ -727,6 +785,10 @@ canvas {
 
   .difficulty-choice div {
     grid-template-columns: 1fr;
+  }
+
+  .admin-actions {
+    grid-template-columns: 1fr 1fr;
   }
 
   .hero-details {
