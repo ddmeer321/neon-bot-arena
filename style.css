@@ -136,6 +136,57 @@ h1 {
   outline: none;
 }
 
+.difficulty-choice {
+  display: grid;
+  gap: 10px;
+  width: min(620px, 100%);
+}
+
+.difficulty-choice p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.difficulty-choice div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.difficulty-btn {
+  min-height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.74);
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.difficulty-btn span {
+  font-weight: 900;
+}
+
+.difficulty-btn small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.difficulty-btn:hover,
+.difficulty-btn:focus-visible,
+.difficulty-btn.selected {
+  border-color: var(--amber);
+  background: rgba(255, 200, 87, 0.15);
+  outline: none;
+}
+
 .name-field {
   width: min(430px, 100%);
   display: grid;
@@ -671,6 +722,10 @@ canvas {
   }
 
   .fighters {
+    grid-template-columns: 1fr;
+  }
+
+  .difficulty-choice div {
     grid-template-columns: 1fr;
   }
 
