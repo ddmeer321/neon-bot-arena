@@ -51,6 +51,17 @@ function drawPlayer(ctx, state) {
     ctx.fillRect(-11, -player.radius - 28, 22, 8);
     ctx.globalAlpha = 1;
   }
+  if (player.damageBoostTimer > 0 || player.speedBoostTimer > 0 || player.pickupFlash) {
+    const boostColor = player.pickupFlash?.color || (player.damageBoostTimer > 0 ? "#ff7a3d" : "#38d8ff");
+    const boostAlpha = player.pickupFlash ? Math.min(1, player.pickupFlash.timer / 0.8) : 0.38 + Math.sin(state.time * 9) * 0.12;
+    ctx.strokeStyle = boostColor;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = boostAlpha;
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius + 30 + Math.sin(state.time * 10) * 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
   if (player.shield > 0) {
     const shieldWarn = player.shield < 1.0;
     const blink = shieldWarn ? Math.sin(state.time * 18) * 0.4 + 0.6 : 1;
@@ -140,10 +151,35 @@ function drawParticles(ctx, state) {
 
 function drawPickups(ctx, state) {
   state.pickups.forEach((item) => {
-    glowCircle(ctx, item.x, item.y, 22, "#b7ff4a", 0.26);
-    ctx.fillStyle = "#b7ff4a";
-    ctx.fillRect(item.x - 11, item.y - 4, 22, 8);
-    ctx.fillRect(item.x - 4, item.y - 11, 8, 22);
+    const color = item.color || "#b7ff4a";
+    const pulseSize = 22 + Math.sin(state.time * 7 + item.x) * 3;
+    glowCircle(ctx, item.x, item.y, pulseSize, color, 0.28);
+    ctx.save();
+    ctx.translate(item.x, item.y);
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = item.life < 2 ? 0.55 + Math.sin(state.time * 18) * 0.35 : 1;
+    if (item.type === "damage") {
+      ctx.rotate(Math.PI / 4);
+      ctx.strokeRect(-9, -9, 18, 18);
+      ctx.fillRect(-3, -13, 6, 26);
+    } else if (item.type === "speed") {
+      ctx.beginPath();
+      ctx.moveTo(-11, -10);
+      ctx.lineTo(4, 0);
+      ctx.lineTo(-11, 10);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(15, 0);
+      ctx.lineTo(0, 10);
+      ctx.stroke();
+    } else {
+      ctx.fillRect(-11, -4, 22, 8);
+      ctx.fillRect(-4, -11, 8, 22);
+    }
+    ctx.restore();
   });
 }
 
