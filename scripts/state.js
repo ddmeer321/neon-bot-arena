@@ -5,6 +5,7 @@ export function createState() {
   const progression = loadProgression();
   return {
     device: "pc",
+    difficulty: "normal",
     selectedHero: "volt",
     running: false,
     paused: false,
