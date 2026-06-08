@@ -19,7 +19,7 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     });
   });
 
-  setupAdminPanel(dom, state);
+  setupAdminPanel(dom, state, startGame);
 
   dom.playerNameInput?.addEventListener("keydown", (event) => event.stopPropagation());
   dom.playerNameInput?.addEventListener("keyup", (event) => event.stopPropagation());
@@ -80,7 +80,7 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
 
 const adminCode = "code24.4";
 
-function setupAdminPanel(dom, state) {
+function setupAdminPanel(dom, state, startGame) {
   const panel = document.querySelector("#adminPanel");
   const status = document.querySelector("#adminStatus");
   if (!panel || !dom.playerNameInput) return;

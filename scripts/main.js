@@ -1,9 +1,9 @@
 import { getDom } from "./dom.js";
 import { createState } from "./state.js?v=boss2";
 import { escapeHtml } from "./utils.js";
-import { setupInput } from "./input.js?v=adminboss1";
-import { createGameplay } from "./gameplay.js?v=adminboss1";
-import { draw } from "./render.js?v=adminboss1";
+import { setupInput } from "./input.js?v=adminboss2";
+import { createGameplay } from "./gameplay.js?v=adminboss2";
+import { draw } from "./render.js?v=adminboss2";
 import { createFPSCounter } from "./fps.js";
 import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=boss2";
 
