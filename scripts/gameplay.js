@@ -415,6 +415,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateRobots(dt) {
     const player = state.player;
+    const settings = getDifficultySettings();
     for (let i = state.robots.length - 1; i >= 0; i--) {
       const robot = state.robots[i];
       const angle = Math.atan2(player.y - robot.y, player.x - robot.x);
