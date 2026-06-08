@@ -150,8 +150,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       dy += state.touch.moveY;
     }
     const len = Math.hypot(dx, dy) || 1;
-    player.x = clamp(player.x + (dx / len) * hero.speed * dt, 26, dom.canvas.width - 26);
-    player.y = clamp(player.y + (dy / len) * hero.speed * dt, 72, dom.canvas.height - 40);
+    const speedMultiplier = player.speedBoostTimer > 0 ? 1.35 : 1;
+    player.x = clamp(player.x + (dx / len) * hero.speed * speedMultiplier * dt, 26, dom.canvas.width - 26);
+    player.y = clamp(player.y + (dy / len) * hero.speed * speedMultiplier * dt, 72, dom.canvas.height - 40);
     player.fireTimer = Math.max(0, player.fireTimer - dt);
     player.specialTimer = Math.max(0, player.specialTimer - dt);
     player.shield = Math.max(0, player.shield - dt);
@@ -171,10 +172,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const hero = player.hero;
     player.fireTimer = hero.fireRate;
     const angle = getAimAngle();
+    const damage = Math.round(hero.bulletDamage * (player.damageBoostTimer > 0 ? 1.5 : 1));
     if (state.selectedHero === "titan") {
-      [-0.18, 0, 0.18].forEach((spread) => addBullet(player.x, player.y, angle + spread, hero.bulletSpeed, hero.bulletDamage, hero.color, false));
+      [-0.18, 0, 0.18].forEach((spread) => addBullet(player.x, player.y, angle + spread, hero.bulletSpeed, damage, hero.color, false));
     } else {
-      addBullet(player.x, player.y, angle, hero.bulletSpeed, hero.bulletDamage, hero.color, state.selectedHero === "nova");
+      addBullet(player.x, player.y, angle, hero.bulletSpeed, damage, hero.color, state.selectedHero === "nova");
     }
   }
 
@@ -381,18 +383,43 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
+  function makePickup(x, y) {
+    const roll = Math.random();
+    const type = roll < 0.45 ? "heal" : roll < 0.72 ? "damage" : "speed";
+    const colors = { heal: "#b7ff4a", damage: "#ff7a3d", speed: "#38d8ff" };
+    return { x, y, type, color: colors[type], radius: 12, life: 9 };
+  }
+
   function updatePickups(dt) {
     for (let i = state.pickups.length - 1; i >= 0; i--) {
       const item = state.pickups[i];
       item.life -= dt;
       if (distance(item, state.player) < item.radius + state.player.radius) {
-        state.player.hp = Math.min(state.player.maxHp, state.player.hp + 24);
-        pulse(item.x, item.y, "#b7ff4a", 22);
+        applyPickup(item);
         state.pickups.splice(i, 1);
       } else if (item.life <= 0) {
         state.pickups.splice(i, 1);
       }
     }
+  }
+
+  function applyPickup(item) {
+    const player = state.player;
+    if (item.type === "damage") {
+      player.damageBoostTimer = 7;
+      player.pickupFlash = { color: item.color, timer: 0.8 };
+      pulse(item.x, item.y, item.color, 30);
+      return;
+    }
+    if (item.type === "speed") {
+      player.speedBoostTimer = 7;
+      player.pickupFlash = { color: item.color, timer: 0.8 };
+      pulse(item.x, item.y, item.color, 30);
+      return;
+    }
+    player.hp = Math.min(player.maxHp, player.hp + 24);
+    player.healFlash = 0.75;
+    pulse(item.x, item.y, item.color || "#b7ff4a", 24);
   }
 
   function endGame() {
