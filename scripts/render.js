@@ -89,12 +89,32 @@ function drawRobots(ctx, state) {
   for (const robot of state.robots) {
     ctx.save();
     ctx.translate(robot.x, robot.y);
-    glowCircle(ctx, 0, 0, robot.radius + 14, robot.boss ? "#ffc857" : "#ff4f92", robot.hit > 0 ? 0.34 : 0.15);
-    ctx.fillStyle = robot.hit > 0 ? "#f6f7fb" : robot.boss ? "#ffc857" : robot.bruiser ? "#9aa4b8" : "#ff4f92";
+    const robotGlow = robot.boss ? "#b11226" : "#ff4f92";
+    glowCircle(ctx, 0, 0, robot.radius + (robot.boss ? 34 : 14), robotGlow, robot.boss ? 0.32 + Math.sin(state.time * 5) * 0.08 : robot.hit > 0 ? 0.34 : 0.15);
+    if (robot.boss) {
+      ctx.strokeStyle = "rgba(255,45,85,0.72)";
+      ctx.lineWidth = 3;
+      ctx.rotate(Math.sin(state.time * 2) * 0.04);
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * (robot.radius + 5), Math.sin(a) * (robot.radius + 5));
+        ctx.lineTo(Math.cos(a) * (robot.radius + 18), Math.sin(a) * (robot.radius + 18));
+        ctx.stroke();
+      }
+    }
+    ctx.fillStyle = robot.hit > 0 ? "#f6f7fb" : robot.boss ? "#5a0712" : robot.bruiser ? "#9aa4b8" : "#ff4f92";
     ctx.fillRect(-robot.radius, -robot.radius, robot.radius * 2, robot.radius * 2);
+    if (robot.boss) {
+      ctx.strokeStyle = "#ff2d55";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(-robot.radius, -robot.radius, robot.radius * 2, robot.radius * 2);
+      ctx.fillStyle = "rgba(255,45,85,0.28)";
+      ctx.fillRect(-robot.radius + 6, -robot.radius + 6, robot.radius * 2 - 12, robot.radius * 2 - 12);
+    }
     ctx.fillStyle = "#07121b";
     ctx.fillRect(-robot.radius * 0.55, -robot.radius * 0.22, robot.radius * 1.1, robot.radius * 0.25);
-    ctx.fillStyle = "#38d8ff";
+    ctx.fillStyle = robot.boss ? "#ffb3c1" : "#38d8ff";
     ctx.fillRect(-robot.radius * 0.44, -robot.radius * 0.18, robot.radius * 0.3, robot.radius * 0.14);
     ctx.fillRect(robot.radius * 0.16, -robot.radius * 0.18, robot.radius * 0.3, robot.radius * 0.14);
     ctx.fillStyle = "rgba(255,255,255,0.2)";
@@ -341,8 +361,9 @@ function drawBossHud(ctx, canvas, state) {
     roundRect(ctx, x + 4, y + 4, width - 8, 16, 5);
     ctx.fill();
     const grad = ctx.createLinearGradient(x, y, x + width, y);
-    grad.addColorStop(0, "#ff4f92");
-    grad.addColorStop(1, "#ffc857");
+    grad.addColorStop(0, "#5a0712");
+    grad.addColorStop(0.45, "#b11226");
+    grad.addColorStop(1, "#ff2d55");
     ctx.fillStyle = grad;
     roundRect(ctx, x + 4, y + 4, (width - 8) * pct, 16, 5);
     ctx.fill();

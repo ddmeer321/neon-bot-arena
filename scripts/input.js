@@ -1,6 +1,6 @@
 import { coinKey, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js";
 import { saveCoins, saveProgression } from "./storage.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=boss2";
 
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
@@ -126,6 +126,11 @@ function setupAdminPanel(dom, state) {
       renderHeroMenu(state, dom);
       renderShop(state, dom);
       setStatus("Alle Helden sind auf Max-Stufe.");
+    }
+
+    if (action === "boss-start") {
+      setStatus("Starte direkt bei Welle 10.");
+      startGame({ startWave: 10 });
     }
 
     if (action === "reset") {

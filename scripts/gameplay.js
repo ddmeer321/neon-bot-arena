@@ -49,7 +49,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     return difficultySettings[state.difficulty] || difficultySettings.normal;
   }
 
-  function startGame() {
+  function startGame(options = {}) {
     const hero = getSelectedHeroStats(state);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
     if (dom.playerNameInput) dom.playerNameInput.value = state.playerName;
@@ -57,8 +57,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       running: true,
       paused: false,
       over: false,
-      wave: 1,
-      score: 0,
+      wave: options.startWave || 1,
+      score: options.startWave ? Math.max(0, (options.startWave - 1) * 100) : 0,
       startHighScore: state.highScore,
       bossCoinBonus: 0,
       bossesDefeated: 0,
@@ -441,13 +441,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && distance(robot, player) < 620) {
           robot.fireTimer = robot.boss ? 0.75 : 1.5;
-          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: "#ff4f92" });
+          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: robot.boss ? "#b11226" : "#ff4f92" });
         }
       }
       if (robot.hp <= 0) {
         state.robots.splice(i, 1);
         state.score += robot.boss ? 700 : robot.bruiser ? 90 : 45;
-        pulse(robot.x, robot.y, robot.boss ? "#ffc857" : "#38d8ff", robot.boss ? 64 : 24);
+        pulse(robot.x, robot.y, robot.boss ? "#b11226" : "#38d8ff", robot.boss ? 80 : 24);
         if (robot.boss) {
           state.bossesDefeated += 1;
           state.waveDelay = 3;
