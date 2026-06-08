@@ -152,8 +152,14 @@ function setupAdminPanel(dom, state) {
 
 function addTouchGuard(element) {
   if (!element) return;
-  element.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
-  element.addEventListener("contextmenu", (event) => event.preventDefault());
+  element.addEventListener("touchstart", (event) => {
+    if (event.target.closest("button, input, textarea, .message")) return;
+    event.preventDefault();
+  }, { passive: false });
+  element.addEventListener("contextmenu", (event) => {
+    if (event.target.closest("button, input, textarea, .message")) return;
+    event.preventDefault();
+  });
   element.addEventListener("gesturestart", (event) => event.preventDefault());
 }
 
