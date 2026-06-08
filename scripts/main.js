@@ -3,7 +3,7 @@ import { createState } from "./state.js";
 import { escapeHtml } from "./utils.js";
 import { setupInput } from "./input.js";
 import { createGameplay } from "./gameplay.js";
-import { draw } from "./render.js";
+import { draw } from "./render.js?v=fist2";
 import { createFPSCounter } from "./fps.js";
 import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js";
 
