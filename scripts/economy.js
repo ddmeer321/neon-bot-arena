@@ -16,7 +16,11 @@ export function getSelectedHeroStats(state) {
 }
 
 export function calculateCoinReward(state) {
-  return Math.max(25, state.wave * 15 + Math.floor(state.score / 80));
+  const baseReward = Math.max(25, state.wave * 15 + Math.floor(state.score / 80));
+  const difficulty = state.difficulty || "normal";
+  const multipliers = { easy: 0.25, normal: 1, hard: 1.35 };
+  const minimums = { easy: 5, normal: 25, hard: 35 };
+  return Math.max(minimums[difficulty] || 25, Math.round(baseReward * (multipliers[difficulty] || 1)));
 }
 
 export function addCoins(state, amount, dom) {
