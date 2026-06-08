@@ -29,11 +29,17 @@ body {
 
 button {
   font: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 canvas,
-.touch-stick {
+.touch-stick,
+.touch-actions button,
+#touchControls {
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .shell {
@@ -45,12 +51,18 @@ canvas,
 
 body.playing {
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 
 body.playing .shell {
   padding: 0;
   width: 100%;
   min-height: 100dvh;
+  touch-action: none;
 }
 
 .menu
@@ -572,6 +584,9 @@ h1 {
 }
 
 .touch-actions button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   width: 96px;
   height: 58px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -741,6 +756,9 @@ canvas {
   }
 
   .game-panel.mobile-mode .touch-actions button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
     width: 84px;
     height: 52px;
     font-size: 0.82rem;
