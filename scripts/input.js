@@ -7,6 +7,14 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     });
   });
 
+  document.querySelectorAll(".difficulty-btn[data-difficulty]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".difficulty-btn[data-difficulty]").forEach((item) => item.classList.remove("selected"));
+      button.classList.add("selected");
+      state.difficulty = button.dataset.difficulty || "normal";
+    });
+  });
+
   dom.playerNameInput?.addEventListener("keydown", (event) => event.stopPropagation());
   dom.playerNameInput?.addEventListener("keyup", (event) => event.stopPropagation());
   dom.startBtn.addEventListener("click", startGame);
