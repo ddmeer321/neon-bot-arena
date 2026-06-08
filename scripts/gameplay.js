@@ -1,8 +1,54 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=difficulty1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
+  const difficultySettings = {
+    easy: {
+      label: "Einfach",
+      enemyCount: 0.72,
+      enemyHp: 0.78,
+      enemySpeed: 0.84,
+      enemyDamage: 0.75,
+      shooterWave: 3,
+      shooterChance: 0.16,
+      bruiserWave: 4,
+      bruiserChance: 0.12,
+      bossEvery: 5,
+      pickupDrop: 0.18
+    },
+    normal: {
+      label: "Normal",
+      enemyCount: 1,
+      enemyHp: 1,
+      enemySpeed: 1,
+      enemyDamage: 1,
+      shooterWave: 2,
+      shooterChance: 0.28,
+      bruiserWave: 3,
+      bruiserChance: 0.22,
+      bossEvery: 4,
+      pickupDrop: 0.14
+    },
+    hard: {
+      label: "Schwer",
+      enemyCount: 1.18,
+      enemyHp: 1.15,
+      enemySpeed: 1.1,
+      enemyDamage: 1.2,
+      shooterWave: 2,
+      shooterChance: 0.35,
+      bruiserWave: 3,
+      bruiserChance: 0.28,
+      bossEvery: 4,
+      pickupDrop: 0.12
+    }
+  };
+
+  function getDifficultySettings() {
+    return difficultySettings[state.difficulty] || difficultySettings.normal;
+  }
+
   function startGame() {
     const hero = getSelectedHeroStats(state);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
@@ -102,29 +148,35 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function spawnWave() {
-    const count = 4 + state.wave * 2;
+    const settings = getDifficultySettings();
+    const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount));
     for (let i = 0; i < count; i++) {
       const side = Math.floor(Math.random() * 4);
       const x = side === 0 ? -40 : side === 1 ? dom.canvas.width + 40 : Math.random() * dom.canvas.width;
       const y = side === 2 ? -40 : side === 3 ? dom.canvas.height + 40 : Math.random() * dom.canvas.height;
-      const shooter = state.wave >= 2 && Math.random() < 0.28;
-      const bruiser = state.wave >= 3 && Math.random() < 0.22;
+      const shooter = state.wave >= settings.shooterWave && Math.random() < settings.shooterChance;
+      const bruiser = state.wave >= settings.bruiserWave && Math.random() < settings.bruiserChance;
       state.robots.push(makeRobot(x, y, shooter, bruiser));
     }
-    if (state.wave % 4 === 0) state.robots.push(makeRobot(dom.canvas.width / 2, -70, true, true, true));
+    if (state.wave % settings.bossEvery === 0) state.robots.push(makeRobot(dom.canvas.width / 2, -70, true, true, true));
   }
 
   function makeRobot(x, y, shooter, bruiser, boss = false) {
-    const speed = boss ? 86 : bruiser ? 96 : 135 + state.wave * 4;
+    const settings = getDifficultySettings();
+    const baseSpeed = boss ? 86 : bruiser ? 96 : 135 + state.wave * 4;
+    const baseHp = boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8;
+    const speed = Math.round(baseSpeed * settings.enemySpeed);
+    const hp = Math.round(baseHp * settings.enemyHp);
     return {
       x,
       y,
       radius: boss ? 34 : bruiser ? 25 : 18,
-      hp: boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8,
-      maxHp: boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8,
+      hp,
+      maxHp: hp,
       speed,
       baseSpeed: speed,
-      damage: boss ? 28 : bruiser ? 20 : 13,
+      damage: Math.round((boss ? 28 : bruiser ? 20 : 13) * settings.enemyDamage),
+      bulletDamage: Math.round((boss ? 18 : 12) * settings.enemyDamage),
       fireTimer: Math.random() * 2,
       shooter,
       bruiser,
@@ -297,7 +349,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
           }
         }
       } else if (distance(bullet, state.player) < bullet.radius + state.player.radius) {
-        hurtPlayer(12 + state.wave * 2);
+        hurtPlayer(bullet.damage || 12 + state.wave * 2);
         bullets.splice(i, 1);
       }
     }
@@ -346,14 +398,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && distance(robot, player) < 620) {
           robot.fireTimer = robot.boss ? 0.75 : 1.5;
-          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: robot.boss ? 7 : 5, life: 2, damage: robot.boss ? 18 : 12, color: "#ff4f92" });
+          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: "#ff4f92" });
         }
       }
       if (robot.hp <= 0) {
         state.robots.splice(i, 1);
         state.score += robot.boss ? 500 : robot.bruiser ? 90 : 45;
         pulse(robot.x, robot.y, robot.boss ? "#ffc857" : "#38d8ff", robot.boss ? 46 : 24);
-        if (Math.random() < 0.14) state.pickups.push(makePickup(robot.x, robot.y));
+        if (Math.random() < getDifficultySettings().pickupDrop) state.pickups.push(makePickup(robot.x, robot.y));
       }
     }
   }
@@ -431,7 +483,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Belohnung: +${reward} Münzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} Münzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
     const againBtn = document.querySelector("#againBtn");
     const menuBtn = document.querySelector("#gameOverMenuBtn");
     againBtn.replaceWith(againBtn.cloneNode(true));
