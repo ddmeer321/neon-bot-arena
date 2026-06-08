@@ -37,6 +37,12 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     state.mouse.down = false;
   });
 
+  addTouchGuard(dom.gamePanel);
+  addTouchGuard(dom.touchControls);
+  addTouchGuard(dom.touchFire);
+  addTouchGuard(dom.touchSpecial);
+  addTouchGuard(dom.touchStick);
+
   dom.touchSpecial?.addEventListener("pointerdown", (event) => {
     event.preventDefault();
     useSpecial();
@@ -55,6 +61,13 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   dom.touchStick?.addEventListener("pointermove", (event) => updateTouchMove(event, dom, state));
   dom.touchStick?.addEventListener("pointerup", (event) => stopTouchMove(event, dom, state));
   dom.touchStick?.addEventListener("pointercancel", (event) => stopTouchMove(event, dom, state));
+}
+
+function addTouchGuard(element) {
+  if (!element) return;
+  element.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
+  element.addEventListener("contextmenu", (event) => event.preventDefault());
+  element.addEventListener("gesturestart", (event) => event.preventDefault());
 }
 
 function updatePointer(event, dom, state) {
