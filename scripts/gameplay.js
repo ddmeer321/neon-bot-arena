@@ -143,7 +143,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function showPauseMenu() {
-    showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmen?</button></div>`);
+    showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmen\u00fc</button></div>`);
     bindOverlayButton("#resumeBtn", togglePause);
     bindOverlayButton("#menuBtn", returnToMenu);
   }
