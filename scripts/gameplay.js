@@ -15,7 +15,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bruiserWave: 4,
       bruiserChance: 0.12,
       bossEvery: 10,
-      pickupDrop: 0.18
+      pickupDrop: 0.18,
+      bossHp: 0.62,
+      bossSpeed: 0.78,
+      bossDamage: 0.7,
+      bossFireRate: 1.12,
+      bossBulletSpeed: 300
     },
     normal: {
       label: "Normal",
@@ -28,7 +33,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bruiserWave: 3,
       bruiserChance: 0.22,
       bossEvery: 10,
-      pickupDrop: 0.14
+      pickupDrop: 0.14,
+      bossHp: 1,
+      bossSpeed: 1,
+      bossDamage: 1,
+      bossFireRate: 0.78,
+      bossBulletSpeed: 360
     },
     hard: {
       label: "Schwer",
@@ -41,7 +51,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bruiserWave: 3,
       bruiserChance: 0.28,
       bossEvery: 10,
-      pickupDrop: 0.12
+      pickupDrop: 0.12,
+      bossHp: 1.42,
+      bossSpeed: 1.16,
+      bossDamage: 1.35,
+      bossFireRate: 0.55,
+      bossBulletSpeed: 430
     }
   };
 
@@ -208,8 +223,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const settings = getDifficultySettings();
     const baseSpeed = boss ? 82 : bruiser ? 96 : 135 + state.wave * 4;
     const baseHp = boss ? 720 + state.wave * 52 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8;
-    const speed = Math.round(baseSpeed * settings.enemySpeed);
-    const hp = Math.round(baseHp * settings.enemyHp);
+    const speed = Math.round(baseSpeed * settings.enemySpeed * (boss ? settings.bossSpeed : 1));
+    const hp = Math.round(baseHp * settings.enemyHp * (boss ? settings.bossHp : 1));
     return {
       x,
       y,
@@ -218,8 +233,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       maxHp: hp,
       speed,
       baseSpeed: speed,
-      damage: Math.round((boss ? 28 : bruiser ? 20 : 13) * settings.enemyDamage),
-      bulletDamage: Math.round((boss ? 18 : 12) * settings.enemyDamage),
+      damage: Math.round((boss ? 28 : bruiser ? 20 : 13) * settings.enemyDamage * (boss ? settings.bossDamage : 1)),
+      bulletDamage: Math.round((boss ? 18 : 12) * settings.enemyDamage * (boss ? settings.bossDamage : 1)),
       fireTimer: Math.random() * 2,
       shooter,
       bruiser,
@@ -440,8 +455,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       if (robot.shooter || robot.boss) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && distance(robot, player) < 620) {
-          robot.fireTimer = robot.boss ? 0.75 : 1.5;
-          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * 360, vy: Math.sin(angle) * 360, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: robot.boss ? "#b11226" : "#ff4f92" });
+          const shotSpeed = robot.boss ? settings.bossBulletSpeed : 360;
+          robot.fireTimer = robot.boss ? settings.bossFireRate : 1.5;
+          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * shotSpeed, vy: Math.sin(angle) * shotSpeed, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: robot.boss ? "#b11226" : "#ff4f92" });
         }
       }
       if (robot.hp <= 0) {

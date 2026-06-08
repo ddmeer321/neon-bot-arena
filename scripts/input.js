@@ -129,7 +129,8 @@ function setupAdminPanel(dom, state, startGame) {
     }
 
     if (action === "boss-start") {
-      setStatus("Starte direkt bei Welle 10.");
+      const difficultyLabel = document.querySelector(".difficulty-btn.selected span")?.textContent || state.difficulty || "Normal";
+      setStatus("Starte Welle 10 auf " + difficultyLabel + ".");
       startGame({ startWave: 10 });
     }
 
