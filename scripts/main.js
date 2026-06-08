@@ -1,11 +1,11 @@
 import { getDom } from "./dom.js";
-import { createState } from "./state.js";
+import { createState } from "./state.js?v=difficulty1";
 import { escapeHtml } from "./utils.js";
-import { setupInput } from "./input.js";
-import { createGameplay } from "./gameplay.js";
+import { setupInput } from "./input.js?v=difficulty1";
+import { createGameplay } from "./gameplay.js?v=difficulty1";
 import { draw } from "./render.js?v=fist2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=difficulty1";
 
 
 
