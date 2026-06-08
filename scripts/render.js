@@ -11,6 +11,7 @@ export function draw(dom, state) {
     drawPlayer(ctx, state);
     drawParticles(ctx, state);
     drawSpecialEffects(ctx, state);
+    drawBossHud(ctx, dom.canvas, state);
   }
   ctx.restore();
 }
@@ -322,4 +323,56 @@ function drawSpecialEffects(ctx, state) {
     ctx.fillRect(state.healWave.x - 13, state.healWave.y - 48 + bob, 26, 10);
     ctx.globalAlpha = 1;
   }
+}
+
+
+function drawBossHud(ctx, canvas, state) {
+  const boss = state.robots?.find((robot) => robot.boss);
+  if (boss) {
+    const width = Math.min(520, canvas.width - 56);
+    const x = (canvas.width - width) / 2;
+    const y = 82;
+    const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp));
+    ctx.save();
+    ctx.fillStyle = "rgba(8,12,20,0.78)";
+    roundRect(ctx, x, y, width, 24, 7);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    roundRect(ctx, x + 4, y + 4, width - 8, 16, 5);
+    ctx.fill();
+    const grad = ctx.createLinearGradient(x, y, x + width, y);
+    grad.addColorStop(0, "#ff4f92");
+    grad.addColorStop(1, "#ffc857");
+    ctx.fillStyle = grad;
+    roundRect(ctx, x + 4, y + 4, (width - 8) * pct, 16, 5);
+    ctx.fill();
+    ctx.fillStyle = "#f6f7fb";
+    ctx.font = "800 13px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Boss Welle " + state.wave, canvas.width / 2, y - 8);
+    ctx.restore();
+  }
+
+  if (state.waveDelay > 0) {
+    ctx.save();
+    ctx.fillStyle = "rgba(8,12,20,0.72)";
+    roundRect(ctx, canvas.width / 2 - 145, 118, 290, 34, 8);
+    ctx.fill();
+    ctx.fillStyle = "#b7ff4a";
+    ctx.font = "900 16px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("N?chste Welle in " + Math.ceil(state.waveDelay) + "...", canvas.width / 2, 140);
+    ctx.restore();
+  }
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
 }

@@ -20,7 +20,9 @@ export function calculateCoinReward(state) {
   const difficulty = state.difficulty || "normal";
   const multipliers = { easy: 0.25, normal: 1, hard: 1.35 };
   const minimums = { easy: 5, normal: 25, hard: 35 };
-  return Math.max(minimums[difficulty] || 25, Math.round(baseReward * (multipliers[difficulty] || 1)));
+  const bossBonus = (Number(state.bossesDefeated) || 0) * 100;
+  state.bossCoinBonus = bossBonus;
+  return Math.max(minimums[difficulty] || 25, Math.round(baseReward * (multipliers[difficulty] || 1)) + bossBonus);
 }
 
 export function addCoins(state, amount, dom) {

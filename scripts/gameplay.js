@@ -1,6 +1,6 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=difficulty1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=boss1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -14,7 +14,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shooterChance: 0.16,
       bruiserWave: 4,
       bruiserChance: 0.12,
-      bossEvery: 5,
+      bossEvery: 10,
       pickupDrop: 0.18
     },
     normal: {
@@ -27,7 +27,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shooterChance: 0.28,
       bruiserWave: 3,
       bruiserChance: 0.22,
-      bossEvery: 4,
+      bossEvery: 10,
       pickupDrop: 0.14
     },
     hard: {
@@ -40,7 +40,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shooterChance: 0.35,
       bruiserWave: 3,
       bruiserChance: 0.28,
-      bossEvery: 4,
+      bossEvery: 10,
       pickupDrop: 0.12
     }
   };
@@ -60,6 +60,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       wave: 1,
       score: 0,
       startHighScore: state.highScore,
+      bossCoinBonus: 0,
+      bossesDefeated: 0,
+      waveDelay: 0,
+      nextWavePulse: 0,
       time: 0,
       bullets: [],
       enemyBullets: [],
@@ -151,12 +155,26 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function update(dt) {
     state.time += dt;
     state.shake = Math.max(0, state.shake - dt * 14);
+    state.nextWavePulse = Math.max(0, state.nextWavePulse - dt);
     updatePlayer(dt);
     updateBullets(dt, state.bullets, true);
     updateBullets(dt, state.enemyBullets, false);
     updateRobots(dt);
     updateParticles(dt);
     updatePickups(dt);
+
+    if (state.waveDelay > 0) {
+      state.waveDelay = Math.max(0, state.waveDelay - dt);
+      if (state.waveDelay <= 0) {
+        state.wave += 1;
+        state.score += 100;
+        spawnWave();
+        pulse(dom.canvas.width / 2, dom.canvas.height / 2, "#b7ff4a", 42);
+      }
+      updateHud();
+      return;
+    }
+
     if (state.robots.length === 0) {
       state.wave += 1;
       state.score += 100;
@@ -168,6 +186,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function spawnWave() {
     const settings = getDifficultySettings();
+    const bossWave = state.wave % settings.bossEvery === 0;
+    if (bossWave) {
+      state.robots.push(makeRobot(dom.canvas.width / 2, -76, true, true, true));
+      state.nextWavePulse = 1.2;
+      return;
+    }
+
     const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount));
     for (let i = 0; i < count; i++) {
       const side = Math.floor(Math.random() * 4);
@@ -177,13 +202,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       const bruiser = state.wave >= settings.bruiserWave && Math.random() < settings.bruiserChance;
       state.robots.push(makeRobot(x, y, shooter, bruiser));
     }
-    if (state.wave % settings.bossEvery === 0) state.robots.push(makeRobot(dom.canvas.width / 2, -70, true, true, true));
   }
 
   function makeRobot(x, y, shooter, bruiser, boss = false) {
     const settings = getDifficultySettings();
-    const baseSpeed = boss ? 86 : bruiser ? 96 : 135 + state.wave * 4;
-    const baseHp = boss ? 260 + state.wave * 35 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8;
+    const baseSpeed = boss ? 82 : bruiser ? 96 : 135 + state.wave * 4;
+    const baseHp = boss ? 720 + state.wave * 52 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8;
     const speed = Math.round(baseSpeed * settings.enemySpeed);
     const hp = Math.round(baseHp * settings.enemyHp);
     return {
@@ -422,9 +446,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       }
       if (robot.hp <= 0) {
         state.robots.splice(i, 1);
-        state.score += robot.boss ? 500 : robot.bruiser ? 90 : 45;
-        pulse(robot.x, robot.y, robot.boss ? "#ffc857" : "#38d8ff", robot.boss ? 46 : 24);
-        if (Math.random() < getDifficultySettings().pickupDrop) state.pickups.push(makePickup(robot.x, robot.y));
+        state.score += robot.boss ? 700 : robot.bruiser ? 90 : 45;
+        pulse(robot.x, robot.y, robot.boss ? "#ffc857" : "#38d8ff", robot.boss ? 64 : 24);
+        if (robot.boss) {
+          state.bossesDefeated += 1;
+          state.waveDelay = 3;
+          state.nextWavePulse = 3;
+          spawnBossReward(robot.x, robot.y);
+        } else if (Math.random() < getDifficultySettings().pickupDrop) {
+          state.pickups.push(makePickup(robot.x, robot.y));
+        }
       }
     }
   }
@@ -454,11 +485,17 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
-  function makePickup(x, y) {
+  function makePickup(x, y, forcedType = null) {
     const roll = Math.random();
-    const type = roll < 0.45 ? "heal" : roll < 0.72 ? "damage" : "speed";
+    const type = forcedType || (roll < 0.45 ? "heal" : roll < 0.72 ? "damage" : "speed");
     const colors = { heal: "#b7ff4a", damage: "#ff7a3d", speed: "#38d8ff" };
     return { x, y, type, color: colors[type], radius: 12, life: 9 };
+  }
+
+  function spawnBossReward(x, y) {
+    [-44, 0, 44].forEach((offset, index) => {
+      state.pickups.push(makePickup(clamp(x + offset, 50, dom.canvas.width - 50), clamp(y + 28 + index * 8, 92, dom.canvas.height - 58), "heal"));
+    });
   }
 
   function updatePickups(dt) {
@@ -506,13 +543,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} Münzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Besiegte Bosse: ${state.bossesDefeated}<br>Bossbonus: +${state.bossCoinBonus} M?nzen<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} M?nzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmen?</button></div>`);
     bindOverlayButton("#againBtn", startGame);
     bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [] });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [] });
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
     dom.gamePanel.classList.add("hidden");
