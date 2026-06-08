@@ -361,7 +361,7 @@ function drawBossHud(ctx, canvas, state) {
     ctx.fillStyle = "#b7ff4a";
     ctx.font = "900 16px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("N?chste Welle in " + Math.ceil(state.waveDelay) + "...", canvas.width / 2, 140);
+    ctx.fillText("N\u00e4chste Welle in " + Math.ceil(state.waveDelay) + "...", canvas.width / 2, 140);
     ctx.restore();
   }
 }

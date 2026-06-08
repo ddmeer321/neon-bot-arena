@@ -1,6 +1,6 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=boss1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=boss2";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -543,7 +543,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Besiegte Bosse: ${state.bossesDefeated}<br>Bossbonus: +${state.bossCoinBonus} M?nzen<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} M?nzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmen?</button></div>`);
+    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Besiegte Bosse: ${state.bossesDefeated}<br>Bossbonus: +${state.bossCoinBonus} M\u00fcnzen<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} M\u00fcnzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmen\u00fc</button></div>`);
     bindOverlayButton("#againBtn", startGame);
     bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
