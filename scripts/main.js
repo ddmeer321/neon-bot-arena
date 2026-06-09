@@ -1,8 +1,9 @@
 import { getDom } from "./dom.js?v=huddiff1";
 import { createState } from "./state.js?v=boss2";
 import { escapeHtml } from "./utils.js";
+import { loadOnlineScores } from "./online-leaderboard.js?v=onlineboard1";
 import { setupInput } from "./input.js?v=bossdiff2";
-import { createGameplay } from "./gameplay.js?v=huddiff1";
+import { createGameplay } from "./gameplay.js?v=onlineboard1";
 import { draw } from "./render.js?v=adminboss2";
 import { createFPSCounter } from "./fps.js";
 import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=boss2";
@@ -20,7 +21,9 @@ export function bootGame() {
 
   const renderLeaderboard = () => {
     if (!dom.leaderboardList) return;
-    const topScores = state.leaderboard.slice(0, 5);
+    const onlineScores = Array.isArray(state.onlineLeaderboard) ? state.onlineLeaderboard : [];
+    const topScores = (onlineScores.length ? onlineScores : state.leaderboard).slice(0, 10);
+    if (dom.leaderboardMode) dom.leaderboardMode.textContent = onlineScores.length ? "Online Rangliste" : "Lokale Rangliste";
     if (topScores.length === 0) {
       dom.leaderboardList.innerHTML = `<li><span>--</span><b>Noch kein Score</b><em>0</em></li>`;
       return;
@@ -30,7 +33,16 @@ export function bootGame() {
       .join("");
   };
 
+  async function refreshOnlineLeaderboard() {
+    const onlineScores = await loadOnlineScores(10);
+    if (onlineScores) {
+      state.onlineLeaderboard = onlineScores;
+      renderLeaderboard();
+    }
+  }
+
   renderLeaderboard();
+  refreshOnlineLeaderboard();
   renderHeroMenu(state, dom);
   renderShop(state, dom);
   setupEconomyInput(state, dom);

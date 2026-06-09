@@ -1,6 +1,7 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=boss2";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=onlineboard1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -560,6 +561,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     addCoins(state, reward, dom);
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
+    submitOnlineScore(state)
+      .then(() => loadOnlineScores(10))
+      .then((onlineScores) => {
+        if (onlineScores) state.onlineLeaderboard = onlineScores;
+        renderLeaderboard();
+      });
     renderLeaderboard();
     showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Besiegte Bosse: ${state.bossesDefeated}<br>Bossbonus: +${state.bossCoinBonus} M\u00fcnzen<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} M\u00fcnzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmen\u00fc</button></div>`);
     bindOverlayButton("#againBtn", startGame);
