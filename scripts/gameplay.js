@@ -1,7 +1,7 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=boss2";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=onlineboard3";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderfilter1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -562,7 +562,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     submitOnlineScore(state)
-      .then(() => loadOnlineScores(10))
+      .then(() => loadOnlineScores(10, state.leaderboardFilter || "all"))
       .then((onlineScores) => {
         if (onlineScores) state.onlineLeaderboard = onlineScores;
         renderLeaderboard();

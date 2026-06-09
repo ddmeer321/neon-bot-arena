@@ -11,12 +11,13 @@ const headers = {
   "Content-Type": "application/json"
 };
 
-export async function loadOnlineScores(limit = 10) {
+export async function loadOnlineScores(limit = 10, difficulty = "all") {
   try {
     const url = new URL(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`);
     url.searchParams.set("select", SCORE_FIELDS);
     url.searchParams.set("order", "scores.desc,wave.desc,created_at.desc");
     url.searchParams.set("limit", String(limit));
+    if (difficulty && difficulty !== "all") url.searchParams.set("diffculty", `eq.${difficulty}`);
 
     const response = await fetch(url, { headers });
     if (!response.ok) throw new Error(`Rangliste konnte nicht geladen werden: ${response.status}`);

@@ -1,9 +1,9 @@
-import { getDom } from "./dom.js?v=huddiff1";
+import { getDom } from "./dom.js?v=leaderfilter1";
 import { createState } from "./state.js?v=boss2";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=onlineboard3";
+import { loadOnlineScores } from "./online-leaderboard.js?v=leaderfilter1";
 import { setupInput } from "./input.js?v=bossdiff2";
-import { createGameplay } from "./gameplay.js?v=onlineboard3";
+import { createGameplay } from "./gameplay.js?v=leaderfilter1";
 import { draw } from "./render.js?v=adminboss2";
 import { createFPSCounter } from "./fps.js";
 import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=boss2";
@@ -13,6 +13,7 @@ import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopP
 export function bootGame() {
   const dom = getDom();
   const state = createState();
+  state.leaderboardFilter = "all";
 
   if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = state.highScore;
   if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
@@ -34,7 +35,7 @@ export function bootGame() {
   };
 
   async function refreshOnlineLeaderboard() {
-    const onlineScores = await loadOnlineScores(10);
+    const onlineScores = await loadOnlineScores(10, state.leaderboardFilter);
     if (onlineScores) {
       state.onlineLeaderboard = onlineScores;
       renderLeaderboard();
@@ -42,6 +43,12 @@ export function bootGame() {
   }
 
   renderLeaderboard();
+  dom.leaderboardFilter?.addEventListener("change", () => {
+    state.leaderboardFilter = dom.leaderboardFilter.value || "all";
+    state.onlineLeaderboard = [];
+    renderLeaderboard();
+    refreshOnlineLeaderboard();
+  });
   refreshOnlineLeaderboard();
   renderHeroMenu(state, dom);
   renderShop(state, dom);

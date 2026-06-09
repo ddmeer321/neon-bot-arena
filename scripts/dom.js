@@ -40,6 +40,7 @@ export function getDom() {
     healthBar: document.querySelector("#healthBar"),
     specialBar: document.querySelector("#specialBar"),
     leaderboardMode: document.querySelector("#leaderboardMode"),
+    leaderboardFilter: document.querySelector("#leaderboardFilter"),
     leaderboardList: document.querySelector("#leaderboardList")
   };
 }

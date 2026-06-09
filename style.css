@@ -368,6 +368,7 @@ h1 {
 .leaderboard-title {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
@@ -380,8 +381,32 @@ h1 {
   text-transform: uppercase;
 }
 
-.leaderboard-title strong {
+.leaderboard-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaderboard-filter span {
   color: var(--lime);
+}
+
+.leaderboard-filter select {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.86);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 0 28px 0 10px;
+}
+
+.leaderboard-filter select:focus-visible {
+  border-color: var(--lime);
+  outline: none;
 }
 
 .leaderboard ol {

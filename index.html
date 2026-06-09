@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=onlineboard3" />
+    <link rel="stylesheet" href="style.css?v=leaderfilter1" />
   </head>
   <body>
     <main class="shell">
@@ -74,7 +74,15 @@
         <div class="leaderboard">
           <div class="leaderboard-title">
             <span id="leaderboardMode">Online Rangliste</span>
-            <strong>Top 10</strong>
+            <label class="leaderboard-filter">
+              <span>Rangliste</span>
+              <select id="leaderboardFilter" aria-label="Ranglisten Schwierigkeit">
+                <option value="all">Alle</option>
+                <option value="easy">Einfach</option>
+                <option value="normal">Normal</option>
+                <option value="hard">Schwer</option>
+              </select>
+            </label>
           </div>
           <ol id="leaderboardList"></ol>
         </div>
@@ -146,6 +154,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=onlineboard3"></script>
+    <script type="module" src="game.js?v=leaderfilter1"></script>
   </body>
 </html>
