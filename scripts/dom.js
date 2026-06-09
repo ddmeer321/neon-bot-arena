@@ -39,6 +39,7 @@ export function getDom() {
     heroDetails: document.querySelector("#heroDetails"),
     healthBar: document.querySelector("#healthBar"),
     specialBar: document.querySelector("#specialBar"),
+    leaderboardMode: document.querySelector("#leaderboardMode"),
     leaderboardList: document.querySelector("#leaderboardList")
   };
 }

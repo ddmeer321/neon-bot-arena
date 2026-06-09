@@ -1,7 +1,7 @@
 import { cleanName } from "./utils.js";
 
 const SUPABASE_URL = "https://ncishdfeznjysqswsvzq.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jaXNoZGZlem5qeXNxc3dzdnpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTg2MDAsImV4cCI6MjA5NjU5NDYwMH0.rk3FZNoGi7ltHkaai8Qod4Qn05ERL86X1uV2Qbqf-G0";
+const SUPABASE_KEY = "sb_publishable_NKMtRTJM-5O0rWaJP3pGaw_vvofM_H8";
 const SCORE_TABLE = "scores";
 const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,created_at";
 

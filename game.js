@@ -1,3 +1,3 @@
-import { bootGame } from "./scripts/main.js?v=onlineboard2";
+import { bootGame } from "./scripts/main.js?v=onlineboard3";
 
 bootGame();
