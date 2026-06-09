@@ -3,7 +3,7 @@ import { cleanName } from "./utils.js";
 const SUPABASE_URL = "https://ncishdfeznjysqswsvzq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jaXNoZGZlem5qeXNxc3dzdnpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTg2MDAsImV4cCI6MjA5NjU5NDYwMH0.rk3FZNoGi7ltHkaai8Qod4Qn05ERL86X1uV2Qbqf-G0";
 const SCORE_TABLE = "scores";
-const SCORE_FIELDS = "name,score,wave,difficulty,bosses,hero,created_at";
+const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,created_at";
 
 const headers = {
   apikey: SUPABASE_KEY,
@@ -15,7 +15,7 @@ export async function loadOnlineScores(limit = 10) {
   try {
     const url = new URL(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`);
     url.searchParams.set("select", SCORE_FIELDS);
-    url.searchParams.set("order", "score.desc,wave.desc,created_at.desc");
+    url.searchParams.set("order", "scores.desc,wave.desc,created_at.desc");
     url.searchParams.set("limit", String(limit));
 
     const response = await fetch(url, { headers });
@@ -33,9 +33,9 @@ export async function submitOnlineScore(state) {
   try {
     const entry = {
       name: cleanName(state.playerName),
-      score: Math.max(0, Math.round(Number(state.score) || 0)),
+      scores: Math.max(0, Math.round(Number(state.score) || 0)),
       wave: Math.max(1, Math.round(Number(state.wave) || 1)),
-      difficulty: state.difficulty || "normal",
+      diffculty: state.difficulty || "normal",
       bosses: Math.max(0, Math.round(Number(state.bossesDefeated) || 0)),
       hero: state.player?.hero?.name || state.selectedHero || "Unbekannt"
     };
@@ -56,13 +56,13 @@ export async function submitOnlineScore(state) {
 
 function normalizeScoreRow(row) {
   if (!row || !row.name) return null;
-  const score = Number(row.score);
+  const score = Number(row.scores);
   if (!Number.isFinite(score)) return null;
   return {
     name: cleanName(row.name),
     score,
     wave: Number(row.wave) || 1,
-    difficulty: row.difficulty || "normal",
+    difficulty: row.diffculty || "normal",
     bosses: Number(row.bosses) || 0,
     hero: row.hero || "",
     date: row.created_at || new Date().toISOString()
