@@ -27,6 +27,7 @@ export function getDom() {
     waveText: document.querySelector("#wave"),
     scoreText: document.querySelector("#score"),
     highScoreText: document.querySelector("#highScore"),
+    difficultyText: document.querySelector("#difficultyHud"),
     menuHighScoreText: document.querySelector("#menuHighScore"),
     coinCount: document.querySelector("#coinCount"),
     heroMenuBtn: document.querySelector("#heroMenuBtn"),

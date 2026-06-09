@@ -103,6 +103,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       hero
     };
     dom.heroName.textContent = hero.name;
+    if (dom.difficultyText) dom.difficultyText.textContent = getDifficultySettings().label;
     applyDeviceMode();
     document.body.classList.add("playing");
     dom.menu.classList.add("hidden");
@@ -582,6 +583,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.waveText.textContent = state.wave;
     dom.scoreText.textContent = state.score;
     if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
+    if (dom.difficultyText) dom.difficultyText.textContent = getDifficultySettings().label;
     dom.healthBar.style.width = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
     dom.specialBar.style.width = `${clamp(100 - (state.player.specialTimer / state.player.hero.specialCooldown) * 100, 0, 100)}%`;
   }
