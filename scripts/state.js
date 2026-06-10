@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=companion1";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=companion2";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -39,3 +39,4 @@ export function createState() {
     pickups: []
   };
 }
+
