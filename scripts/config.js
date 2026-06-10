@@ -106,35 +106,39 @@ export const heroes = {
   }
 };
 
-export const cosmetics = {
+export const companions = {
   classic: {
     id: "classic",
-    name: "Classic Neon",
-    description: "Standard-Look",
+    name: "Kein Begleiter",
+    description: "Nur dein Held",
+    shape: "none",
     color: null,
     glow: null,
     price: 0
   },
   solar: {
     id: "solar",
-    name: "Solar Flare",
-    description: "Orange-goldener Kampfanzug",
+    name: "Solar Drohne",
+    description: "Kleine Flammen-Drohne",
+    shape: "spark",
     color: "#ff8f3d",
     glow: "#ffd166",
     price: 900
   },
   venom: {
     id: "venom",
-    name: "Venom Pulse",
-    description: "Giftgruenes Neonlicht",
+    name: "Venom Mini",
+    description: "Gruener Energie-Begleiter",
+    shape: "orb",
     color: "#60ff7a",
     glow: "#d6ff4a",
     price: 1200
   },
   royal: {
     id: "royal",
-    name: "Royal Rift",
-    description: "Violetter Elite-Skin",
+    name: "Royal Wisp",
+    description: "Schwebende Rift-Figur",
+    shape: "wisp",
     color: "#a78bfa",
     glow: "#38d8ff",
     price: 1600
@@ -142,7 +146,8 @@ export const cosmetics = {
   eclipse: {
     id: "eclipse",
     name: "Eclipse Core",
-    description: "Dunkler Boss-Look",
+    description: "Dunkler Mini-Kern",
+    shape: "core",
     color: "#ef4444",
     glow: "#7f1d1d",
     price: 2200
