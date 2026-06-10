@@ -1,4 +1,4 @@
-import { clamp, cleanName, distance } from "./utils.js";
+﻿import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=companion2";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=companion2";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderfilter1";
