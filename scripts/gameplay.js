@@ -1,6 +1,6 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=economyshop1";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=economyshop1";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=companion1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=companion1";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderfilter1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
