@@ -1,12 +1,12 @@
 import { getDom } from "./dom.js?v=leaderfilter1";
-import { createState } from "./state.js?v=boss2";
+import { createState } from "./state.js?v=economyshop1";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderfilter1";
-import { setupInput } from "./input.js?v=bossdiff2";
-import { createGameplay } from "./gameplay.js?v=leaderfilter1";
+import { setupInput } from "./input.js?v=economyshop1";
+import { createGameplay } from "./gameplay.js?v=economyshop1";
 import { draw } from "./render.js?v=adminboss2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=boss2";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=economyshop1";
 
 
 
