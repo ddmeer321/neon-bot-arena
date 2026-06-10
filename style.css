@@ -328,12 +328,12 @@ h1 {
   width: min(900px, 100%);
 }
 
-.cosmetic-card:disabled {
+.companion-card:disabled {
   cursor: not-allowed;
   opacity: 0.48;
 }
 
-.cosmetic-swatch {
+.companion-swatch {
   width: 100%;
   aspect-ratio: 1.8;
   border-radius: 6px;
@@ -341,20 +341,20 @@ h1 {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--skin-color) 80%, white 20%), transparent 18%),
-    linear-gradient(135deg, color-mix(in srgb, var(--skin-color) 26%, transparent), color-mix(in srgb, var(--skin-glow) 28%, transparent));
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--companion-color) 80%, white 20%), transparent 18%),
+    linear-gradient(135deg, color-mix(in srgb, var(--companion-color) 26%, transparent), color-mix(in srgb, var(--companion-glow) 28%, transparent));
 }
 
-.cosmetic-swatch::before {
+.companion-swatch::before {
   content: "";
   position: absolute;
-  inset: 24% 35% 14%;
-  border-radius: 45% 45% 8px 8px;
-  background: var(--skin-color);
-  box-shadow: 0 0 34px var(--skin-glow);
+  inset: 24% 34% 16%;
+  border-radius: 999px 999px 10px 10px;
+  background: var(--companion-color);
+  box-shadow: 0 0 34px var(--companion-glow);
 }
 
-.cosmetic-swatch::after {
+.companion-swatch::after {
   content: "";
   position: absolute;
   left: 24%;
