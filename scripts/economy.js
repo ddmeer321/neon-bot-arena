@@ -1,6 +1,6 @@
-import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=companion1";
+import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=companion2";
 import { escapeHtml } from "./utils.js";
-import { saveCoins, saveProgression } from "./storage.js?v=companion1";
+import { saveCoins, saveProgression } from "./storage.js?v=companion2";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
@@ -190,7 +190,7 @@ export function showShopPanel(dom) {
 function renderHeroCard(state, hero, unlocked, selectable) {
   const level = getHeroLevel(state, hero.id);
   const selected = state.selectedHero === hero.id;
-  const status = unlocked ? `Stufe ${level}` : `${hero.price} MÃ¼nzen`;
+  const status = unlocked ? `Stufe ${level}` : `${hero.price} Münzen`;
   const action = selectable ? `data-hero="${hero.id}"` : `data-buy-hero="${hero.id}"`;
   return `
     <button class="fighter ${selected ? "selected" : ""} ${unlocked ? "" : "locked"}" ${action}>
@@ -208,13 +208,13 @@ function renderCompanionCard(state, companion) {
   const equipped = state.equippedCosmetic === companion.id;
   const disabled = !owned && state.coins < companion.price;
   const action = owned ? `data-equip-companion="${companion.id}"` : `data-buy-companion="${companion.id}"`;
-  const status = equipped ? "Aktiv" : owned ? "AusrÃ¼sten" : `${companion.price} MÃ¼nzen`;
+  const status = equipped ? "Aktiv" : owned ? "Ausrüsten" : `${companion.price} Münzen`;
   return `
     <button class="fighter companion-card ${equipped ? "selected" : ""} ${owned ? "" : "locked"}" ${action} ${disabled ? "disabled" : ""}>
       <span class="companion-swatch" style="--companion-color:${companion.color}; --companion-glow:${companion.glow};"></span>
       <span class="fighter-name">${escapeHtml(companion.name)}</span>
       <span class="fighter-role">${escapeHtml(companion.description)}</span>
-      <span class="stats">LÃ¤uft neben dir, keine StÃ¤rke</span>
+      <span class="stats">Läuft neben dir, keine Stärke</span>
       <span class="hero-status">${status}</span>
     </button>
   `;
@@ -230,10 +230,11 @@ function renderHeroDetails(state, dom) {
   const companion = getEquippedCosmetic(state);
   dom.heroDetails.innerHTML = `
     <div>
-      <span class="label">AusgewÃ¤hlt</span>
+      <span class="label">Ausgewählt</span>
       <strong>${escapeHtml(hero.name)}</strong>
       <p>Stufe ${level}/${maxUpgradeLevel} | Leben ${upgraded.hp} | Schaden ${upgraded.bulletDamage} | Tempo ${upgraded.speed} | Begleiter ${escapeHtml(companion.name)}</p>
     </div>
-    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} MÃ¼nzen`}</button>
+    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} Münzen`}</button>
   `;
 }
+
