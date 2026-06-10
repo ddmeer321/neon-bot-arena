@@ -43,7 +43,7 @@ export const heroes = {
   nova: {
     id: "nova",
     name: "Nova Shade",
-    role: "PrÃ¤zise, Teleportpuls",
+    role: "Präzise, Teleportpuls",
     statsLabel: "Tempo ++ | Leben + | Schaden ++",
     color: "#ff4f92",
     glow: "#b7ff4a",
@@ -75,7 +75,7 @@ export const heroes = {
   frost: {
     id: "frost",
     name: "Frost Byte",
-    role: "Kontrolle, KÃ¤ltefeld",
+    role: "Kontrolle, Kältefeld",
     statsLabel: "Tempo ++ | Leben ++ | Schaden ++",
     color: "#8ee7ff",
     glow: "#f6f7fb",
@@ -85,7 +85,7 @@ export const heroes = {
     bulletDamage: 20,
     bulletSpeed: 700,
     specialCooldown: 8,
-    specialName: "KÃ¤ltefeld",
+    specialName: "Kältefeld",
     price: 550
   },
   pulse: {
@@ -128,7 +128,7 @@ export const companions = {
   venom: {
     id: "venom",
     name: "Venom Mini",
-    description: "GrÃ¼ner Energie-Begleiter",
+    description: "Grüner Energie-Begleiter",
     shape: "orb",
     color: "#60ff7a",
     glow: "#d6ff4a",
