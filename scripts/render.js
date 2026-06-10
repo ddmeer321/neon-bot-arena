@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=companion1";
+import { companions, defaultCosmetic } from "./config.js?v=companion2";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -453,3 +453,4 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
 }
+
