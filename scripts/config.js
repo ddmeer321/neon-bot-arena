@@ -5,6 +5,7 @@ export const progressionKey = "neon-bot-arena-progression";
 
 export const maxUpgradeLevel = 5;
 export const starterHeroes = ["volt", "titan", "nova"];
+export const defaultCosmetic = "classic";
 
 export const heroes = {
   volt: {
@@ -42,7 +43,7 @@ export const heroes = {
   nova: {
     id: "nova",
     name: "Nova Shade",
-    role: "Präzise, Teleportpuls",
+    role: "PrÃ¤zise, Teleportpuls",
     statsLabel: "Tempo ++ | Leben + | Schaden ++",
     color: "#ff4f92",
     glow: "#b7ff4a",
@@ -74,7 +75,7 @@ export const heroes = {
   frost: {
     id: "frost",
     name: "Frost Byte",
-    role: "Kontrolle, Kältefeld",
+    role: "Kontrolle, KÃ¤ltefeld",
     statsLabel: "Tempo ++ | Leben ++ | Schaden ++",
     color: "#8ee7ff",
     glow: "#f6f7fb",
@@ -84,7 +85,7 @@ export const heroes = {
     bulletDamage: 20,
     bulletSpeed: 700,
     specialCooldown: 8,
-    specialName: "Kältefeld",
+    specialName: "KÃ¤ltefeld",
     price: 550
   },
   pulse: {
@@ -102,6 +103,49 @@ export const heroes = {
     specialCooldown: 9,
     specialName: "Heilimpuls",
     price: 650
+  }
+};
+
+export const cosmetics = {
+  classic: {
+    id: "classic",
+    name: "Classic Neon",
+    description: "Standard-Look",
+    color: null,
+    glow: null,
+    price: 0
+  },
+  solar: {
+    id: "solar",
+    name: "Solar Flare",
+    description: "Orange-goldener Kampfanzug",
+    color: "#ff8f3d",
+    glow: "#ffd166",
+    price: 900
+  },
+  venom: {
+    id: "venom",
+    name: "Venom Pulse",
+    description: "Giftgruenes Neonlicht",
+    color: "#60ff7a",
+    glow: "#d6ff4a",
+    price: 1200
+  },
+  royal: {
+    id: "royal",
+    name: "Royal Rift",
+    description: "Violetter Elite-Skin",
+    color: "#a78bfa",
+    glow: "#38d8ff",
+    price: 1600
+  },
+  eclipse: {
+    id: "eclipse",
+    name: "Eclipse Core",
+    description: "Dunkler Boss-Look",
+    color: "#ef4444",
+    glow: "#7f1d1d",
+    price: 2200
   }
 };
 
