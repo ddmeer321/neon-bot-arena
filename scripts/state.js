@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=economyshop1";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=companion1";
 
 export function createState() {
   const highScore = loadHighScore();
