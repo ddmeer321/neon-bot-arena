@@ -299,6 +299,72 @@ h1 {
   opacity: 0.5;
 }
 
+.shop-section {
+  display: grid;
+  gap: 10px;
+}
+
+.shop-section + .shop-section {
+  margin-top: 4px;
+}
+
+.shop-heading {
+  width: min(720px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.shop-heading strong {
+  color: var(--amber);
+}
+
+.shop-grid {
+  width: min(900px, 100%);
+}
+
+.cosmetic-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.cosmetic-swatch {
+  width: 100%;
+  aspect-ratio: 1.8;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--skin-color) 80%, white 20%), transparent 18%),
+    linear-gradient(135deg, color-mix(in srgb, var(--skin-color) 26%, transparent), color-mix(in srgb, var(--skin-glow) 28%, transparent));
+}
+
+.cosmetic-swatch::before {
+  content: "";
+  position: absolute;
+  inset: 24% 35% 14%;
+  border-radius: 45% 45% 8px 8px;
+  background: var(--skin-color);
+  box-shadow: 0 0 34px var(--skin-glow);
+}
+
+.cosmetic-swatch::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  top: 42%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .admin-panel {
   width: min(620px, 100%);
   border: 1px solid rgba(255, 200, 87, 0.36);
