@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=economyshop1";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -17,6 +17,8 @@ export function createState() {
     coins: loadCoins(),
     unlockedHeroes: progression.unlockedHeroes,
     upgrades: progression.upgrades,
+    ownedCosmetics: progression.ownedCosmetics,
+    equippedCosmetic: progression.equippedCosmetic,
     lastCoinReward: 0,
     bossCoinBonus: 0,
     bossesDefeated: 0,
