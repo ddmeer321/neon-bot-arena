@@ -1,6 +1,6 @@
-import { coinKey, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js";
-import { saveCoins, saveProgression } from "./storage.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=boss2";
+import { coinKey, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=economyshop1";
+import { saveCoins, saveProgression } from "./storage.js?v=economyshop1";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=economyshop1";
 
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
