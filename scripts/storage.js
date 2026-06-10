@@ -1,4 +1,4 @@
-import { coinKey, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js";
+import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=economyshop1";
 import { cleanName } from "./utils.js";
 
 export function loadHighScore() {
@@ -18,12 +18,16 @@ export function loadProgression() {
     const parsed = JSON.parse(localStorage.getItem(progressionKey) || "{}");
     const unlocked = Array.isArray(parsed.unlockedHeroes) ? parsed.unlockedHeroes : starterHeroes;
     const upgrades = parsed.upgrades && typeof parsed.upgrades === "object" ? parsed.upgrades : {};
+    const ownedCosmetics = Array.isArray(parsed.ownedCosmetics) ? parsed.ownedCosmetics : [defaultCosmetic];
+    const equippedCosmetic = typeof parsed.equippedCosmetic === "string" ? parsed.equippedCosmetic : defaultCosmetic;
     return {
       unlockedHeroes: [...new Set([...starterHeroes, ...unlocked])],
-      upgrades
+      upgrades,
+      ownedCosmetics: [...new Set([defaultCosmetic, ...ownedCosmetics])],
+      equippedCosmetic
     };
   } catch {
-    return { unlockedHeroes: [...starterHeroes], upgrades: {} };
+    return { unlockedHeroes: [...starterHeroes], upgrades: {}, ownedCosmetics: [defaultCosmetic], equippedCosmetic: defaultCosmetic };
   }
 }
 
@@ -32,7 +36,9 @@ export function saveProgression(state) {
     progressionKey,
     JSON.stringify({
       unlockedHeroes: state.unlockedHeroes,
-      upgrades: state.upgrades
+      upgrades: state.upgrades,
+      ownedCosmetics: state.ownedCosmetics,
+      equippedCosmetic: state.equippedCosmetic
     })
   );
 }
