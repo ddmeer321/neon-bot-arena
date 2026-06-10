@@ -1,3 +1,5 @@
+import { companions, defaultCosmetic } from "./config.js?v=companion1";
+
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
   ctx.save();
@@ -36,6 +38,7 @@ function drawArena(ctx, canvas) {
 function drawPlayer(ctx, state) {
   const player = state.player;
   const angle = getPlayerAngle(state);
+  drawCompanion(ctx, state);
   ctx.save();
   ctx.translate(player.x, player.y);
   if (player.healFlash > 0) {
@@ -82,6 +85,59 @@ function drawPlayer(ctx, state) {
   ctx.fillRect(5, -5, 28, 10);
   ctx.fillStyle = player.hero.glow;
   ctx.fillRect(24, -3, 12, 6);
+  ctx.restore();
+}
+
+function drawCompanion(ctx, state) {
+  const player = state.player;
+  const companion = companions[state.equippedCosmetic] || companions[defaultCosmetic];
+  if (!player || !companion || companion.id === defaultCosmetic || companion.shape === "none") return;
+
+  const bob = Math.sin(state.time * 5) * 5;
+  const orbit = state.time * 1.8;
+  const side = Math.sin(orbit) * 8;
+  const x = player.x - 42 + side;
+  const y = player.y - 28 + bob;
+  const color = companion.color || "#38d8ff";
+  const glow = companion.glow || color;
+
+  ctx.save();
+  glowCircle(ctx, x, y, 24, glow, 0.25);
+  ctx.translate(x, y);
+  ctx.strokeStyle = glow;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+
+  if (companion.shape === "spark") {
+    ctx.rotate(state.time * 2.5);
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const r = i % 2 === 0 ? 16 : 7;
+      const a = (Math.PI * 2 * i) / 8;
+      ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else if (companion.shape === "wisp") {
+    ctx.beginPath();
+    ctx.moveTo(0, -17);
+    ctx.bezierCurveTo(16, -8, 10, 14, 0, 18);
+    ctx.bezierCurveTo(-10, 14, -16, -8, 0, -17);
+    ctx.fill();
+  } else if (companion.shape === "core") {
+    ctx.rotate(state.time);
+    ctx.fillRect(-10, -10, 20, 20);
+    ctx.strokeRect(-15, -15, 30, 30);
+  } else {
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.fillRect(-6, -3, 4, 4);
+  ctx.fillRect(3, -3, 4, 4);
   ctx.restore();
 }
 
