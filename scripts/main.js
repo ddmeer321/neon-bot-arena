@@ -1,4 +1,4 @@
-import { getDom } from "./dom.js?v=leaderfilter1";
+﻿import { getDom } from "./dom.js?v=leaderfilter1";
 import { createState } from "./state.js?v=companion2";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderfilter1";
