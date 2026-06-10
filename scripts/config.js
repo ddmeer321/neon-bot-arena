@@ -128,7 +128,7 @@ export const companions = {
   venom: {
     id: "venom",
     name: "Venom Mini",
-    description: "Gruener Energie-Begleiter",
+    description: "GrÃ¼ner Energie-Begleiter",
     shape: "orb",
     color: "#60ff7a",
     glow: "#d6ff4a",
