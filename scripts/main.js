@@ -1,12 +1,12 @@
 import { getDom } from "./dom.js?v=leaderfilter1";
-import { createState } from "./state.js?v=companion1";
+import { createState } from "./state.js?v=companion2";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderfilter1";
-import { setupInput } from "./input.js?v=companion1";
-import { createGameplay } from "./gameplay.js?v=companion1";
-import { draw } from "./render.js?v=companion1";
+import { setupInput } from "./input.js?v=companion2";
+import { createGameplay } from "./gameplay.js?v=companion2";
+import { draw } from "./render.js?v=companion2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=companion1";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=companion2";
 
 
 
@@ -85,3 +85,4 @@ export function bootGame() {
 
   loop();
 }
+
