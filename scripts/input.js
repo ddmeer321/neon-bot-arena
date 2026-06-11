@@ -1,6 +1,6 @@
-﻿import { coinKey, defaultCosmetic, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=sound1";
-import { saveCoins, saveProgression } from "./storage.js?v=sound1";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=sound1";
+﻿import { coinKey, defaultCosmetic, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=sound2";
+import { saveCoins, saveProgression } from "./storage.js?v=sound2";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=sound2";
 
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
@@ -200,7 +200,7 @@ function updateTouchMove(event, dom, state) {
   const knobY = Math.sin(angle) * limited;
   state.touch.moveX = length > 8 ? knobX / max : 0;
   state.touch.moveY = length > 8 ? knobY / max : 0;
-  dom.touchKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+  dom.touchKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
 }
 
 function stopTouchMove(event, dom, state) {
@@ -208,7 +208,7 @@ function stopTouchMove(event, dom, state) {
   state.touch.stickPointer = null;
   state.touch.moveX = 0;
   state.touch.moveY = 0;
-  dom.touchKnob.style.transform = "translate(0, 0)";
+  dom.touchKnob.style.transform = "translate(-50%, -50%)";
 }
 
 function isTyping(target) {
