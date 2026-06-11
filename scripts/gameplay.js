@@ -1,7 +1,8 @@
 ﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=nova2";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=nova2";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=sound1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=sound1";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderfilter1";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=sound1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -110,6 +111,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.menu.classList.add("hidden");
     dom.gamePanel.classList.remove("hidden");
     dom.message.classList.add("hidden");
+    startMusic();
     spawnWave();
   }
 
@@ -133,10 +135,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.pauseBtn.textContent = state.paused ? ">" : "II";
     if (state.paused) {
       state.touch.fire = false;
+      setMusicPaused(true);
       dom.touchControls?.classList.add("hidden");
       showPauseMenu();
     } else {
       dom.message.classList.add("hidden");
+      setMusicPaused(false);
       applyDeviceMode();
     }
   }
@@ -283,6 +287,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const player = state.player;
     const hero = player.hero;
     player.fireTimer = hero.fireRate;
+    playShoot();
     const angle = getAimAngle();
     const damage = Math.round(hero.bulletDamage * (player.damageBoostTimer > 0 ? 1.5 : 1));
     if (state.selectedHero === "titan") {
@@ -555,6 +560,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     state.touch.moveX = 0;
     state.touch.moveY = 0;
     dom.touchControls?.classList.add("hidden");
+    stopMusic();
     const isRecord = state.score > state.startHighScore;
     const reward = calculateCoinReward(state);
     state.lastCoinReward = reward;
@@ -575,6 +581,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function returnToMenu() {
     Object.assign(state, { running: false, paused: false, over: false, player: null, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [] });
+    stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
     dom.gamePanel.classList.add("hidden");
