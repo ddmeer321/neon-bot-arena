@@ -16,7 +16,7 @@ function getContext() {
   masterGain.gain.value = 0.32;
   masterGain.connect(audioContext.destination);
   musicGain = audioContext.createGain();
-  musicGain.gain.value = 0.035;
+  musicGain.gain.value = 0.055;
   musicGain.connect(masterGain);
   return audioContext;
 }
@@ -50,16 +50,16 @@ function playMusicStep() {
   if (!audioContext || mutedByPause) return;
   const frequency = melody[musicStep % melody.length];
   musicStep += 1;
-  playTone({ frequency, duration: 0.18, type: "triangle", volume: 0.055, destination: musicGain });
+  playTone({ frequency, duration: 0.18, type: "triangle", volume: 0.072, destination: musicGain });
   if (musicStep % 4 === 1) {
-    playTone({ frequency: frequency / 2, duration: 0.32, type: "sine", volume: 0.035, destination: musicGain });
+    playTone({ frequency: frequency / 2, duration: 0.32, type: "sine", volume: 0.048, destination: musicGain });
   }
 }
 
 export async function startMusic() {
   await resumeContext();
   mutedByPause = false;
-  if (musicGain) musicGain.gain.value = 0.035;
+  if (musicGain) musicGain.gain.value = 0.055;
   if (musicTimer) return;
   playMusicStep();
   musicTimer = window.setInterval(playMusicStep, 260);
@@ -67,7 +67,7 @@ export async function startMusic() {
 
 export function setMusicPaused(paused) {
   mutedByPause = paused;
-  if (musicGain) musicGain.gain.value = paused ? 0 : 0.035;
+  if (musicGain) musicGain.gain.value = paused ? 0 : 0.055;
 }
 
 export function stopMusic() {
