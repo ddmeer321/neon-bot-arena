@@ -756,8 +756,8 @@ h1 {
 }
 
 .touch-stick {
-  width: 160px;
-  height: 160px;
+  width: 128px;
+  height: 128px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 50%;
   background: rgba(13, 18, 28, 0.56);
@@ -770,11 +770,12 @@ h1 {
   position: absolute;
   width: 54px;
   height: 54px;
-  left: 36px;
-  top: 36px;
+  left: 50%;
+  top: 50%;
   border-radius: 50%;
   background: var(--cyan);
   box-shadow: 0 0 26px rgba(56, 216, 255, 0.42);
+  transform: translate(-50%, -50%);
 }
 
 .touch-actions {
@@ -959,8 +960,6 @@ canvas {
   .game-panel.mobile-mode .touch-stick i {
     width: 46px;
     height: 46px;
-    left: 30px;
-    top: 30px;
   }
 
   .game-panel.mobile-mode .touch-actions button {
