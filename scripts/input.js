@@ -1,6 +1,6 @@
-﻿import { coinKey, defaultCosmetic, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=nova2";
-import { saveCoins, saveProgression } from "./storage.js?v=nova2";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=nova2";
+﻿import { coinKey, defaultCosmetic, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=sound1";
+import { saveCoins, saveProgression } from "./storage.js?v=sound1";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=sound1";
 
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
