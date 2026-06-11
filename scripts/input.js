@@ -1,7 +1,3 @@
-﻿import { coinKey, defaultCosmetic, heroes, highScoreKey, leaderboardKey, maxUpgradeLevel, progressionKey, starterHeroes } from "./config.js?v=sound2";
-import { saveCoins, saveProgression } from "./storage.js?v=sound2";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=sound2";
-
 export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -19,7 +15,6 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     });
   });
 
-  setupAdminPanel(dom, state, startGame);
 
   dom.playerNameInput?.addEventListener("keydown", (event) => event.stopPropagation());
   dom.playerNameInput?.addEventListener("keyup", (event) => event.stopPropagation());
@@ -77,86 +72,6 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   dom.touchStick?.addEventListener("pointercancel", (event) => stopTouchMove(event, dom, state));
 }
 
-
-const adminCode = "code24.4";
-
-function setupAdminPanel(dom, state, startGame) {
-  const panel = document.querySelector("#adminPanel");
-  const status = document.querySelector("#adminStatus");
-  if (!panel || !dom.playerNameInput) return;
-
-  const setStatus = (text) => {
-    if (status) status.textContent = text;
-  };
-
-  const syncVisibility = () => {
-    const active = dom.playerNameInput.value.trim() === adminCode;
-    panel.classList.toggle("hidden", !active);
-    if (active) setStatus("Admin aktiv. \u00c4nderungen gelten nur auf diesem Ger\u00e4t.");
-  };
-
-  dom.playerNameInput.addEventListener("input", syncVisibility);
-  dom.playerNameInput.addEventListener("change", syncVisibility);
-  syncVisibility();
-
-  panel.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-admin-action]");
-    if (!button) return;
-    const action = button.dataset.adminAction;
-
-    if (action === "coins") {
-      state.coins += 500;
-      saveCoins(state.coins);
-      updateCoinDisplay(state, dom);
-      setStatus("+500 M\u00fcnzen hinzugef\u00fcgt.");
-    }
-
-    if (action === "unlock") {
-      state.unlockedHeroes = Object.keys(heroes);
-      saveProgression(state);
-      renderHeroMenu(state, dom);
-      renderShop(state, dom);
-      setStatus("Alle Helden freigeschaltet.");
-    }
-
-    if (action === "max-upgrades") {
-      state.unlockedHeroes = Object.keys(heroes);
-      state.upgrades = Object.fromEntries(Object.keys(heroes).map((heroId) => [heroId, maxUpgradeLevel]));
-      saveProgression(state);
-      renderHeroMenu(state, dom);
-      renderShop(state, dom);
-      setStatus("Alle Helden sind auf Max-Stufe.");
-    }
-
-    if (action === "boss-start") {
-      const difficultyLabel = document.querySelector(".difficulty-btn.selected span")?.textContent || state.difficulty || "Normal";
-      setStatus("Starte Welle 10 auf " + difficultyLabel + ".");
-      startGame({ startWave: 10 });
-    }
-
-    if (action === "reset") {
-      if (!confirm("Lokalen Spielstand auf diesem Ger\u00e4t zur\u00fccksetzen?")) return;
-      localStorage.removeItem(coinKey);
-      localStorage.removeItem(highScoreKey);
-      localStorage.removeItem(leaderboardKey);
-      localStorage.removeItem(progressionKey);
-      state.coins = 0;
-      state.highScore = 0;
-      state.leaderboard = [];
-      state.unlockedHeroes = [...starterHeroes];
-      state.upgrades = {};
-      state.ownedCosmetics = [defaultCosmetic];
-      state.equippedCosmetic = defaultCosmetic;
-      state.selectedHero = "volt";
-      updateCoinDisplay(state, dom);
-      if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = 0;
-      if (dom.highScoreText) dom.highScoreText.textContent = 0;
-      renderHeroMenu(state, dom);
-      renderShop(state, dom);
-      setStatus("Lokaler Spielstand zur\u00fcckgesetzt.");
-    }
-  });
-}
 
 function addTouchGuard(element) {
   if (!element) return;
