@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=nova2";
+﻿import { companions, defaultCosmetic } from "./config.js?v=sound1";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
