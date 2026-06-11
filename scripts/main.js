@@ -1,12 +1,12 @@
-﻿import { getDom } from "./dom.js?v=leaderfilter1";
-import { createState } from "./state.js?v=sound2";
+import { getDom } from "./dom.js?v=security2";
+import { createState } from "./state.js?v=security2";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=leaderfilter1";
-import { setupInput } from "./input.js?v=sound2";
-import { createGameplay } from "./gameplay.js?v=sound2";
-import { draw } from "./render.js?v=sound2";
+import { loadOnlineScores } from "./online-leaderboard.js?v=security2";
+import { setupInput } from "./input.js?v=security2";
+import { createGameplay } from "./gameplay.js?v=security2";
+import { draw } from "./render.js?v=security2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=sound2";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=security2";
 
 
 
