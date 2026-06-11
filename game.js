@@ -1,3 +1,3 @@
-import { bootGame } from "./scripts/main.js?v=sound2";
+import { bootGame } from "./scripts/main.js?v=security2";
 
 bootGame();
