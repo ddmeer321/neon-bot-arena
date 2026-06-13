@@ -1,8 +1,8 @@
-import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=security2";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=security2";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=security2";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=security2";
+﻿import { clamp, cleanName, distance } from "./utils.js";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=melee1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=melee1";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=melee1";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=melee1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -86,7 +86,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       enemyBullets: [],
       robots: [],
       particles: [],
-      pickups: []
+      pickups: [],
+      meleeSwings: [],
+      wardenRing: null
     });
     state.player = {
       x: dom.canvas.width / 2,
@@ -290,10 +292,37 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     playShoot();
     const angle = getAimAngle();
     const damage = Math.round(hero.bulletDamage * (player.damageBoostTimer > 0 ? 1.5 : 1));
+    if (state.selectedHero === "warden") {
+      meleeAttack(angle, damage);
+      return;
+    }
     if (state.selectedHero === "titan") {
       [-0.18, 0, 0.18].forEach((spread) => addBullet(player.x, player.y, angle + spread, hero.bulletSpeed, damage, hero.color, false));
     } else {
       addBullet(player.x, player.y, angle, hero.bulletSpeed, damage, hero.color, state.selectedHero === "nova");
+    }
+  }
+
+  function meleeAttack(angle, damage) {
+    const player = state.player;
+    const range = 92;
+    const arc = 1.28;
+    state.meleeSwings.push({ x: player.x, y: player.y, angle, timer: 0.2, range, color: player.hero.color });
+    for (const robot of state.robots) {
+      const dx = robot.x - player.x;
+      const dy = robot.y - player.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > range + robot.radius) continue;
+      const robotAngle = Math.atan2(dy, dx);
+      if (Math.abs(angleDelta(robotAngle, angle)) > arc / 2) continue;
+      damageRobot(robot, damage, player.hero.color);
+      const push = robot.boss ? 8 : 18;
+      robot.x += Math.cos(robotAngle) * push;
+      robot.y += Math.sin(robotAngle) * push;
+    }
+    for (let i = 0; i < 10; i++) {
+      const spread = angle + (Math.random() - 0.5) * arc;
+      addParticle(player.x + Math.cos(spread) * 44, player.y + Math.sin(spread) * 44, player.hero.color, 1.4);
     }
   }
 
@@ -380,6 +409,24 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       state.healWave = { x: player.x, y: player.y, timer: 0.9, amount: healed };
       pulse(player.x, player.y, "#b7ff4a", 96);
     }
+
+    if (state.selectedHero === "warden") {
+      player.shield = Math.max(player.shield, 1.8);
+      player.invincible = Math.max(player.invincible, 0.75);
+      state.robots.filter((robot) => distance(player, robot) < 175).forEach((robot) => {
+        damageRobot(robot, 118, "#d8dde8");
+        const angle = Math.atan2(robot.y - player.y, robot.x - player.x);
+        const push = robot.boss ? 18 : 38;
+        robot.x += Math.cos(angle) * push;
+        robot.y += Math.sin(angle) * push;
+      });
+      state.wardenRing = { x: player.x, y: player.y, timer: 0.56 };
+      pulse(player.x, player.y, "#d8dde8", 86);
+    }
+  }
+
+  function angleDelta(a, b) {
+    return Math.atan2(Math.sin(a - b), Math.cos(a - b));
   }
 
   function getAimAngle() {
@@ -580,7 +627,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [] });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");

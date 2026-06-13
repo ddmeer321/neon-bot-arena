@@ -1,6 +1,6 @@
-import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=security2";
+﻿import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=melee1";
 import { escapeHtml } from "./utils.js";
-import { saveCoins, saveProgression } from "./storage.js?v=security2";
+import { saveCoins, saveProgression } from "./storage.js?v=melee1";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);

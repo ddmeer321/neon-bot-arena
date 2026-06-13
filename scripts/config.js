@@ -1,4 +1,4 @@
-export const highScoreKey = "neon-bot-arena-high-score";
+﻿export const highScoreKey = "neon-bot-arena-high-score";
 export const leaderboardKey = "neon-bot-arena-leaderboard";
 export const coinKey = "neon-bot-arena-coins";
 export const progressionKey = "neon-bot-arena-progression";
@@ -103,6 +103,22 @@ export const heroes = {
     specialCooldown: 9,
     specialName: "Heilimpuls",
     price: 650
+  },
+  warden: {
+    id: "warden",
+    name: "Iron Warden",
+    role: "Nahkampf, Klingensturm",
+    statsLabel: "Tempo + | Leben ++++ | Schaden ++++",
+    color: "#d8dde8",
+    glow: "#ff2d55",
+    hp: 220,
+    speed: 185,
+    fireRate: 0.52,
+    bulletDamage: 58,
+    bulletSpeed: 0,
+    specialCooldown: 9,
+    specialName: "Klingensturm",
+    price: 850
   }
 };
 

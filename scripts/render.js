@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=security2";
+﻿import { companions, defaultCosmetic } from "./config.js?v=melee1";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -300,6 +300,36 @@ function line(ctx, x1, y1, x2, y2) {
 }
 
 function drawSpecialEffects(ctx, state) {
+  if (Array.isArray(state.meleeSwings)) {
+    for (let i = state.meleeSwings.length - 1; i >= 0; i--) {
+      const swing = state.meleeSwings[i];
+      swing.timer -= 0.016;
+      const duration = 0.2;
+      const progress = 1 - swing.timer / duration;
+      const alpha = Math.max(0, swing.timer / duration);
+      ctx.save();
+      ctx.translate(swing.x, swing.y);
+      ctx.rotate(swing.angle);
+      glowCircle(ctx, 36, 0, swing.range, swing.color, 0.16 * alpha);
+      ctx.globalAlpha = alpha * 0.75;
+      ctx.strokeStyle = swing.color;
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.arc(0, 0, swing.range * (0.86 + progress * 0.18), -0.64, 0.64);
+      ctx.stroke();
+      ctx.globalAlpha = alpha * 0.24;
+      ctx.fillStyle = swing.color;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, swing.range, -0.7, 0.7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      if (swing.timer <= 0) state.meleeSwings.splice(i, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   // Nova Geisterbild
   if (state.novaGhost?.timer > 0) {
     state.novaGhost.timer -= 0.016;
@@ -331,16 +361,17 @@ function drawSpecialEffects(ctx, state) {
     ["emberRing", "#ff7a3d", 210],
     ["frostRing", "#8ee7ff", 230],
     ["pulseRing", "#b7ff4a", 185],
+    ["wardenRing", "#d8dde8", 175],
   ]) {
     const ring = state[key];
     if (ring?.timer > 0) {
-      const duration = key === "pulseRing" ? 0.62 : key === "emberRing" ? 0.58 : 0.45;
+      const duration = key === "pulseRing" ? 0.62 : key === "emberRing" ? 0.58 : key === "wardenRing" ? 0.56 : 0.45;
       ring.timer -= 0.016;
       const progress = 1 - ring.timer / duration;
       const r = progress * maxR;
       ctx.globalAlpha = Math.max(0, (1 - progress) * 0.65);
       ctx.strokeStyle = color;
-      ctx.lineWidth = key === "pulseRing" ? 5 : 3;
+      ctx.lineWidth = key === "pulseRing" || key === "wardenRing" ? 5 : 3;
       ctx.beginPath();
       ctx.arc(ring.x, ring.y, r, 0, Math.PI * 2);
       ctx.stroke();
@@ -358,6 +389,17 @@ function drawSpecialEffects(ctx, state) {
       if (key === "pulseRing") {
         ctx.globalAlpha = Math.max(0, (1 - progress) * 0.28);
         glowCircle(ctx, ring.x, ring.y, r * 0.72, color, 0.2);
+      }
+      if (key === "wardenRing") {
+        ctx.globalAlpha = Math.max(0, (1 - progress) * 0.32);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 10; i++) {
+          const a = (Math.PI * 2 * i) / 10 - progress * 0.7;
+          ctx.beginPath();
+          ctx.moveTo(ring.x + Math.cos(a) * (r - 18), ring.y + Math.sin(a) * (r - 18));
+          ctx.lineTo(ring.x + Math.cos(a) * (r + 18), ring.y + Math.sin(a) * (r + 18));
+          ctx.stroke();
+        }
       }
       ctx.globalAlpha = 1;
     }

@@ -1,4 +1,4 @@
-export function createFPSCounter() {
+﻿export function createFPSCounter() {
   let lastTime = performance.now();
   let frames = 0;
   let fps = 0;
