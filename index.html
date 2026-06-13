@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=testpanel2" />
+    <link rel="stylesheet" href="style.css?v=testpanel3" />
   </head>
   <body>
     <main class="shell">
@@ -149,6 +149,19 @@
           <span id="specialHint">Leertaste</span>
           <button id="pauseBtn" title="Pause">II</button>
         </div>
+        <div id="testPanelGame" class="test-panel test-panel-game hidden" aria-label="Testpanel im Spiel">
+          <div class="test-panel-title">
+            <span>Testpanel</span>
+            <strong>Runde</strong>
+          </div>
+          <div class="test-actions">
+            <button id="testGameHealBtn" type="button">Heilen</button>
+            <button id="testGameSpecialBtn" type="button">Spezial bereit</button>
+            <button id="testGameCoinsBtn" type="button">+5.000</button>
+            <button id="testGameWave10Btn" type="button">Welle 10</button>
+            <button id="testGameWave20Btn" type="button">Welle 20</button>
+          </div>
+        </div>
         <div id="touchControls" class="touch-controls hidden" aria-label="Handy Steuerung">
           <div id="touchStick" class="touch-stick">
             <i id="touchKnob"></i>
@@ -162,6 +175,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=testpanel2"></script>
+    <script type="module" src="game.js?v=testpanel3"></script>
   </body>
 </html>

@@ -451,6 +451,30 @@ h1 {
   font-weight: 800;
 }
 
+.test-panel-game {
+  position: absolute;
+  top: 94px;
+  right: 12px;
+  width: min(280px, calc(100% - 24px));
+  z-index: 4;
+  padding: 9px;
+  background: rgba(13, 18, 28, 0.84);
+}
+
+.test-panel-game .test-panel-title {
+  margin-bottom: 2px;
+}
+
+.test-panel-game .test-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.test-panel-game .test-actions button {
+  min-height: 34px;
+  font-size: 0.72rem;
+  padding: 4px;
+}
+
 .leaderboard {
   width: min(430px, 100%);
   border: 1px solid var(--line);
@@ -972,6 +996,23 @@ canvas {
 
   .game-panel.mobile-mode .bar {
     height: 8px;
+  }
+
+  .game-panel.mobile-mode .test-panel-game {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 132px;
+    width: auto;
+  }
+
+  .game-panel.mobile-mode .test-panel-game .test-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .game-panel.mobile-mode .test-panel-game .test-actions button {
+    min-height: 36px;
+    font-size: 0.68rem;
   }
 
   .game-panel.mobile-mode .touch-controls {
