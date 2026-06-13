@@ -1,12 +1,13 @@
-﻿import { getDom } from "./dom.js?v=upgrade10b";
-import { createState } from "./state.js?v=upgrade10b";
+﻿import { getDom } from "./dom.js?v=testid1";
+import { createState } from "./state.js?v=testid1";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=upgrade10b";
-import { setupInput } from "./input.js?v=upgrade10b";
-import { createGameplay } from "./gameplay.js?v=upgrade10b";
-import { draw } from "./render.js?v=upgrade10b";
+import { loadOnlineScores } from "./online-leaderboard.js?v=testid1";
+import { setupInput } from "./input.js?v=testid1";
+import { createGameplay } from "./gameplay.js?v=testid1";
+import { draw } from "./render.js?v=testid1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=upgrade10b";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=testid1";
+import { setupTestPanel } from "./test-panel.js?v=testid1";
 
 
 
@@ -62,6 +63,7 @@ export function bootGame() {
     togglePause: gameplay.togglePause,
     useSpecial: gameplay.useSpecial
   });
+  setupTestPanel({ dom, state, startGame: gameplay.startGame });
 
   dom.heroMenuBtn?.addEventListener("click", () => {
     showHeroPanel(dom);

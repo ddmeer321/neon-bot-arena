@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=upgrade10b" />
+    <link rel="stylesheet" href="style.css?v=testid1" />
   </head>
   <body>
     <main class="shell">
@@ -56,6 +56,11 @@
           <strong id="coinCount">0</strong>
         </div>
 
+        <div class="test-id-box">
+          <button id="testIdBtn" type="button">Test-ID</button>
+          <span id="testIdText">Nicht erstellt</span>
+        </div>
+
         <div class="leaderboard">
           <div class="leaderboard-title">
             <span id="leaderboardMode">Online Rangliste</span>
@@ -84,6 +89,19 @@
 
         <section id="shopPanel" class="menu-panel hidden">
           <div id="shopList" class="shop-list" aria-label="Shop Helden und Begleiter"></div>
+        </section>
+
+        <section id="testPanel" class="admin-panel hidden" aria-label="Testpanel">
+          <div class="admin-panel-title">
+            <span>Testpanel</span>
+            <strong id="testPanelUser">Aktiv</strong>
+          </div>
+          <div class="admin-actions">
+            <button id="testCoinsBtn" type="button">+5.000 Münzen</button>
+            <button id="testMaxCoinsBtn" type="button">50.000 Münzen</button>
+            <button id="testWave10Btn" type="button">Welle 10 starten</button>
+          </div>
+          <p>Nur für freigegebene Name + Test-ID Kombinationen.</p>
         </section>
 
         <button id="startBtn" class="start-btn">Spiel starten</button>
@@ -139,6 +157,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=upgrade10b"></script>
+    <script type="module" src="game.js?v=testid1"></script>
   </body>
 </html>

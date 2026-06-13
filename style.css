@@ -243,6 +243,34 @@ h1 {
   color: var(--amber);
 }
 
+.test-id-box {
+  width: min(430px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.test-id-box button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 8px 12px;
+}
+
+.test-id-box button:hover,
+.test-id-box button:focus-visible {
+  border-color: rgba(56, 216, 255, 0.42);
+  color: var(--text);
+  outline: none;
+}
+
 .menu-actions {
   width: min(430px, 100%);
   display: grid;
