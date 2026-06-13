@@ -176,9 +176,9 @@ export function getUpgradeCost(level) {
 }
 
 export function getHeroStats(hero, level = 0) {
-  const damageBoost = 1 + level * 0.1;
-  const healthBoost = 1 + level * 0.12;
-  const speedBoost = 1 + level * 0.04;
+  const damageBoost = 1 + level * 0.07;
+  const healthBoost = 1 + level * 0.08;
+  const speedBoost = 1 + level * 0.02;
   return {
     ...hero,
     hp: Math.round(hero.hp * healthBoost),

@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=upgrade10";
+﻿import { companions, defaultCosmetic } from "./config.js?v=upgrade10b";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;

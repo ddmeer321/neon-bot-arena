@@ -1,4 +1,4 @@
-﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=upgrade10";
+﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=upgrade10b";
 
 export function createState() {
   const highScore = loadHighScore();

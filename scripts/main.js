@@ -1,12 +1,12 @@
-﻿import { getDom } from "./dom.js?v=upgrade10";
-import { createState } from "./state.js?v=upgrade10";
+﻿import { getDom } from "./dom.js?v=upgrade10b";
+import { createState } from "./state.js?v=upgrade10b";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=upgrade10";
-import { setupInput } from "./input.js?v=upgrade10";
-import { createGameplay } from "./gameplay.js?v=upgrade10";
-import { draw } from "./render.js?v=upgrade10";
+import { loadOnlineScores } from "./online-leaderboard.js?v=upgrade10b";
+import { setupInput } from "./input.js?v=upgrade10b";
+import { createGameplay } from "./gameplay.js?v=upgrade10b";
+import { draw } from "./render.js?v=upgrade10b";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=upgrade10";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=upgrade10b";
 
 
 
