@@ -1,13 +1,13 @@
-﻿import { getDom } from "./dom.js?v=testid2";
-import { createState } from "./state.js?v=testid2";
+﻿import { getDom } from "./dom.js?v=testid3";
+import { createState } from "./state.js?v=testid3";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=testid2";
-import { setupInput } from "./input.js?v=testid2";
-import { createGameplay } from "./gameplay.js?v=testid2";
-import { draw } from "./render.js?v=testid2";
+import { loadOnlineScores } from "./online-leaderboard.js?v=testid3";
+import { setupInput } from "./input.js?v=testid3";
+import { createGameplay } from "./gameplay.js?v=testid3";
+import { draw } from "./render.js?v=testid3";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=testid2";
-import { setupTestPanel } from "./test-panel.js?v=testid2";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=testid3";
+import { setupTestPanel } from "./test-panel.js?v=testid3";
 
 
 

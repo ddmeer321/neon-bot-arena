@@ -1,7 +1,7 @@
-﻿import { testIdKey, testPanelAccess } from "./config.js?v=testid2";
-import { saveCoins } from "./storage.js?v=testid2";
+﻿import { testIdKey, testPanelAccess } from "./config.js?v=testid3";
+import { saveCoins } from "./storage.js?v=testid3";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testid2";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testid3";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);
@@ -61,9 +61,8 @@ function updateTestPanelAccess(dom, state) {
 
 function hasTestPanelAccess(dom) {
   const id = localStorage.getItem(testIdKey);
-  const name = cleanName(dom.playerNameInput?.value || "").toLowerCase();
-  if (!id || !name) return false;
-  return testPanelAccess.some((entry) => cleanName(entry.name).toLowerCase() === name && String(entry.id) === id);
+  if (!id) return false;
+  return testPanelAccess.some((entry) => String(entry) === id);
 }
 
 function getRandomNumber(min, max) {

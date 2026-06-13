@@ -8,8 +8,8 @@ export const maxUpgradeLevel = 10;
 export const starterHeroes = ["volt", "titan", "nova"];
 export const defaultCosmetic = "classic";
 export const testPanelAccess = [
-  { name: "Dodo", id: "755051" },
-  { name: "D̸̐̌̔̏̐͗̿̂̓͆̈́̀̑͠", id: "809587" }
+  "755051",
+  "809587"
 ];
 
 export const heroes = {
