@@ -1,4 +1,4 @@
-﻿import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=testid1";
+﻿import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=testid2";
 import { cleanName } from "./utils.js";
 
 export function loadHighScore() {

@@ -1,7 +1,7 @@
-﻿import { testIdKey, testPanelAccess } from "./config.js?v=testid1";
-import { saveCoins } from "./storage.js?v=testid1";
+﻿import { testIdKey, testPanelAccess } from "./config.js?v=testid2";
+import { saveCoins } from "./storage.js?v=testid2";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testid1";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testid2";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);
