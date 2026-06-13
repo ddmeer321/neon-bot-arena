@@ -1,7 +1,7 @@
-﻿import { testIdKey, testPanelAccess } from "./config.js?v=testid3";
-import { saveCoins } from "./storage.js?v=testid3";
+﻿import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=testpanel2";
+import { saveCoins, saveProgression } from "./storage.js?v=testpanel2";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testid3";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=testpanel2";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);
@@ -17,27 +17,59 @@ export function setupTestPanel({ dom, state, startGame }) {
   dom.playerNameInput?.addEventListener("input", () => updateTestPanelAccess(dom, state));
 
   dom.testCoinsBtn?.addEventListener("click", () => {
-    if (!hasTestPanelAccess(dom)) return;
+    if (!hasTestPanelAccess()) return;
     state.coins += 5000;
     saveCoins(state.coins);
-    updateCoinDisplay(state, dom);
-    renderHeroMenu(state, dom);
-    renderShop(state, dom);
+    updateEconomyViews(state, dom);
   });
 
   dom.testMaxCoinsBtn?.addEventListener("click", () => {
-    if (!hasTestPanelAccess(dom)) return;
+    if (!hasTestPanelAccess()) return;
     state.coins = Math.max(state.coins, 50000);
     saveCoins(state.coins);
-    updateCoinDisplay(state, dom);
-    renderHeroMenu(state, dom);
-    renderShop(state, dom);
+    updateEconomyViews(state, dom);
   });
 
   dom.testWave10Btn?.addEventListener("click", () => {
-    if (!hasTestPanelAccess(dom)) return;
+    if (!hasTestPanelAccess()) return;
     startGame({ startWave: 10 });
   });
+
+  dom.testWave20Btn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    startGame({ startWave: 20 });
+  });
+
+  dom.testUnlockBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    state.unlockedHeroes = Object.keys(heroes);
+    saveProgression(state);
+    updateEconomyViews(state, dom);
+  });
+
+  dom.testMaxHeroBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    state.upgrades[state.selectedHero] = maxUpgradeLevel;
+    saveProgression(state);
+    updateEconomyViews(state, dom);
+  });
+
+  dom.testHealBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess() || !state.player) return;
+    state.player.hp = state.player.maxHp;
+    state.player.healFlash = 0.8;
+  });
+
+  dom.testSpecialBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess() || !state.player) return;
+    state.player.specialTimer = 0;
+  });
+}
+
+function updateEconomyViews(state, dom) {
+  updateCoinDisplay(state, dom);
+  renderHeroMenu(state, dom);
+  renderShop(state, dom);
 }
 
 function getOrCreateTestId() {
@@ -54,12 +86,12 @@ function renderStoredTestId(dom) {
 }
 
 function updateTestPanelAccess(dom, state) {
-  const active = hasTestPanelAccess(dom);
+  const active = hasTestPanelAccess();
   dom.testPanel?.classList.toggle("hidden", !active);
   if (active && dom.testPanelUser) dom.testPanelUser.textContent = cleanName(dom.playerNameInput?.value || state.playerName);
 }
 
-function hasTestPanelAccess(dom) {
+function hasTestPanelAccess() {
   const id = localStorage.getItem(testIdKey);
   if (!id) return false;
   return testPanelAccess.some((entry) => String(entry) === id);
