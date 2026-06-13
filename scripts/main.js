@@ -1,12 +1,12 @@
-﻿import { getDom } from "./dom.js?v=melee1";
-import { createState } from "./state.js?v=melee1";
+﻿import { getDom } from "./dom.js?v=upgrade10";
+import { createState } from "./state.js?v=upgrade10";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=melee1";
-import { setupInput } from "./input.js?v=melee1";
-import { createGameplay } from "./gameplay.js?v=melee1";
-import { draw } from "./render.js?v=melee1";
+import { loadOnlineScores } from "./online-leaderboard.js?v=upgrade10";
+import { setupInput } from "./input.js?v=upgrade10";
+import { createGameplay } from "./gameplay.js?v=upgrade10";
+import { draw } from "./render.js?v=upgrade10";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=melee1";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=upgrade10";
 
 
 

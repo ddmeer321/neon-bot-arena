@@ -1,8 +1,8 @@
 ﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=melee1";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=melee1";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=melee1";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=melee1";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=upgrade10";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=upgrade10";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=upgrade10";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=upgrade10";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {

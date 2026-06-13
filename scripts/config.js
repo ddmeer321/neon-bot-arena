@@ -3,7 +3,7 @@ export const leaderboardKey = "neon-bot-arena-leaderboard";
 export const coinKey = "neon-bot-arena-coins";
 export const progressionKey = "neon-bot-arena-progression";
 
-export const maxUpgradeLevel = 5;
+export const maxUpgradeLevel = 10;
 export const starterHeroes = ["volt", "titan", "nova"];
 export const defaultCosmetic = "classic";
 
@@ -171,7 +171,8 @@ export const companions = {
 };
 
 export function getUpgradeCost(level) {
-  return 120 + level * 90;
+  const costs = [2000, 3500, 5500, 8000, 12000, 17000, 23000, 30000, 39000, 50000];
+  return costs[Math.min(level, costs.length - 1)];
 }
 
 export function getHeroStats(hero, level = 0) {

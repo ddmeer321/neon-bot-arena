@@ -1,3 +1,3 @@
-﻿import { bootGame } from "./scripts/main.js?v=melee1";
+﻿import { bootGame } from "./scripts/main.js?v=upgrade10";
 
 bootGame();
