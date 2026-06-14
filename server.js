@@ -66,9 +66,9 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Keine Lobby aktiv" }));
         return;
       }
-      const startAt = Date.now() + 1200;
+      const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
-      broadcastToRoom(room, { type: "start-game", startAt, seed, wave: 1 });
+      broadcastToRoom(room, { type: "start-game", delayMs, seed, wave: 1 });
       return;
     }
 

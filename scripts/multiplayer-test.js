@@ -205,7 +205,7 @@ function updateRemotePlayerAges(state) {
 function setupStartHandler(dom, state, startGame) {
   window.__neonStartCoopGame = (payload) => {
     if (dom.coopStartText) dom.coopStartText.textContent = "Startet...";
-    const delay = Math.max(0, Number(payload.startAt || 0) - Date.now());
+    const delay = Math.max(0, Math.min(5000, Number(payload.delayMs) || 1200));
     window.setTimeout(() => {
       state.remotePlayers = [];
       startGame({ startWave: Number(payload.wave) || 1 });

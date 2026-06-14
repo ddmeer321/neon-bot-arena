@@ -1,3 +1,3 @@
-﻿import { bootGame } from "./scripts/main.js?v=coopstart1";
+import { bootGame } from "./scripts/main.js?v=coopstart2";
 
 bootGame();
