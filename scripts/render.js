@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=lobby2";
+﻿import { companions, defaultCosmetic } from "./config.js?v=lobby3";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -11,11 +11,49 @@ export function draw(dom, state) {
     drawBullets(ctx, state);
     drawRobots(ctx, state);
     drawPlayer(ctx, state);
+    drawRemotePlayers(ctx, state);
     drawParticles(ctx, state);
     drawSpecialEffects(ctx, state);
     drawBossHud(ctx, dom.canvas, state);
   }
   ctx.restore();
+}
+
+function drawRemotePlayers(ctx, state) {
+  const players = Array.isArray(state.remotePlayers) ? state.remotePlayers : [];
+  const now = performance.now();
+  for (const player of players) {
+    if (now - (player.seenAt || 0) > 2500) continue;
+    const color = player.color || "#38d8ff";
+    const hpPct = Math.max(0, Math.min(1, (player.hp || 0) / (player.maxHp || 1)));
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    glowCircle(ctx, 0, 0, 38, color, 0.16);
+    ctx.globalAlpha = 0.78;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 19, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.34;
+    ctx.beginPath();
+    ctx.arc(0, 0, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#f6f7fb";
+    ctx.font = "800 12px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(player.name || "Spieler", 0, -34);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(-22, 25, 44, 5);
+    ctx.fillStyle = "#b7ff4a";
+    ctx.fillRect(-22, 25, 44 * hpPct, 5);
+    ctx.fillStyle = color;
+    ctx.font = "700 10px Inter, system-ui, sans-serif";
+    ctx.fillText(player.hero || "Held", 0, 43);
+    ctx.restore();
+  }
 }
 
 function drawArena(ctx, canvas) {

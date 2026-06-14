@@ -2,6 +2,7 @@
 import { WebSocketServer } from "ws";
 
 const port = Number(process.env.PORT) || 3000;
+const socketOpen = 1;
 const rooms = new Map();
 
 const server = http.createServer((req, res) => {
@@ -21,6 +22,7 @@ wss.on("connection", (socket) => {
   socket.clientId = crypto.randomUUID();
   socket.roomCode = null;
   socket.playerName = "Spieler";
+  socket.playerState = null;
   socket.send(JSON.stringify({ type: "welcome", clientId: socket.clientId }));
 
   socket.on("message", (raw) => {
@@ -55,6 +57,21 @@ wss.on("connection", (socket) => {
     if (message.type === "leave-room") {
       leaveRoom(socket);
       socket.send(JSON.stringify({ type: "room-left" }));
+      return;
+    }
+
+    if (message.type === "player-state") {
+      socket.playerState = {
+        x: clampNumber(message.x, 0, 1280),
+        y: clampNumber(message.y, 0, 720),
+        hero: normalizePlayerName(message.hero || "Held"),
+        color: normalizeColor(message.color),
+        hp: clampNumber(message.hp, 0, 9999),
+        maxHp: clampNumber(message.maxHp, 1, 9999),
+        time: Date.now()
+      };
+      const room = rooms.get(socket.roomCode);
+      if (room) broadcastPlayerStates(room);
       return;
     }
 
@@ -93,6 +110,17 @@ function normalizeRoomCode(code) {
 function normalizePlayerName(name) {
   const cleaned = String(name || "").trim().replace(/\s+/g, " ").slice(0, 16);
   return cleaned || "Spieler";
+}
+
+function normalizeColor(color) {
+  const value = String(color || "");
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : "#38d8ff";
+}
+
+function clampNumber(value, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return min;
+  return Math.max(min, Math.min(max, number));
 }
 
 function joinRoom(socket, code) {
@@ -142,6 +170,21 @@ function broadcastRoom(room) {
   });
 
   for (const client of room.clients) {
-    if (client.readyState === client.OPEN) client.send(payload);
+    if (client.readyState === socketOpen) client.send(payload);
+  }
+}
+
+function broadcastPlayerStates(room) {
+  const players = [...room.clients]
+    .filter((client) => client.playerState)
+    .map((client) => ({
+      id: client.clientId,
+      name: client.playerName || "Spieler",
+      ...client.playerState
+    }));
+  const payload = JSON.stringify({ type: "player-states", players });
+
+  for (const client of room.clients) {
+    if (client.readyState === socketOpen) client.send(payload);
   }
 }

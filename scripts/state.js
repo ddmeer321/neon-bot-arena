@@ -1,4 +1,4 @@
-﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=lobby2";
+﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=lobby3";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -32,6 +32,7 @@ export function createState() {
     touch: { moveX: 0, moveY: 0, fire: false, stickPointer: null },
     keys: new Set(),
     player: null,
+    remotePlayers: [],
     bullets: [],
     enemyBullets: [],
     robots: [],

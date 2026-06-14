@@ -2,8 +2,11 @@
 
 let socket = null;
 let connecting = false;
+let clientId = null;
+let multiplayerState = null;
 
-export function setupMultiplayerTest(dom) {
+export function setupMultiplayerTest(dom, state) {
+  multiplayerState = state;
   dom.multiplayerTestBtn?.addEventListener("click", () => {
     connect(dom, true);
   });
@@ -24,7 +27,12 @@ export function setupMultiplayerTest(dom) {
   dom.leaveLobbyBtn?.addEventListener("click", () => {
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
     setLobby(dom, null, 0, 2, []);
+    if (multiplayerState) multiplayerState.remotePlayers = [];
   });
+
+  window.setInterval(() => {
+    sendLocalPlayerState(state);
+  }, 100);
 }
 
 function sendWhenConnected(dom, message) {
@@ -63,9 +71,17 @@ function connect(dom, pingOnly) {
       setStatus(dom, "Verbunden", "ok");
       return;
     }
+    if (data.type === "welcome") {
+      clientId = data.clientId || clientId;
+      return;
+    }
     if (data.type === "room-state") {
       setStatus(dom, "Lobby verbunden", "ok");
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
+      return;
+    }
+    if (data.type === "player-states") {
+      updateRemotePlayers(data.players || [], multiplayerState);
       return;
     }
     if (data.type === "room-left") {
@@ -88,6 +104,7 @@ function connect(dom, pingOnly) {
     socket = null;
     setStatus(dom, "Getrennt", "error");
     setLobby(dom, null, 0, 2, []);
+    if (multiplayerState) multiplayerState.remotePlayers = [];
   });
 
   return true;
@@ -121,4 +138,35 @@ function setLobby(dom, code, count, maxPlayers, players = []) {
 function getPlayerName(dom) {
   const value = String(dom.playerNameInput?.value || "").trim().replace(/\s+/g, " ").slice(0, 16);
   return value || "Spieler";
+}
+
+function sendLocalPlayerState(state) {
+  if (socket?.readyState !== WebSocket.OPEN || !state.running || state.over || !state.player) return;
+  socket.send(JSON.stringify({
+    type: "player-state",
+    x: Math.round(state.player.x),
+    y: Math.round(state.player.y),
+    hero: state.player.hero?.name || state.selectedHero || "Held",
+    color: state.player.hero?.color || "#38d8ff",
+    hp: Math.round(state.player.hp),
+    maxHp: Math.round(state.player.maxHp)
+  }));
+}
+
+function updateRemotePlayers(players, state) {
+  if (!state) return;
+  const now = performance.now();
+  state.remotePlayers = players
+    .filter((player) => player.id !== clientId)
+    .map((player) => ({
+      id: player.id,
+      name: player.name || "Spieler",
+      hero: player.hero || "Held",
+      x: Number(player.x) || 0,
+      y: Number(player.y) || 0,
+      color: player.color || "#38d8ff",
+      hp: Number(player.hp) || 0,
+      maxHp: Number(player.maxHp) || 1,
+      seenAt: now
+    }));
 }
