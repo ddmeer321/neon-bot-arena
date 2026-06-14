@@ -60,6 +60,18 @@ wss.on("connection", (socket) => {
       return;
     }
 
+    if (message.type === "start-room") {
+      const room = rooms.get(socket.roomCode);
+      if (!room) {
+        socket.send(JSON.stringify({ type: "room-error", message: "Keine Lobby aktiv" }));
+        return;
+      }
+      const startAt = Date.now() + 1200;
+      const seed = Math.floor(Math.random() * 1000000000);
+      broadcastToRoom(room, { type: "start-game", startAt, seed, wave: 1 });
+      return;
+    }
+
     if (message.type === "player-state") {
       socket.playerState = {
         x: clampNumber(message.x, 0, 1280),
@@ -169,9 +181,7 @@ function broadcastRoom(room) {
     maxPlayers: 2
   });
 
-  for (const client of room.clients) {
-    if (client.readyState === socketOpen) client.send(payload);
-  }
+  sendPayload(room, payload);
 }
 
 function broadcastPlayerStates(room) {
@@ -184,6 +194,14 @@ function broadcastPlayerStates(room) {
     }));
   const payload = JSON.stringify({ type: "player-states", players });
 
+  sendPayload(room, payload);
+}
+
+function broadcastToRoom(room, message) {
+  sendPayload(room, JSON.stringify(message));
+}
+
+function sendPayload(room, payload) {
   for (const client of room.clients) {
     if (client.readyState === socketOpen) client.send(payload);
   }

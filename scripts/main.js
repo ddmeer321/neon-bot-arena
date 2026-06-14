@@ -1,14 +1,14 @@
-﻿import { getDom } from "./dom.js?v=prep1";
-import { createState } from "./state.js?v=prep1";
+﻿import { getDom } from "./dom.js?v=coopstart1";
+import { createState } from "./state.js?v=coopstart1";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=prep1";
-import { setupInput } from "./input.js?v=prep1";
-import { createGameplay } from "./gameplay.js?v=prep1";
-import { draw } from "./render.js?v=prep1";
+import { loadOnlineScores } from "./online-leaderboard.js?v=coopstart1";
+import { setupInput } from "./input.js?v=coopstart1";
+import { createGameplay } from "./gameplay.js?v=coopstart1";
+import { draw } from "./render.js?v=coopstart1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=prep1";
-import { setupTestPanel } from "./test-panel.js?v=prep1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=prep1";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=coopstart1";
+import { setupTestPanel } from "./test-panel.js?v=coopstart1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopstart1";
 
 
 
@@ -65,7 +65,7 @@ export function bootGame() {
     useSpecial: gameplay.useSpecial
   });
   setupTestPanel({ dom, state, startGame: gameplay.startGame });
-  setupMultiplayerTest(dom, state);
+  setupMultiplayerTest(dom, state, gameplay.startGame);
 
   dom.heroMenuBtn?.addEventListener("click", () => {
     showHeroPanel(dom);

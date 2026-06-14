@@ -37,6 +37,8 @@
     createLobbyBtn: document.querySelector("#createLobbyBtn"),
     joinLobbyBtn: document.querySelector("#joinLobbyBtn"),
     leaveLobbyBtn: document.querySelector("#leaveLobbyBtn"),
+    coopStartBtn: document.querySelector("#coopStartBtn"),
+    coopStartText: document.querySelector("#coopStartText"),
     lobbyCodeInput: document.querySelector("#lobbyCodeInput"),
     lobbyCodeText: document.querySelector("#lobbyCodeText"),
     lobbyPlayersText: document.querySelector("#lobbyPlayersText"),

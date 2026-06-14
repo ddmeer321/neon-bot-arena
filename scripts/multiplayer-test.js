@@ -4,8 +4,9 @@ let socket = null;
 let connecting = false;
 let clientId = null;
 let multiplayerState = null;
+let currentLobbyCount = 0;
 
-export function setupMultiplayerTest(dom, state) {
+export function setupMultiplayerTest(dom, state, startGame) {
   multiplayerState = state;
   dom.multiplayerTestBtn?.addEventListener("click", () => {
     connect(dom, true);
@@ -30,9 +31,27 @@ export function setupMultiplayerTest(dom, state) {
     if (multiplayerState) multiplayerState.remotePlayers = [];
   });
 
+  dom.coopStartBtn?.addEventListener("click", () => {
+    if (currentLobbyCount < 2) {
+      setStatus(dom, "2 Spieler nötig", "error");
+      return;
+    }
+    sendWhenConnected(dom, { type: "start-room" });
+  });
+
   window.setInterval(() => {
     sendLocalPlayerState(state);
-  }, 100);
+  }, 50);
+
+  window.setInterval(() => {
+    updateRemotePlayerAges(state);
+  }, 250);
+
+  window.addEventListener("beforeunload", () => {
+    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
+  });
+
+  setupStartHandler(dom, state, startGame);
 }
 
 function sendWhenConnected(dom, message) {
@@ -80,6 +99,10 @@ function connect(dom, pingOnly) {
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
       return;
     }
+    if (data.type === "start-game") {
+      startCoopGame(data);
+      return;
+    }
     if (data.type === "player-states") {
       updateRemotePlayers(data.players || [], multiplayerState);
       return;
@@ -125,8 +148,10 @@ function setStatus(dom, text, state) {
 }
 
 function setLobby(dom, code, count, maxPlayers, players = []) {
+  currentLobbyCount = count;
   if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : "Keine Lobby";
   if (dom.lobbyPlayersText) dom.lobbyPlayersText.textContent = `${count}/${maxPlayers} Spieler`;
+  if (dom.coopStartText) dom.coopStartText.textContent = count >= 2 ? "Bereit" : "Warte auf 2 Spieler";
   if (dom.lobbyNames) {
     dom.lobbyNames.textContent = players.length
       ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}`).join(" | ")
@@ -169,4 +194,25 @@ function updateRemotePlayers(players, state) {
       maxHp: Number(player.maxHp) || 1,
       seenAt: now
     }));
+}
+
+function updateRemotePlayerAges(state) {
+  if (!state?.remotePlayers) return;
+  const now = performance.now();
+  state.remotePlayers = state.remotePlayers.filter((player) => now - (player.seenAt || 0) < 3000);
+}
+
+function setupStartHandler(dom, state, startGame) {
+  window.__neonStartCoopGame = (payload) => {
+    if (dom.coopStartText) dom.coopStartText.textContent = "Startet...";
+    const delay = Math.max(0, Number(payload.startAt || 0) - Date.now());
+    window.setTimeout(() => {
+      state.remotePlayers = [];
+      startGame({ startWave: Number(payload.wave) || 1 });
+    }, delay);
+  };
+}
+
+function startCoopGame(payload) {
+  if (typeof window.__neonStartCoopGame === "function") window.__neonStartCoopGame(payload);
 }
