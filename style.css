@@ -273,14 +273,19 @@ h1 {
 
 .multiplayer-test {
   width: min(430px, 100%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid rgba(56, 216, 255, 0.2);
   border-radius: 8px;
   background: rgba(13, 18, 28, 0.62);
+}
+
+.multiplayer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .multiplayer-test button {
@@ -291,6 +296,29 @@ h1 {
   cursor: pointer;
   font-weight: 900;
   padding: 8px 12px;
+}
+
+.lobby-code-field {
+  flex: 1;
+  min-width: 78px;
+  display: grid;
+  gap: 2px;
+}
+
+.lobby-code-field span {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.lobby-code-field input {
+  width: 100%;
+  border: 1px solid rgba(56, 216, 255, 0.26);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  font-weight: 900;
+  padding: 7px 9px;
+  outline: none;
 }
 
 .multiplayer-test button:hover,
@@ -312,6 +340,11 @@ h1 {
 
 .multiplayer-test span[data-state="error"] {
   color: var(--rose);
+}
+
+.multiplayer-test strong {
+  color: var(--cyan);
+  font-size: 0.86rem;
 }
 
 .menu-actions {

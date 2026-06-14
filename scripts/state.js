@@ -1,4 +1,4 @@
-﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=mp-test1";
+﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=lobby1";
 
 export function createState() {
   const highScore = loadHighScore();

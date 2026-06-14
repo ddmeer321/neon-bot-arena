@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=mp-test1" />
+    <link rel="stylesheet" href="style.css?v=lobby1" />
   </head>
   <body>
     <main class="shell">
@@ -62,8 +62,23 @@
         </div>
 
         <div class="multiplayer-test">
-          <button id="multiplayerTestBtn" type="button">Multiplayer testen</button>
-          <span id="multiplayerStatus" data-state="idle">Nicht verbunden</span>
+          <div class="multiplayer-row">
+            <button id="multiplayerTestBtn" type="button">Verbindung testen</button>
+            <span id="multiplayerStatus" data-state="idle">Nicht verbunden</span>
+          </div>
+          <div class="multiplayer-row">
+            <button id="createLobbyBtn" type="button">Lobby erstellen</button>
+            <label class="lobby-code-field">
+              <span>Code</span>
+              <input id="lobbyCodeInput" type="text" inputmode="numeric" maxlength="4" placeholder="1234" />
+            </label>
+            <button id="joinLobbyBtn" type="button">Beitreten</button>
+          </div>
+          <div class="multiplayer-row">
+            <strong id="lobbyCodeText">Keine Lobby</strong>
+            <span id="lobbyPlayersText">0/2 Spieler</span>
+            <button id="leaveLobbyBtn" type="button">Verlassen</button>
+          </div>
         </div>
 
         <div class="leaderboard">
@@ -180,6 +195,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=mp-test1"></script>
+    <script type="module" src="game.js?v=lobby1"></script>
   </body>
 </html>

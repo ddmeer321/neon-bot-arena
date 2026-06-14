@@ -1,56 +1,96 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
+let socket = null;
+let connecting = false;
+
 export function setupMultiplayerTest(dom) {
   dom.multiplayerTestBtn?.addEventListener("click", () => {
-    runConnectionTest(dom);
+    connect(dom, true);
+  });
+
+  dom.createLobbyBtn?.addEventListener("click", () => {
+    sendWhenConnected(dom, { type: "create-room" });
+  });
+
+  dom.joinLobbyBtn?.addEventListener("click", () => {
+    const code = String(dom.lobbyCodeInput?.value || "").replace(/\D/g, "").slice(0, 4);
+    if (code.length !== 4) {
+      setStatus(dom, "Code fehlt", "error");
+      return;
+    }
+    sendWhenConnected(dom, { type: "join-room", code });
+  });
+
+  dom.leaveLobbyBtn?.addEventListener("click", () => {
+    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
+    setLobby(dom, null, 0, 2);
   });
 }
 
-function runConnectionTest(dom) {
-  if (!dom.multiplayerStatus) return;
-  dom.multiplayerStatus.textContent = "Verbinde...";
-  dom.multiplayerStatus.dataset.state = "loading";
+function sendWhenConnected(dom, message) {
+  const active = connect(dom, false);
+  if (!active) return;
 
-  let finished = false;
-  const socket = new WebSocket(multiplayerUrl);
-  const timeout = window.setTimeout(() => {
-    if (finished) return;
-    finished = true;
-    socket.close();
-    setStatus(dom, "Keine Antwort", "error");
-  }, 7000);
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(message));
+    return;
+  }
+
+  socket.addEventListener("open", () => socket.send(JSON.stringify(message)), { once: true });
+}
+
+function connect(dom, pingOnly) {
+  if (socket?.readyState === WebSocket.OPEN) {
+    if (pingOnly) socket.send(JSON.stringify({ type: "ping" }));
+    return true;
+  }
+  if (connecting) return true;
+
+  connecting = true;
+  setStatus(dom, "Verbinde...", "loading");
+  socket = new WebSocket(multiplayerUrl);
 
   socket.addEventListener("open", () => {
-    socket.send(JSON.stringify({ type: "ping" }));
+    connecting = false;
+    setStatus(dom, "Verbunden", "ok");
+    if (pingOnly) socket.send(JSON.stringify({ type: "ping" }));
   });
 
   socket.addEventListener("message", (event) => {
-    if (finished) return;
     const data = parseMessage(event.data);
-    if (data?.type !== "pong" && data?.type !== "welcome") return;
-    if (data.type === "welcome") {
-      socket.send(JSON.stringify({ type: "ping" }));
+    if (!data) return;
+    if (data.type === "pong") {
+      setStatus(dom, "Verbunden", "ok");
       return;
     }
-    finished = true;
-    window.clearTimeout(timeout);
-    setStatus(dom, "Verbunden", "ok");
-    socket.close();
+    if (data.type === "room-state") {
+      setStatus(dom, "Lobby verbunden", "ok");
+      setLobby(dom, data.code, data.count, data.maxPlayers);
+      return;
+    }
+    if (data.type === "room-left") {
+      setStatus(dom, "Verbunden", "ok");
+      setLobby(dom, null, 0, 2);
+      return;
+    }
+    if (data.type === "room-error" || data.type === "error") {
+      setStatus(dom, data.message || "Fehler", "error");
+    }
   });
 
   socket.addEventListener("error", () => {
-    if (finished) return;
-    finished = true;
-    window.clearTimeout(timeout);
+    connecting = false;
     setStatus(dom, "Fehler", "error");
   });
 
   socket.addEventListener("close", () => {
-    if (finished) return;
-    finished = true;
-    window.clearTimeout(timeout);
+    connecting = false;
+    socket = null;
     setStatus(dom, "Getrennt", "error");
+    setLobby(dom, null, 0, 2);
   });
+
+  return true;
 }
 
 function parseMessage(value) {
@@ -62,6 +102,13 @@ function parseMessage(value) {
 }
 
 function setStatus(dom, text, state) {
+  if (!dom.multiplayerStatus) return;
   dom.multiplayerStatus.textContent = text;
   dom.multiplayerStatus.dataset.state = state;
+}
+
+function setLobby(dom, code, count, maxPlayers) {
+  if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : "Keine Lobby";
+  if (dom.lobbyPlayersText) dom.lobbyPlayersText.textContent = `${count}/${maxPlayers} Spieler`;
+  if (code && dom.lobbyCodeInput) dom.lobbyCodeInput.value = code;
 }
