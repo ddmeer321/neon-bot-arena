@@ -1,8 +1,8 @@
 ﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=lobby3";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=lobby3";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=lobby3";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=lobby3";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=prep1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=prep1";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=prep1";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=prep1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -79,6 +79,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       startHighScore: state.highScore,
       bossCoinBonus: 0,
       bossesDefeated: 0,
+      prepTimer: options.skipPrep ? 0 : 5,
       waveDelay: 0,
       nextWavePulse: 0,
       time: 0,
@@ -114,7 +115,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.gamePanel.classList.remove("hidden");
     dom.message.classList.add("hidden");
     startMusic();
-    spawnWave();
+    if (state.prepTimer <= 0) spawnWave();
   }
 
   function applyDeviceMode() {
@@ -185,6 +186,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     updateRobots(dt);
     updateParticles(dt);
     updatePickups(dt);
+
+    if (state.prepTimer > 0) {
+      state.prepTimer = Math.max(0, state.prepTimer - dt);
+      if (state.prepTimer <= 0) {
+        spawnWave();
+        pulse(dom.canvas.width / 2, dom.canvas.height / 2, "#38d8ff", 36);
+      }
+      updateHud();
+      return;
+    }
 
     if (state.waveDelay > 0) {
       state.waveDelay = Math.max(0, state.waveDelay - dt);
@@ -627,7 +638,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");

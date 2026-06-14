@@ -1,3 +1,3 @@
-﻿import { bootGame } from "./scripts/main.js?v=lobby3";
+﻿import { bootGame } from "./scripts/main.js?v=prep1";
 
 bootGame();

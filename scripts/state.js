@@ -1,4 +1,4 @@
-﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=lobby3";
+﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=prep1";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -22,6 +22,7 @@ export function createState() {
     lastCoinReward: 0,
     bossCoinBonus: 0,
     bossesDefeated: 0,
+    prepTimer: 0,
     waveDelay: 0,
     nextWavePulse: 0,
     playerName: "Spieler",

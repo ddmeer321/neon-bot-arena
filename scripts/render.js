@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=lobby3";
+﻿import { companions, defaultCosmetic } from "./config.js?v=prep1";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -483,6 +483,18 @@ function drawSpecialEffects(ctx, state) {
 
 
 function drawBossHud(ctx, canvas, state) {
+  if (state.prepTimer > 0) {
+    ctx.save();
+    ctx.fillStyle = "rgba(8,12,20,0.74)";
+    roundRect(ctx, canvas.width / 2 - 160, 118, 320, 42, 8);
+    ctx.fill();
+    ctx.fillStyle = "#38d8ff";
+    ctx.font = "900 17px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Vorbereitung: " + Math.ceil(state.prepTimer), canvas.width / 2, 145);
+    ctx.restore();
+  }
+
   const boss = state.robots?.find((robot) => robot.boss);
   if (boss) {
     const width = Math.min(520, canvas.width - 56);
