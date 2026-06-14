@@ -1,7 +1,7 @@
-﻿import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=lobby1";
-import { saveCoins, saveProgression } from "./storage.js?v=lobby1";
+﻿import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=lobby2";
+import { saveCoins, saveProgression } from "./storage.js?v=lobby2";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=lobby1";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=lobby2";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);

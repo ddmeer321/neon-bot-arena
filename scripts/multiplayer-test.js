@@ -9,7 +9,7 @@ export function setupMultiplayerTest(dom) {
   });
 
   dom.createLobbyBtn?.addEventListener("click", () => {
-    sendWhenConnected(dom, { type: "create-room" });
+    sendWhenConnected(dom, { type: "create-room", name: getPlayerName(dom) });
   });
 
   dom.joinLobbyBtn?.addEventListener("click", () => {
@@ -18,12 +18,12 @@ export function setupMultiplayerTest(dom) {
       setStatus(dom, "Code fehlt", "error");
       return;
     }
-    sendWhenConnected(dom, { type: "join-room", code });
+    sendWhenConnected(dom, { type: "join-room", code, name: getPlayerName(dom) });
   });
 
   dom.leaveLobbyBtn?.addEventListener("click", () => {
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
-    setLobby(dom, null, 0, 2);
+    setLobby(dom, null, 0, 2, []);
   });
 }
 
@@ -65,12 +65,12 @@ function connect(dom, pingOnly) {
     }
     if (data.type === "room-state") {
       setStatus(dom, "Lobby verbunden", "ok");
-      setLobby(dom, data.code, data.count, data.maxPlayers);
+      setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
       return;
     }
     if (data.type === "room-left") {
       setStatus(dom, "Verbunden", "ok");
-      setLobby(dom, null, 0, 2);
+      setLobby(dom, null, 0, 2, []);
       return;
     }
     if (data.type === "room-error" || data.type === "error") {
@@ -87,7 +87,7 @@ function connect(dom, pingOnly) {
     connecting = false;
     socket = null;
     setStatus(dom, "Getrennt", "error");
-    setLobby(dom, null, 0, 2);
+    setLobby(dom, null, 0, 2, []);
   });
 
   return true;
@@ -107,8 +107,18 @@ function setStatus(dom, text, state) {
   dom.multiplayerStatus.dataset.state = state;
 }
 
-function setLobby(dom, code, count, maxPlayers) {
+function setLobby(dom, code, count, maxPlayers, players = []) {
   if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : "Keine Lobby";
   if (dom.lobbyPlayersText) dom.lobbyPlayersText.textContent = `${count}/${maxPlayers} Spieler`;
+  if (dom.lobbyNames) {
+    dom.lobbyNames.textContent = players.length
+      ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}`).join(" | ")
+      : "Noch niemand in der Lobby";
+  }
   if (code && dom.lobbyCodeInput) dom.lobbyCodeInput.value = code;
+}
+
+function getPlayerName(dom) {
+  const value = String(dom.playerNameInput?.value || "").trim().replace(/\s+/g, " ").slice(0, 16);
+  return value || "Spieler";
 }

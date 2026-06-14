@@ -20,6 +20,7 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (socket) => {
   socket.clientId = crypto.randomUUID();
   socket.roomCode = null;
+  socket.playerName = "Spieler";
   socket.send(JSON.stringify({ type: "welcome", clientId: socket.clientId }));
 
   socket.on("message", (raw) => {
@@ -35,6 +36,7 @@ wss.on("connection", (socket) => {
     }
 
     if (message.type === "create-room") {
+      socket.playerName = normalizePlayerName(message.name);
       joinRoom(socket, createRoomCode());
       return;
     }
@@ -45,6 +47,7 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Lobby nicht gefunden" }));
         return;
       }
+      socket.playerName = normalizePlayerName(message.name);
       joinRoom(socket, code);
       return;
     }
@@ -87,6 +90,11 @@ function normalizeRoomCode(code) {
   return String(code || "").replace(/\D/g, "").slice(0, 4);
 }
 
+function normalizePlayerName(name) {
+  const cleaned = String(name || "").trim().replace(/\s+/g, " ").slice(0, 16);
+  return cleaned || "Spieler";
+}
+
 function joinRoom(socket, code) {
   leaveRoom(socket);
   let room = rooms.get(code);
@@ -120,7 +128,11 @@ function leaveRoom(socket) {
 }
 
 function broadcastRoom(room) {
-  const players = [...room.clients].map((client, index) => ({ id: client.clientId, slot: index + 1 }));
+  const players = [...room.clients].map((client, index) => ({
+    id: client.clientId,
+    name: client.playerName || "Spieler",
+    slot: index + 1
+  }));
   const payload = JSON.stringify({
     type: "room-state",
     code: room.code,

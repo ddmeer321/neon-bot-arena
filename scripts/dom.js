@@ -40,6 +40,7 @@
     lobbyCodeInput: document.querySelector("#lobbyCodeInput"),
     lobbyCodeText: document.querySelector("#lobbyCodeText"),
     lobbyPlayersText: document.querySelector("#lobbyPlayersText"),
+    lobbyNames: document.querySelector("#lobbyNames"),
     testPanel: document.querySelector("#testPanel"),
     testPanelGame: document.querySelector("#testPanelGame"),
     testPanelUser: document.querySelector("#testPanelUser"),

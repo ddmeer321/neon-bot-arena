@@ -1,14 +1,14 @@
-﻿import { getDom } from "./dom.js?v=lobby1";
-import { createState } from "./state.js?v=lobby1";
+﻿import { getDom } from "./dom.js?v=lobby2";
+import { createState } from "./state.js?v=lobby2";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=lobby1";
-import { setupInput } from "./input.js?v=lobby1";
-import { createGameplay } from "./gameplay.js?v=lobby1";
-import { draw } from "./render.js?v=lobby1";
+import { loadOnlineScores } from "./online-leaderboard.js?v=lobby2";
+import { setupInput } from "./input.js?v=lobby2";
+import { createGameplay } from "./gameplay.js?v=lobby2";
+import { draw } from "./render.js?v=lobby2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=lobby1";
-import { setupTestPanel } from "./test-panel.js?v=lobby1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=lobby1";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=lobby2";
+import { setupTestPanel } from "./test-panel.js?v=lobby2";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=lobby2";
 
 
 
