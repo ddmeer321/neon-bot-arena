@@ -271,6 +271,49 @@ h1 {
   outline: none;
 }
 
+.multiplayer-test {
+  width: min(430px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(56, 216, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(13, 18, 28, 0.62);
+}
+
+.multiplayer-test button {
+  border: 1px solid rgba(56, 216, 255, 0.34);
+  border-radius: 8px;
+  background: rgba(56, 216, 255, 0.12);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 8px 12px;
+}
+
+.multiplayer-test button:hover,
+.multiplayer-test button:focus-visible {
+  border-color: var(--cyan);
+  background: rgba(56, 216, 255, 0.2);
+  outline: none;
+}
+
+.multiplayer-test span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.multiplayer-test span[data-state="ok"] {
+  color: var(--lime);
+}
+
+.multiplayer-test span[data-state="error"] {
+  color: var(--rose);
+}
+
 .menu-actions {
   width: min(430px, 100%);
   display: grid;

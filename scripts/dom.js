@@ -32,6 +32,8 @@
     coinCount: document.querySelector("#coinCount"),
     testIdBtn: document.querySelector("#testIdBtn"),
     testIdText: document.querySelector("#testIdText"),
+    multiplayerTestBtn: document.querySelector("#multiplayerTestBtn"),
+    multiplayerStatus: document.querySelector("#multiplayerStatus"),
     testPanel: document.querySelector("#testPanel"),
     testPanelGame: document.querySelector("#testPanelGame"),
     testPanelUser: document.querySelector("#testPanelUser"),

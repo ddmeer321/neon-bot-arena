@@ -1,13 +1,14 @@
-﻿import { getDom } from "./dom.js?v=testpanel3";
-import { createState } from "./state.js?v=testpanel3";
+﻿import { getDom } from "./dom.js?v=mp-test1";
+import { createState } from "./state.js?v=mp-test1";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=testpanel3";
-import { setupInput } from "./input.js?v=testpanel3";
-import { createGameplay } from "./gameplay.js?v=testpanel3";
-import { draw } from "./render.js?v=testpanel3";
+import { loadOnlineScores } from "./online-leaderboard.js?v=mp-test1";
+import { setupInput } from "./input.js?v=mp-test1";
+import { createGameplay } from "./gameplay.js?v=mp-test1";
+import { draw } from "./render.js?v=mp-test1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=testpanel3";
-import { setupTestPanel } from "./test-panel.js?v=testpanel3";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=mp-test1";
+import { setupTestPanel } from "./test-panel.js?v=mp-test1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=mp-test1";
 
 
 
@@ -64,6 +65,7 @@ export function bootGame() {
     useSpecial: gameplay.useSpecial
   });
   setupTestPanel({ dom, state, startGame: gameplay.startGame });
+  setupMultiplayerTest(dom);
 
   dom.heroMenuBtn?.addEventListener("click", () => {
     showHeroPanel(dom);
