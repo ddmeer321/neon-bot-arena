@@ -1,14 +1,14 @@
-﻿import { getDom } from "./dom.js?v=coopstart6";
-import { createState } from "./state.js?v=coopstart6";
+﻿import { getDom } from "./dom.js?v=coopstart7";
+import { createState } from "./state.js?v=coopstart7";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=coopstart6";
-import { setupInput } from "./input.js?v=coopstart6";
-import { createGameplay } from "./gameplay.js?v=coopstart6";
-import { draw } from "./render.js?v=coopstart6";
+import { loadOnlineScores } from "./online-leaderboard.js?v=coopstart7";
+import { setupInput } from "./input.js?v=coopstart7";
+import { createGameplay } from "./gameplay.js?v=coopstart7";
+import { draw } from "./render.js?v=coopstart7";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=coopstart6";
-import { setupTestPanel } from "./test-panel.js?v=coopstart6";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopstart6";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=coopstart7";
+import { setupTestPanel } from "./test-panel.js?v=coopstart7";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopstart7";
 
 
 

@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=coopstart6";
+﻿import { companions, defaultCosmetic } from "./config.js?v=coopstart7";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;

@@ -1,9 +1,9 @@
 ﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=coopstart6";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=coopstart6";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=coopstart6";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=coopstart6";
-import { sendMultiplayerAction } from "./multiplayer-test.js?v=coopstart6";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=coopstart7";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=coopstart7";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=coopstart7";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=coopstart7";
+import { sendMultiplayerAction } from "./multiplayer-test.js?v=coopstart7";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -241,7 +241,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const settings = getDifficultySettings();
     const bossWave = state.wave % settings.bossEvery === 0;
     if (bossWave) {
-      state.robots.push(makeRobot(dom.canvas.width / 2, -76, true, true, true));
+      state.robots.push(makeRobot(dom.canvas.width / 2, 92, true, true, true));
       state.nextWavePulse = 1.2;
       return;
     }
@@ -249,8 +249,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount));
     for (let i = 0; i < count; i++) {
       const side = Math.floor(Math.random() * 4);
-      const x = side === 0 ? -40 : side === 1 ? dom.canvas.width + 40 : Math.random() * dom.canvas.width;
-      const y = side === 2 ? -40 : side === 3 ? dom.canvas.height + 40 : Math.random() * dom.canvas.height;
+      const x = side === 0 ? 42 : side === 1 ? dom.canvas.width - 42 : 42 + Math.random() * (dom.canvas.width - 84);
+      const y = side === 2 ? 94 : side === 3 ? dom.canvas.height - 50 : 94 + Math.random() * (dom.canvas.height - 144);
       const shooter = state.wave >= settings.shooterWave && Math.random() < settings.shooterChance;
       const bruiser = state.wave >= settings.bruiserWave && Math.random() < settings.bruiserChance;
       state.robots.push(makeRobot(x, y, shooter, bruiser));
@@ -506,6 +506,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function updateRobots(dt) {
+    const player = state.player;
     const settings = getDifficultySettings();
     for (let i = state.robots.length - 1; i >= 0; i--) {
       const robot = state.robots[i];
@@ -545,6 +546,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       } else if (target.local) {
         hurtPlayer(robot.damage * dt);
       }
+      robot.x = clamp(robot.x, robot.radius + 24, dom.canvas.width - robot.radius - 24);
+      robot.y = clamp(robot.y, robot.radius + 70, dom.canvas.height - robot.radius - 28);
       if (robot.shooter || robot.boss) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && distance(robot, player) < 620) {

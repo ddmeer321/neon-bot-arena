@@ -1,7 +1,7 @@
-﻿import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=coopstart6";
-import { saveCoins, saveProgression } from "./storage.js?v=coopstart6";
+﻿import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=coopstart7";
+import { saveCoins, saveProgression } from "./storage.js?v=coopstart7";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=coopstart6";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=coopstart7";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);
