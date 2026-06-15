@@ -232,7 +232,7 @@ function setupStartHandler(dom, state, startGame) {
     state.multiplayer.active = true;
     state.multiplayer.hostId = payload.hostId || state.multiplayer.hostId;
     state.multiplayer.role = payload.hostId && payload.hostId === clientId ? "host" : "guest";
-    startGame({ startWave: Number(payload.wave) || 1 });
+    startGame({ startWave: Number(payload.wave) || 1, coop: true });
   };
 
   window.__neonStartCoopGame = (payload) => {

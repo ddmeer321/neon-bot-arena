@@ -1,9 +1,9 @@
 ﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=coopstart5";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=coopstart5";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=coopstart5";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=coopstart5";
-import { sendMultiplayerAction } from "./multiplayer-test.js?v=coopstart5";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=coopstart6";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=coopstart6";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=coopstart6";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=coopstart6";
+import { sendMultiplayerAction } from "./multiplayer-test.js?v=coopstart6";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -71,6 +71,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const hero = getSelectedHeroStats(state);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
     if (dom.playerNameInput) dom.playerNameInput.value = state.playerName;
+    if (!options.coop && state.multiplayer) {
+      state.multiplayer.active = false;
+      state.multiplayer.role = "solo";
+      state.multiplayer.hostId = null;
+      state.multiplayer.lastWorldAt = 0;
+    }
     Object.assign(state, {
       running: true,
       paused: false,
