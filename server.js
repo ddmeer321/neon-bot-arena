@@ -68,7 +68,31 @@ wss.on("connection", (socket) => {
       }
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
-      broadcastToRoom(room, { type: "start-game", delayMs, seed, wave: 1 });
+      broadcastToRoom(room, { type: "start-game", delayMs, seed, wave: 1, hostId: getRoomHost(room)?.clientId || socket.clientId });
+      return;
+    }
+
+    if (message.type === "world-state") {
+      const room = rooms.get(socket.roomCode);
+      if (!room || getRoomHost(room) !== socket) return;
+      broadcastToRoom(room, {
+        type: "world-state",
+        hostId: socket.clientId,
+        snapshot: sanitizeWorldSnapshot(message.snapshot)
+      }, socket);
+      return;
+    }
+
+    if (message.type === "player-action") {
+      const room = rooms.get(socket.roomCode);
+      const host = room ? getRoomHost(room) : null;
+      if (!room || !host || host === socket) return;
+      sendSocket(host, {
+        type: "player-action",
+        clientId: socket.clientId,
+        name: socket.playerName || "Spieler",
+        action: sanitizePlayerAction(message.action)
+      });
       return;
     }
 
@@ -168,15 +192,18 @@ function leaveRoom(socket) {
 }
 
 function broadcastRoom(room) {
+  const host = getRoomHost(room);
   const players = [...room.clients].map((client, index) => ({
     id: client.clientId,
     name: client.playerName || "Spieler",
-    slot: index + 1
+    slot: index + 1,
+    host: client === host
   }));
   const payload = JSON.stringify({
     type: "room-state",
     code: room.code,
     players,
+    hostId: host?.clientId || null,
     count: players.length,
     maxPlayers: 2
   });
@@ -197,12 +224,68 @@ function broadcastPlayerStates(room) {
   sendPayload(room, payload);
 }
 
-function broadcastToRoom(room, message) {
-  sendPayload(room, JSON.stringify(message));
+function broadcastToRoom(room, message, exclude = null) {
+  sendPayload(room, JSON.stringify(message), exclude);
 }
 
-function sendPayload(room, payload) {
+function sendPayload(room, payload, exclude = null) {
   for (const client of room.clients) {
+    if (client === exclude) continue;
     if (client.readyState === socketOpen) client.send(payload);
   }
+}
+
+function getRoomHost(room) {
+  return room?.clients?.values().next().value || null;
+}
+
+function sendSocket(socket, message) {
+  if (socket?.readyState === socketOpen) socket.send(JSON.stringify(message));
+}
+
+function sanitizeWorldSnapshot(snapshot = {}) {
+  return {
+    wave: clampNumber(snapshot.wave, 1, 999),
+    score: clampNumber(snapshot.score, 0, 99999999),
+    prepTimer: clampNumber(snapshot.prepTimer, 0, 30),
+    waveDelay: clampNumber(snapshot.waveDelay, 0, 30),
+    bossesDefeated: clampNumber(snapshot.bossesDefeated, 0, 999),
+    bossCoinBonus: clampNumber(snapshot.bossCoinBonus, 0, 999999),
+    robots: sanitizeEntities(snapshot.robots, 80),
+    bullets: sanitizeEntities(snapshot.bullets, 120),
+    enemyBullets: sanitizeEntities(snapshot.enemyBullets, 120),
+    pickups: sanitizeEntities(snapshot.pickups, 30)
+  };
+}
+
+function sanitizePlayerAction(action = {}) {
+  const kind = String(action.kind || "").slice(0, 24);
+  return {
+    kind,
+    hero: normalizePlayerName(action.hero || "Held"),
+    pickupType: String(action.pickupType || "").slice(0, 16),
+    x: clampNumber(action.x, 0, 1280),
+    y: clampNumber(action.y, 0, 720),
+    angle: clampNumber(action.angle, -Math.PI * 2, Math.PI * 2),
+    color: normalizeColor(action.color),
+    damage: clampNumber(action.damage, 0, 9999),
+    bullets: sanitizeEntities(action.bullets, 5)
+  };
+}
+
+function sanitizeEntities(entities, limit) {
+  if (!Array.isArray(entities)) return [];
+  return entities.slice(0, limit).map((entity) => {
+    const clean = {};
+    for (const [key, value] of Object.entries(entity || {})) {
+      if (typeof value === "number") {
+        clean[key] = clampNumber(value, -10000, 10000);
+      } else if (typeof value === "boolean") {
+        clean[key] = value;
+      } else if (typeof value === "string") {
+        clean[key] = value.slice(0, 32);
+      }
+    }
+    return clean;
+  });
 }

@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=coopstart2";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=coopstart4";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -34,6 +34,13 @@ export function createState() {
     keys: new Set(),
     player: null,
     remotePlayers: [],
+    multiplayer: {
+      active: false,
+      role: "solo",
+      clientId: null,
+      hostId: null,
+      lastWorldAt: 0
+    },
     bullets: [],
     enemyBullets: [],
     robots: [],

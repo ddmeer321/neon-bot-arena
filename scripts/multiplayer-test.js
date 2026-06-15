@@ -5,6 +5,10 @@ let connecting = false;
 let clientId = null;
 let multiplayerState = null;
 let currentLobbyCount = 0;
+let pendingCoopStart = null;
+let coopStartTimer = null;
+let startHandlerReady = false;
+let lastWorldSend = 0;
 
 export function setupMultiplayerTest(dom, state, startGame) {
   multiplayerState = state;
@@ -28,7 +32,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
   dom.leaveLobbyBtn?.addEventListener("click", () => {
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
     setLobby(dom, null, 0, 2, []);
-    if (multiplayerState) multiplayerState.remotePlayers = [];
+    resetMultiplayerState();
   });
 
   dom.coopStartBtn?.addEventListener("click", () => {
@@ -92,11 +96,13 @@ function connect(dom, pingOnly) {
     }
     if (data.type === "welcome") {
       clientId = data.clientId || clientId;
+      if (multiplayerState?.multiplayer) multiplayerState.multiplayer.clientId = clientId;
       return;
     }
     if (data.type === "room-state") {
       setStatus(dom, "Lobby verbunden", "ok");
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
+      setMultiplayerRole(data.hostId);
       return;
     }
     if (data.type === "start-game") {
@@ -107,9 +113,18 @@ function connect(dom, pingOnly) {
       updateRemotePlayers(data.players || [], multiplayerState);
       return;
     }
+    if (data.type === "world-state") {
+      applyWorldSnapshot(data.snapshot, multiplayerState);
+      return;
+    }
+    if (data.type === "player-action") {
+      multiplayerState?.handleMultiplayerAction?.(data);
+      return;
+    }
     if (data.type === "room-left") {
       setStatus(dom, "Verbunden", "ok");
       setLobby(dom, null, 0, 2, []);
+      resetMultiplayerState();
       return;
     }
     if (data.type === "room-error" || data.type === "error") {
@@ -127,7 +142,7 @@ function connect(dom, pingOnly) {
     socket = null;
     setStatus(dom, "Getrennt", "error");
     setLobby(dom, null, 0, 2, []);
-    if (multiplayerState) multiplayerState.remotePlayers = [];
+    resetMultiplayerState();
   });
 
   return true;
@@ -154,7 +169,7 @@ function setLobby(dom, code, count, maxPlayers, players = []) {
   if (dom.coopStartText) dom.coopStartText.textContent = count >= 2 ? "Bereit" : "Warte auf 2 Spieler";
   if (dom.lobbyNames) {
     dom.lobbyNames.textContent = players.length
-      ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}`).join(" | ")
+      ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}${player.host ? " (Host)" : ""}`).join(" | ")
       : "Noch niemand in der Lobby";
   }
   if (code && dom.lobbyCodeInput) dom.lobbyCodeInput.value = code;
@@ -176,6 +191,7 @@ function sendLocalPlayerState(state) {
     hp: Math.round(state.player.hp),
     maxHp: Math.round(state.player.maxHp)
   }));
+  sendWorldSnapshot(state);
 }
 
 function updateRemotePlayers(players, state) {
@@ -203,16 +219,112 @@ function updateRemotePlayerAges(state) {
 }
 
 function setupStartHandler(dom, state, startGame) {
+  const runPendingStart = () => {
+    if (!pendingCoopStart) return;
+    const payload = pendingCoopStart;
+    pendingCoopStart = null;
+    if (coopStartTimer) {
+      window.clearTimeout(coopStartTimer);
+      coopStartTimer = null;
+    }
+    state.remotePlayers = [];
+    state.multiplayer.active = true;
+    state.multiplayer.hostId = payload.hostId || state.multiplayer.hostId;
+    state.multiplayer.role = payload.hostId && payload.hostId === clientId ? "host" : "guest";
+    startGame({ startWave: Number(payload.wave) || 1 });
+  };
+
   window.__neonStartCoopGame = (payload) => {
     if (dom.coopStartText) dom.coopStartText.textContent = "Startet...";
+    setStatus(dom, "Koop startet...", "ok");
     const delay = Math.max(0, Math.min(5000, Number(payload.delayMs) || 1200));
-    window.setTimeout(() => {
-      state.remotePlayers = [];
-      startGame({ startWave: Number(payload.wave) || 1 });
-    }, delay);
+    pendingCoopStart = {
+      ...payload,
+      localStartAt: performance.now() + delay
+    };
+    if (coopStartTimer) window.clearTimeout(coopStartTimer);
+    coopStartTimer = window.setTimeout(runPendingStart, delay);
   };
+
+  if (startHandlerReady) return;
+  startHandlerReady = true;
+  const resumePendingStart = () => {
+    if (!pendingCoopStart) return;
+    if (performance.now() >= pendingCoopStart.localStartAt - 50) runPendingStart();
+  };
+  window.addEventListener("focus", resumePendingStart);
+  document.addEventListener("visibilitychange", resumePendingStart);
 }
 
 function startCoopGame(payload) {
   if (typeof window.__neonStartCoopGame === "function") window.__neonStartCoopGame(payload);
+}
+
+function setMultiplayerRole(hostId) {
+  if (!multiplayerState?.multiplayer) return;
+  multiplayerState.multiplayer.active = Boolean(hostId);
+  multiplayerState.multiplayer.hostId = hostId || null;
+  multiplayerState.multiplayer.clientId = clientId;
+  multiplayerState.multiplayer.role = hostId && hostId === clientId ? "host" : hostId ? "guest" : "solo";
+}
+
+function resetMultiplayerState() {
+  if (!multiplayerState) return;
+  multiplayerState.remotePlayers = [];
+  if (multiplayerState.multiplayer) {
+    multiplayerState.multiplayer.active = false;
+    multiplayerState.multiplayer.role = "solo";
+    multiplayerState.multiplayer.hostId = null;
+    multiplayerState.multiplayer.lastWorldAt = 0;
+  }
+}
+
+function sendWorldSnapshot(state) {
+  if (state.multiplayer?.role !== "host" || socket?.readyState !== WebSocket.OPEN) return;
+  const now = performance.now();
+  if (now - lastWorldSend < 70) return;
+  lastWorldSend = now;
+  socket.send(JSON.stringify({
+    type: "world-state",
+    snapshot: createWorldSnapshot(state)
+  }));
+}
+
+function createWorldSnapshot(state) {
+  return {
+    wave: state.wave,
+    score: state.score,
+    prepTimer: state.prepTimer,
+    waveDelay: state.waveDelay,
+    bossesDefeated: state.bossesDefeated,
+    bossCoinBonus: state.bossCoinBonus,
+    robots: cloneEntities(state.robots, 80),
+    bullets: cloneEntities(state.bullets, 120),
+    enemyBullets: cloneEntities(state.enemyBullets, 120),
+    pickups: cloneEntities(state.pickups, 30)
+  };
+}
+
+function cloneEntities(items, limit) {
+  return (Array.isArray(items) ? items : []).slice(0, limit).map((item) => ({ ...item }));
+}
+
+function applyWorldSnapshot(snapshot, state) {
+  if (!snapshot || state?.multiplayer?.role !== "guest") return;
+  state.wave = Number(snapshot.wave) || state.wave;
+  state.score = Number(snapshot.score) || 0;
+  state.prepTimer = Number(snapshot.prepTimer) || 0;
+  state.waveDelay = Number(snapshot.waveDelay) || 0;
+  state.bossesDefeated = Number(snapshot.bossesDefeated) || 0;
+  state.bossCoinBonus = Number(snapshot.bossCoinBonus) || 0;
+  state.robots = cloneEntities(snapshot.robots, 80);
+  state.bullets = cloneEntities(snapshot.bullets, 120);
+  state.enemyBullets = cloneEntities(snapshot.enemyBullets, 120);
+  state.pickups = cloneEntities(snapshot.pickups, 30);
+  state.multiplayer.lastWorldAt = performance.now();
+}
+
+export function sendMultiplayerAction(action) {
+  if (multiplayerState?.multiplayer?.role !== "guest" || socket?.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: "player-action", action }));
 }
