@@ -1,4 +1,4 @@
-﻿export const highScoreKey = "neon-bot-arena-high-score";
+export const highScoreKey = "neon-bot-arena-high-score";
 export const leaderboardKey = "neon-bot-arena-leaderboard";
 export const coinKey = "neon-bot-arena-coins";
 export const progressionKey = "neon-bot-arena-progression";

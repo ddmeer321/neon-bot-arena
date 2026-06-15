@@ -1,4 +1,4 @@
-﻿let audioContext = null;
+let audioContext = null;
 let masterGain = null;
 let musicGain = null;
 let musicTimer = null;

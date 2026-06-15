@@ -1,4 +1,4 @@
-﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
+const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
 let socket = null;
 let connecting = false;

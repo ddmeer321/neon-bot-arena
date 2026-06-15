@@ -1,4 +1,4 @@
-﻿export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
+export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
   document.querySelectorAll(".device-btn[data-device]").forEach((button) => {
     button.addEventListener("click", () => {
       document.querySelectorAll(".device-btn[data-device]").forEach((item) => item.classList.remove("selected"));

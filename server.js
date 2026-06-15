@@ -1,4 +1,4 @@
-﻿import http from "node:http";
+import http from "node:http";
 import { WebSocketServer } from "ws";
 
 const port = Number(process.env.PORT) || 3000;

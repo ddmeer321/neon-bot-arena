@@ -1,4 +1,4 @@
-﻿export function getDom() {
+export function getDom() {
   const canvas = document.querySelector("#game");
 
   if (!canvas) {
