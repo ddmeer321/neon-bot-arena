@@ -212,6 +212,9 @@ function broadcastRoom(room) {
 }
 
 function broadcastPlayerStates(room) {
+  const now = Date.now();
+  if (now - (room.lastPlayerBroadcast || 0) < 100) return;
+  room.lastPlayerBroadcast = now;
   const players = [...room.clients]
     .filter((client) => client.playerState)
     .map((client) => ({
@@ -251,10 +254,10 @@ function sanitizeWorldSnapshot(snapshot = {}) {
     waveDelay: clampNumber(snapshot.waveDelay, 0, 30),
     bossesDefeated: clampNumber(snapshot.bossesDefeated, 0, 999),
     bossCoinBonus: clampNumber(snapshot.bossCoinBonus, 0, 999999),
-    robots: sanitizeEntities(snapshot.robots, 80),
-    bullets: sanitizeEntities(snapshot.bullets, 120),
-    enemyBullets: sanitizeEntities(snapshot.enemyBullets, 120),
-    pickups: sanitizeEntities(snapshot.pickups, 30)
+    robots: sanitizeEntities(snapshot.robots, 50),
+    bullets: sanitizeEntities(snapshot.bullets, 60),
+    enemyBullets: sanitizeEntities(snapshot.enemyBullets, 60),
+    pickups: sanitizeEntities(snapshot.pickups, 20)
   };
 }
 

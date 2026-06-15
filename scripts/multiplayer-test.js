@@ -45,7 +45,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
 
   window.setInterval(() => {
     sendLocalPlayerState(state);
-  }, 50);
+  }, 110);
 
   window.setInterval(() => {
     updateRemotePlayerAges(state);
@@ -182,6 +182,7 @@ function getPlayerName(dom) {
 
 function sendLocalPlayerState(state) {
   if (socket?.readyState !== WebSocket.OPEN || !state.running || state.over || !state.player) return;
+  if (socket.bufferedAmount > 50000) return;
   socket.send(JSON.stringify({
     type: "player-state",
     x: Math.round(state.player.x),
@@ -282,7 +283,7 @@ function resetMultiplayerState() {
 function sendWorldSnapshot(state) {
   if (state.multiplayer?.role !== "host" || socket?.readyState !== WebSocket.OPEN) return;
   const now = performance.now();
-  if (now - lastWorldSend < 70) return;
+  if (now - lastWorldSend < 180 || socket.bufferedAmount > 50000) return;
   lastWorldSend = now;
   socket.send(JSON.stringify({
     type: "world-state",
@@ -298,10 +299,10 @@ function createWorldSnapshot(state) {
     waveDelay: state.waveDelay,
     bossesDefeated: state.bossesDefeated,
     bossCoinBonus: state.bossCoinBonus,
-    robots: cloneEntities(state.robots, 80),
-    bullets: cloneEntities(state.bullets, 120),
-    enemyBullets: cloneEntities(state.enemyBullets, 120),
-    pickups: cloneEntities(state.pickups, 30)
+    robots: cloneEntities(state.robots, 50),
+    bullets: cloneEntities(state.bullets, 60),
+    enemyBullets: cloneEntities(state.enemyBullets, 60),
+    pickups: cloneEntities(state.pickups, 20)
   };
 }
 
@@ -317,14 +318,15 @@ function applyWorldSnapshot(snapshot, state) {
   state.waveDelay = Number(snapshot.waveDelay) || 0;
   state.bossesDefeated = Number(snapshot.bossesDefeated) || 0;
   state.bossCoinBonus = Number(snapshot.bossCoinBonus) || 0;
-  state.robots = cloneEntities(snapshot.robots, 80);
-  state.bullets = cloneEntities(snapshot.bullets, 120);
-  state.enemyBullets = cloneEntities(snapshot.enemyBullets, 120);
-  state.pickups = cloneEntities(snapshot.pickups, 30);
+  state.robots = cloneEntities(snapshot.robots, 50);
+  state.bullets = cloneEntities(snapshot.bullets, 60);
+  state.enemyBullets = cloneEntities(snapshot.enemyBullets, 60);
+  state.pickups = cloneEntities(snapshot.pickups, 20);
   state.multiplayer.lastWorldAt = performance.now();
 }
 
 export function sendMultiplayerAction(action) {
   if (multiplayerState?.multiplayer?.role !== "guest" || socket?.readyState !== WebSocket.OPEN) return;
+  if (socket.bufferedAmount > 50000) return;
   socket.send(JSON.stringify({ type: "player-action", action }));
 }
