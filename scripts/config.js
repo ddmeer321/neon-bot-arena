@@ -9,7 +9,8 @@ export const starterHeroes = ["volt", "titan", "nova"];
 export const defaultCosmetic = "classic";
 export const testPanelAccess = [
   "755051",
-  "809587"
+  "809587",
+  "535127"
 ];
 
 export const heroes = {
