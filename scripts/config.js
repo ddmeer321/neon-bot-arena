@@ -176,7 +176,7 @@ export const companions = {
 };
 
 export function getUpgradeCost(level) {
-  const costs = [2000, 3500, 5500, 8000, 10000, 13500, 17500, 22500, 29000, 37500];
+  const costs = [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 7500, 10000];
   return costs[Math.min(level, costs.length - 1)];
 }
 
