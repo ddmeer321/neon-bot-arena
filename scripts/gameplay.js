@@ -1,9 +1,9 @@
-﻿import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=coopstart7";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=coopstart7";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=coopstart7";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=coopstart7";
-import { sendMultiplayerAction } from "./multiplayer-test.js?v=coopstart7";
+import { clamp, cleanName, distance } from "./utils.js";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=cooprespawn1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=cooprespawn1";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=cooprespawn1";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=cooprespawn1";
+import { sendMultiplayerAction } from "./multiplayer-test.js?v=cooprespawn1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -108,6 +108,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       specialTimer: 0,
       shield: 0,
       invincible: 0,
+      dead: false,
+      respawnTimer: 0,
       healFlash: 0,
       damageBoostTimer: 0,
       speedBoostTimer: 0,
@@ -286,6 +288,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updatePlayer(dt) {
     const player = state.player;
+    if (player.dead) {
+      updateRespawn(dt);
+      return;
+    }
     const hero = player.hero;
     let dx = 0;
     let dy = 0;
@@ -498,7 +504,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
             }
           }
         }
-      } else if (distance(bullet, state.player) < bullet.radius + state.player.radius) {
+      } else if (!state.player.dead && distance(bullet, state.player) < bullet.radius + state.player.radius) {
         hurtPlayer(bullet.damage || 12 + state.wave * 2);
         bullets.splice(i, 1);
       }
@@ -550,7 +556,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       robot.y = clamp(robot.y, robot.radius + 70, dom.canvas.height - robot.radius - 28);
       if (robot.shooter || robot.boss) {
         robot.fireTimer -= dt;
-        if (robot.fireTimer <= 0 && distance(robot, player) < 620) {
+        if (robot.fireTimer <= 0 && !target.dead && distance(robot, target) < 620) {
           const shotSpeed = robot.boss ? settings.bossBulletSpeed : 360;
           robot.fireTimer = robot.boss ? settings.bossFireRate : 1.5;
           state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * shotSpeed, vy: Math.sin(angle) * shotSpeed, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: robot.boss ? "#b11226" : "#ff4f92" });
@@ -574,11 +580,53 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function hurtPlayer(amount) {
     const player = state.player;
+    if (player.dead) return;
     if (player.invincible > 0) return;
     const reduced = player.shield > 0 ? amount * 0.28 : amount;
     player.hp -= reduced;
     state.shake = Math.max(state.shake, 0.28);
-    if (player.hp <= 0) endGame();
+    if (player.hp <= 0) {
+      if (isCoopMode()) {
+        knockOutPlayer();
+      } else {
+        endGame();
+      }
+    }
+  }
+
+  function knockOutPlayer() {
+    const player = state.player;
+    player.hp = 0;
+    player.dead = true;
+    player.respawnTimer = 15;
+    player.shield = 0;
+    player.invincible = 0;
+    player.fireTimer = 0;
+    state.touch.fire = false;
+    state.touch.moveX = 0;
+    state.touch.moveY = 0;
+    state.mouse.down = false;
+    state.shake = Math.max(state.shake, 0.45);
+    pulse(player.x, player.y, "#ff4f92", 46);
+  }
+
+  function updateRespawn(dt) {
+    const player = state.player;
+    player.respawnTimer = Math.max(0, (player.respawnTimer || 0) - dt);
+    if (player.respawnTimer > 0) return;
+    const teammate = getLivingTeammate();
+    player.x = teammate ? clamp(teammate.x + 46, 34, dom.canvas.width - 34) : dom.canvas.width / 2;
+    player.y = teammate ? clamp(teammate.y + 24, 82, dom.canvas.height - 42) : dom.canvas.height / 2;
+    player.hp = Math.max(1, Math.round(player.maxHp * 0.55));
+    player.dead = false;
+    player.invincible = 2.2;
+    player.healFlash = 1.0;
+    pulse(player.x, player.y, "#b7ff4a", 58);
+  }
+
+  function getLivingTeammate() {
+    const now = performance.now();
+    return (state.remotePlayers || []).find((player) => !player.dead && now - (player.seenAt || 0) < 2500);
   }
 
   function damageRobot(robot, amount, color) {
@@ -605,18 +653,20 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function getRobotTarget(robot) {
-    const targets = [{ ...state.player, local: true }];
+    const targets = state.player?.dead ? [] : [{ ...state.player, local: true }];
     const now = performance.now();
     for (const player of state.remotePlayers || []) {
       if (now - (player.seenAt || 0) > 1200) continue;
+      if (player.dead || player.respawnTimer > 0) continue;
       targets.push({ ...player, radius: 19, local: false });
     }
+    if (targets.length === 0) return { x: robot.x, y: robot.y, radius: 19, local: false, dead: true };
     return targets.reduce((closest, target) => (distance(robot, target) < distance(robot, closest) ? target : closest), targets[0]);
   }
 
   function updateGuestDamage(dt) {
     const player = state.player;
-    if (!player) return;
+    if (!player || player.dead) return;
     for (const robot of state.robots || []) {
       if (distance(robot, player) < robot.radius + player.radius + 5) hurtPlayer((robot.damage || 12) * dt);
     }
@@ -644,7 +694,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = state.pickups.length - 1; i >= 0; i--) {
       const item = state.pickups[i];
       item.life -= dt;
-      if (distance(item, state.player) < item.radius + state.player.radius) {
+      if (!state.player.dead && distance(item, state.player) < item.radius + state.player.radius) {
         applyPickup(item);
         state.pickups.splice(i, 1);
       } else if (item.life <= 0) {
@@ -738,8 +788,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     return state.multiplayer?.active && state.multiplayer.role === "host";
   }
 
+  function isCoopMode() {
+    return state.multiplayer?.active && state.multiplayer.role !== "solo";
+  }
+
   function sendGuestAction(action) {
-    if (!isCoopGuest() || !state.player) return;
+    if (!isCoopGuest() || !state.player || state.player.dead) return;
     sendMultiplayerAction({
       ...action,
       hero: action.hero || state.selectedHero,
@@ -799,7 +853,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateGuestPickups() {
     const player = state.player;
-    if (!player) return;
+    if (!player || player.dead) return;
     for (let i = state.pickups.length - 1; i >= 0; i--) {
       const item = state.pickups[i];
       if (distance(item, player) >= item.radius + player.radius) continue;
@@ -891,4 +945,3 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   return { startGame, togglePause, useSpecial, update, handleMultiplayerAction };
 }
-
