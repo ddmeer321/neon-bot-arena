@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=cooprespawn1";
+import { companions, defaultCosmetic } from "./config.js?v=cooprespawn2";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
