@@ -104,6 +104,8 @@ wss.on("connection", (socket) => {
         color: normalizeColor(message.color),
         hp: clampNumber(message.hp, 0, 9999),
         maxHp: clampNumber(message.maxHp, 1, 9999),
+        dead: Boolean(message.dead),
+        respawnTimer: clampNumber(message.respawnTimer, 0, 30),
         time: Date.now()
       };
       const room = rooms.get(socket.roomCode);
