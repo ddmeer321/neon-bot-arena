@@ -190,7 +190,9 @@ function sendLocalPlayerState(state) {
     hero: state.player.hero?.name || state.selectedHero || "Held",
     color: state.player.hero?.color || "#38d8ff",
     hp: Math.round(state.player.hp),
-    maxHp: Math.round(state.player.maxHp)
+    maxHp: Math.round(state.player.maxHp),
+    dead: Boolean(state.player.dead),
+    respawnTimer: Math.max(0, Number(state.player.respawnTimer) || 0)
   }));
   sendWorldSnapshot(state);
 }
@@ -209,6 +211,8 @@ function updateRemotePlayers(players, state) {
       color: player.color || "#38d8ff",
       hp: Number(player.hp) || 0,
       maxHp: Number(player.maxHp) || 1,
+      dead: Boolean(player.dead),
+      respawnTimer: Math.max(0, Number(player.respawnTimer) || 0),
       seenAt: now
     }));
 }
