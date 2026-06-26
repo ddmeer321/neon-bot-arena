@@ -1,6 +1,6 @@
-﻿import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=coopstart7";
+import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=cooprespawn1";
 import { escapeHtml } from "./utils.js";
-import { saveCoins, saveProgression } from "./storage.js?v=coopstart7";
+import { saveCoins, saveProgression } from "./storage.js?v=cooprespawn1";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
@@ -237,4 +237,3 @@ function renderHeroDetails(state, dom) {
     <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} Münzen`}</button>
   `;
 }
-
