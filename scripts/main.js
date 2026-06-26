@@ -1,14 +1,14 @@
-﻿import { getDom } from "./dom.js?v=coopstart7";
-import { createState } from "./state.js?v=coopstart7";
+import { getDom } from "./dom.js?v=cooprespawn1";
+import { createState } from "./state.js?v=cooprespawn1";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=coopstart7";
-import { setupInput } from "./input.js?v=coopstart7";
-import { createGameplay } from "./gameplay.js?v=coopstart7";
-import { draw } from "./render.js?v=coopstart7";
+import { loadOnlineScores } from "./online-leaderboard.js?v=cooprespawn1";
+import { setupInput } from "./input.js?v=cooprespawn1";
+import { createGameplay } from "./gameplay.js?v=cooprespawn1";
+import { draw } from "./render.js?v=cooprespawn1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=coopstart7";
-import { setupTestPanel } from "./test-panel.js?v=coopstart7";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopstart7";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=cooprespawn1";
+import { setupTestPanel } from "./test-panel.js?v=cooprespawn1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=cooprespawn1";
 
 
 
@@ -89,4 +89,3 @@ export function bootGame() {
 
   loop();
 }
-
