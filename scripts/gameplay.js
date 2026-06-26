@@ -1,9 +1,9 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=cooprespawn1";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=cooprespawn1";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=cooprespawn1";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=cooprespawn1";
-import { sendMultiplayerAction } from "./multiplayer-test.js?v=cooprespawn1";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=cooprespawn2";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=cooprespawn2";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=cooprespawn2";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=cooprespawn2";
+import { sendMultiplayerAction } from "./multiplayer-test.js?v=cooprespawn2";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -598,7 +598,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const player = state.player;
     player.hp = 0;
     player.dead = true;
-    player.respawnTimer = 15;
+    player.respawnTimer = 20;
     player.shield = 0;
     player.invincible = 0;
     player.fireTimer = 0;
@@ -608,10 +608,15 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     state.mouse.down = false;
     state.shake = Math.max(state.shake, 0.45);
     pulse(player.x, player.y, "#ff4f92", 46);
+    if (areAllCoopPlayersDown()) endGame();
   }
 
   function updateRespawn(dt) {
     const player = state.player;
+    if (areAllCoopPlayersDown()) {
+      endGame();
+      return;
+    }
     player.respawnTimer = Math.max(0, (player.respawnTimer || 0) - dt);
     if (player.respawnTimer > 0) return;
     const teammate = getLivingTeammate();
@@ -627,6 +632,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function getLivingTeammate() {
     const now = performance.now();
     return (state.remotePlayers || []).find((player) => !player.dead && now - (player.seenAt || 0) < 2500);
+  }
+
+  function areAllCoopPlayersDown() {
+    if (!isCoopMode() || !state.player?.dead) return false;
+    const now = performance.now();
+    const teammates = (state.remotePlayers || []).filter((player) => now - (player.seenAt || 0) < 2500);
+    return teammates.length > 0 && teammates.every((player) => player.dead || player.respawnTimer > 0);
   }
 
   function damageRobot(robot, amount, color) {
