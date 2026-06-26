@@ -1,4 +1,4 @@
-﻿import { companions, defaultCosmetic } from "./config.js?v=coopstart7";
+import { companions, defaultCosmetic } from "./config.js?v=cooprespawn1";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -25,9 +25,15 @@ function drawRemotePlayers(ctx, state) {
   for (const player of players) {
     if (now - (player.seenAt || 0) > 2500) continue;
     const color = player.color || "#38d8ff";
+    const dead = Boolean(player.dead || player.respawnTimer > 0);
     const hpPct = Math.max(0, Math.min(1, (player.hp || 0) / (player.maxHp || 1)));
     ctx.save();
     ctx.translate(player.x, player.y);
+    if (dead) {
+      drawRespawnMarker(ctx, player.name || "Spieler", player.respawnTimer, color);
+      ctx.restore();
+      continue;
+    }
     glowCircle(ctx, 0, 0, 38, color, 0.16);
     ctx.globalAlpha = 0.78;
     ctx.strokeStyle = color;
@@ -75,6 +81,13 @@ function drawArena(ctx, canvas) {
 
 function drawPlayer(ctx, state) {
   const player = state.player;
+  if (player.dead) {
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    drawRespawnMarker(ctx, state.playerName || "Du", player.respawnTimer, player.hero.color);
+    ctx.restore();
+    return;
+  }
   const angle = getPlayerAngle(state);
   drawCompanion(ctx, state);
   ctx.save();
@@ -124,6 +137,30 @@ function drawPlayer(ctx, state) {
   ctx.fillStyle = player.hero.glow;
   ctx.fillRect(24, -3, 12, 6);
   ctx.restore();
+}
+
+function drawRespawnMarker(ctx, name, timer, color) {
+  const seconds = Math.max(0, Math.ceil(Number(timer) || 0));
+  glowCircle(ctx, 0, 0, 42, color || "#38d8ff", 0.12);
+  ctx.globalAlpha = 0.42;
+  ctx.strokeStyle = color || "#38d8ff";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(0, 0, 20, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = color || "#38d8ff";
+  ctx.beginPath();
+  ctx.arc(0, 0, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#f6f7fb";
+  ctx.font = "900 13px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(name, 0, -42);
+  ctx.fillStyle = "#ff7a3d";
+  ctx.font = "900 14px Inter, system-ui, sans-serif";
+  ctx.fillText(`Respawn: ${seconds} Sekunden`, 0, -25);
 }
 
 function drawCompanion(ctx, state) {
@@ -545,4 +582,3 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
 }
-
