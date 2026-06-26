@@ -1,4 +1,4 @@
-﻿import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=coopstart7";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=cooprespawn1";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -48,4 +48,3 @@ export function createState() {
     pickups: []
   };
 }
-
