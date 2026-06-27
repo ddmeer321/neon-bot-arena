@@ -14,192 +14,36 @@
           <h1>Neon Bot Arena</h1>
           <p class="intro">Wähle eine Figur, zerlege Roboterwellen und setze deine Spezialfähigkeit im richtigen Moment ein.</p>
         </div>
-
-        <div class="device-choice" aria-label="Gerät auswählen">
-          <p>Womit spielst du?</p>
-          <div>
-            <button class="device-btn selected" data-device="pc">PC</button>
-            <button class="device-btn" data-device="mobile">Handy</button>
-          </div>
-        </div>
-
-        <div class="difficulty-choice" aria-label="Schwierigkeitsgrad auswählen">
-          <p>Schwierigkeit</p>
-          <div>
-            <button class="difficulty-btn" data-difficulty="easy">
-              <span>Einfach</span>
-              <small>weniger Gegner, kaum Münzen</small>
-            </button>
-            <button class="difficulty-btn selected" data-difficulty="normal">
-              <span>Normal</span>
-              <small>normale Belohnung</small>
-            </button>
-            <button class="difficulty-btn" data-difficulty="hard">
-              <span>Schwer</span>
-              <small>stärkere Gegner, mehr Münzen</small>
-            </button>
-          </div>
-        </div>
-
-        <label class="name-field">
-          <span>Spielername</span>
-          <input id="playerName" type="text" maxlength="16" placeholder="Dein Name" autocomplete="nickname" />
-        </label>
-
-        <div class="menu-score">
-          <span>Highscore</span>
-          <strong id="menuHighScore">0</strong>
-        </div>
-
-        <div class="menu-score coins-box">
-          <span>Münzen</span>
-          <strong id="coinCount">0</strong>
-        </div>
-
-        <div class="test-id-box">
-          <button id="testIdBtn" type="button">Test-ID</button>
-          <span id="testIdText">Nicht erstellt</span>
-        </div>
-
+        <div class="device-choice" aria-label="Gerät auswählen"><p>Womit spielst du?</p><div><button class="device-btn selected" data-device="pc">PC</button><button class="device-btn" data-device="mobile">Handy</button></div></div>
+        <div class="difficulty-choice" aria-label="Schwierigkeitsgrad auswählen"><p>Schwierigkeit</p><div><button class="difficulty-btn" data-difficulty="easy"><span>Einfach</span><small>weniger Gegner, kaum Münzen</small></button><button class="difficulty-btn selected" data-difficulty="normal"><span>Normal</span><small>normale Belohnung</small></button><button class="difficulty-btn" data-difficulty="hard"><span>Schwer</span><small>stärkere Gegner, mehr Münzen</small></button></div></div>
+        <label class="name-field"><span>Spielername</span><input id="playerName" type="text" maxlength="16" placeholder="Dein Name" autocomplete="nickname" /></label>
+        <div class="menu-score"><span>Highscore</span><strong id="menuHighScore">0</strong></div>
+        <div class="menu-score coins-box"><span>Münzen</span><strong id="coinCount">0</strong></div>
+        <div class="test-id-box"><button id="testIdBtn" type="button">Test-ID</button><span id="testIdText">Nicht erstellt</span></div>
         <div class="multiplayer-test">
-          <div class="multiplayer-row">
-            <button id="multiplayerTestBtn" type="button">Verbindung testen</button>
-            <span id="multiplayerStatus" data-state="idle">Nicht verbunden</span>
-          </div>
-          <div class="multiplayer-row">
-            <button id="createLobbyBtn" type="button">Lobby erstellen</button>
-            <label class="lobby-code-field">
-              <span>Code</span>
-              <input id="lobbyCodeInput" type="text" inputmode="numeric" maxlength="4" placeholder="1234" />
-            </label>
-            <button id="joinLobbyBtn" type="button">Beitreten</button>
-          </div>
-          <div class="multiplayer-row">
-            <strong id="lobbyCodeText">Keine Lobby</strong>
-            <span id="lobbyPlayersText">0/2 Spieler</span>
-            <button id="leaveLobbyBtn" type="button">Verlassen</button>
-          </div>
-          <div class="multiplayer-row">
-            <button id="coopStartBtn" type="button">Koop starten</button>
-            <span id="coopStartText">Wartet auf Lobby</span>
-          </div>
+          <div class="multiplayer-row"><button id="multiplayerTestBtn" type="button">Verbindung testen</button><span id="multiplayerStatus" data-state="idle">Nicht verbunden</span></div>
+          <div class="multiplayer-row"><button id="createLobbyBtn" type="button">Lobby erstellen</button><label class="lobby-code-field"><span>Code</span><input id="lobbyCodeInput" type="text" inputmode="numeric" maxlength="4" placeholder="1234" /></label><button id="joinLobbyBtn" type="button">Beitreten</button></div>
+          <div class="multiplayer-row"><strong id="lobbyCodeText">Keine Lobby</strong><span id="lobbyPlayersText">0/2 Spieler</span><button id="leaveLobbyBtn" type="button">Verlassen</button></div>
+          <div class="multiplayer-row"><button id="coopStartBtn" type="button">Koop starten</button><span id="coopStartText">Wartet auf Lobby</span></div>
           <div id="lobbyNames" class="lobby-names">Noch niemand in der Lobby</div>
         </div>
-
-        <div class="leaderboard">
-          <div class="leaderboard-title">
-            <span id="leaderboardMode">Online Rangliste</span>
-            <label class="leaderboard-filter">
-              <span>Rangliste</span>
-              <select id="leaderboardFilter" aria-label="Ranglisten Schwierigkeit">
-                <option value="all">Alle</option>
-                <option value="easy">Einfach</option>
-                <option value="normal">Normal</option>
-                <option value="hard">Schwer</option>
-              </select>
-            </label>
-          </div>
-          <ol id="leaderboardList"></ol>
-        </div>
-
-        <div class="menu-actions">
-          <button id="heroMenuBtn" class="device-btn selected">Helden</button>
-          <button id="shopMenuBtn" class="device-btn">Shop</button>
-        </div>
-
-        <section id="heroPanel" class="menu-panel">
-          <div id="heroList" class="fighters" aria-label="Figur auswählen"></div>
-          <div id="heroDetails" class="hero-details"></div>
-        </section>
-
-        <section id="shopPanel" class="menu-panel hidden">
-          <div id="shopList" class="shop-list" aria-label="Shop Helden und Begleiter"></div>
-        </section>
-
-        <section id="testPanel" class="test-panel hidden" aria-label="Testpanel">
-          <div class="test-panel-title">
-            <span>Testpanel</span>
-            <strong id="testPanelUser">Aktiv</strong>
-          </div>
-          <div class="test-actions">
-            <button id="testCoinsBtn" type="button">+5.000 Münzen</button>
-            <button id="testMaxCoinsBtn" type="button">50.000 Münzen</button>
-            <button id="testWave10Btn" type="button">Welle 10 starten</button>
-            <button id="testWave20Btn" type="button">Welle 20 starten</button>
-            <button id="testUnlockBtn" type="button">Alle Helden</button>
-            <button id="testMaxHeroBtn" type="button">Held maxen</button>
-            <button id="testHealBtn" type="button">Heilen</button>
-            <button id="testSpecialBtn" type="button">Spezial bereit</button>
-          </div>
-          <p>Nur für freigegebene Test-IDs.</p>
-        </section>
-
+        <div class="leaderboard"><div class="leaderboard-title"><span id="leaderboardMode">Online Rangliste</span><label class="leaderboard-filter"><span>Rangliste</span><select id="leaderboardFilter" aria-label="Ranglisten Schwierigkeit"><option value="all">Alle</option><option value="easy">Einfach</option><option value="normal">Normal</option><option value="hard">Schwer</option></select></label></div><ol id="leaderboardList"></ol></div>
+        <div class="menu-actions"><button id="heroMenuBtn" class="device-btn selected">Helden</button><button id="shopMenuBtn" class="device-btn">Shop</button></div>
+        <section id="heroPanel" class="menu-panel"><div id="heroList" class="fighters" aria-label="Figur auswählen"></div><div id="heroDetails" class="hero-details"></div></section>
+        <section id="shopPanel" class="menu-panel hidden"><div id="shopList" class="shop-list" aria-label="Shop Helden und Begleiter"></div></section>
+        <section id="testPanel" class="test-panel hidden" aria-label="Testpanel"><div class="test-panel-title"><span>Testpanel</span><strong id="testPanelUser">Aktiv</strong></div><div class="test-actions"><button id="testCoinsBtn" type="button">+5.000 Münzen</button><button id="testMaxCoinsBtn" type="button">50.000 Münzen</button><button id="testWave10Btn" type="button">Welle 10 starten</button><button id="testWave20Btn" type="button">Welle 20 starten</button><button id="testUnlockBtn" type="button">Alle Helden</button><button id="testMaxHeroBtn" type="button">Held maxen</button><button id="testHealBtn" type="button">Heilen</button><button id="testSpecialBtn" type="button">Spezial bereit</button></div><p>Nur für freigegebene Test-IDs.</p></section>
         <button id="startBtn" class="start-btn">Spiel starten</button>
       </section>
-
       <section id="gamePanel" class="game-panel hidden">
         <canvas id="game" width="1280" height="720" aria-label="Neon Bot Arena Spielfeld"></canvas>
-        <div class="hud top">
-          <div>
-            <span class="label">Figur</span>
-            <strong id="heroName">Volt Runner</strong>
-          </div>
-          <div>
-            <span class="label">Welle</span>
-            <strong id="wave">1</strong>
-          </div>
-          <div>
-            <span class="label">Punkte</span>
-            <strong id="score">0</strong>
-          </div>
-          <div>
-            <span class="label">Schwierigkeit</span>
-            <strong id="difficultyHud">Normal</strong>
-          </div>
-        </div>
-        <div class="hud bars">
-          <div class="bar-wrap">
-            <span>Leben</span>
-            <div class="bar"><i id="healthBar"></i></div>
-          </div>
-          <div class="bar-wrap">
-            <span>Spezial</span>
-            <div class="bar special"><i id="specialBar"></i></div>
-          </div>
-        </div>
-        <div class="controls">
-          <span id="moveHint">WASD</span>
-          <span id="aimHint">Maus</span>
-          <span id="fireHint">Klick</span>
-          <span id="specialHint">Leertaste</span>
-          <button id="pauseBtn" title="Pause">II</button>
-        </div>
-        <div id="testPanelGame" class="test-panel test-panel-game hidden" aria-label="Testpanel im Spiel">
-          <div class="test-panel-title">
-            <span>Testpanel</span>
-            <strong>Runde</strong>
-          </div>
-          <div class="test-actions">
-            <button id="testGameHealBtn" type="button">Heilen</button>
-            <button id="testGameSpecialBtn" type="button">Spezial bereit</button>
-            <button id="testGameCoinsBtn" type="button">+5.000</button>
-            <button id="testGameWave10Btn" type="button">Welle 10</button>
-            <button id="testGameWave20Btn" type="button">Welle 20</button>
-          </div>
-        </div>
-        <div id="touchControls" class="touch-controls hidden" aria-label="Handy Steuerung">
-          <div id="touchStick" class="touch-stick">
-            <i id="touchKnob"></i>
-          </div>
-          <div class="touch-actions">
-            <button id="touchFire" class="touch-fire">Feuer</button>
-            <button id="touchSpecial" class="touch-special">Spezial</button>
-          </div>
-        </div>
+        <div class="hud top"><div><span class="label">Figur</span><strong id="heroName">Volt Runner</strong></div><div><span class="label">Welle</span><strong id="wave">1</strong></div><div><span class="label">Punkte</span><strong id="score">0</strong></div><div><span class="label">Schwierigkeit</span><strong id="difficultyHud">Normal</strong></div></div>
+        <div class="hud bars"><div class="bar-wrap"><span>Leben</span><div class="bar"><i id="healthBar"></i></div></div><div class="bar-wrap"><span>Spezial</span><div class="bar special"><i id="specialBar"></i></div></div></div>
+        <div class="controls"><span id="moveHint">WASD</span><span id="aimHint">Maus</span><span id="fireHint">Klick</span><span id="specialHint">Leertaste</span><button id="pauseBtn" title="Pause">II</button></div>
+        <div id="testPanelGame" class="test-panel test-panel-game hidden" aria-label="Testpanel im Spiel"><div class="test-panel-title"><span>Testpanel</span><strong>Runde</strong></div><div class="test-actions"><button id="testGameHealBtn" type="button">Heilen</button><button id="testGameSpecialBtn" type="button">Spezial bereit</button><button id="testGameCoinsBtn" type="button">+5.000</button><button id="testGameWave10Btn" type="button">Welle 10</button><button id="testGameWave20Btn" type="button">Welle 20</button></div></div>
+        <div id="touchControls" class="touch-controls hidden" aria-label="Handy Steuerung"><div id="touchStick" class="touch-stick"><i id="touchKnob"></i></div><div class="touch-actions"><button id="touchFire" class="touch-fire">Feuer</button><button id="touchSpecial" class="touch-special">Spezial</button></div></div>
         <div id="message" class="message hidden"></div>
       </section>
     </main>
-
-    <script type="module" src="game.js?v=coopgameover2"></script>
+    <script type="module" src="game.js?v=companionability1"></script>
   </body>
 </html>
