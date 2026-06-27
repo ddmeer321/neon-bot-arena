@@ -181,7 +181,8 @@ function getPlayerName(dom) {
 }
 
 function sendLocalPlayerState(state) {
-  if (socket?.readyState !== WebSocket.OPEN || !state.running || state.over || !state.player) return;
+  if (socket?.readyState !== WebSocket.OPEN || !state.running || !state.player) return;
+  if (state.over && !state.player.dead) return;
   if (socket.bufferedAmount > 50000) return;
   socket.send(JSON.stringify({
     type: "player-state",
