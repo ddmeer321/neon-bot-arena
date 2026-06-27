@@ -27,7 +27,7 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
     if (["KeyW", "KeyA", "KeyS", "KeyD", "Space"].includes(event.code)) event.preventDefault();
     state.keys.add(event.code);
     if (event.code === "KeyP" || event.code === "Escape") togglePause();
-    if (event.code === "Space") useSpecial();
+    if (event.code === "Space" && !state.player?.dead) useSpecial();
   });
 
   window.addEventListener("keyup", (event) => {
@@ -54,7 +54,7 @@ export function setupInput({ dom, state, startGame, togglePause, useSpecial }) {
 
   dom.touchSpecial?.addEventListener("pointerdown", (event) => {
     event.preventDefault();
-    useSpecial();
+    if (!state.player?.dead) useSpecial();
   });
   dom.touchFire?.addEventListener("pointerdown", (event) => {
     event.preventDefault();
@@ -129,4 +129,3 @@ function stopTouchMove(event, dom, state) {
 function isTyping(target) {
   return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
 }
-
