@@ -66,6 +66,7 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Keine Lobby aktiv" }));
         return;
       }
+      room.gameOver = false;
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
       broadcastToRoom(room, { type: "start-game", delayMs, seed, wave: 1, hostId: getRoomHost(room)?.clientId || socket.clientId });
@@ -96,6 +97,13 @@ wss.on("connection", (socket) => {
       return;
     }
 
+    if (message.type === "game-over") {
+      const room = rooms.get(socket.roomCode);
+      if (!room || !areAllPlayersDown(room)) return;
+      finishRoomGame(room);
+      return;
+    }
+
     if (message.type === "player-state") {
       socket.playerState = {
         x: clampNumber(message.x, 0, 1280),
@@ -109,7 +117,10 @@ wss.on("connection", (socket) => {
         time: Date.now()
       };
       const room = rooms.get(socket.roomCode);
-      if (room) broadcastPlayerStates(room);
+      if (room) {
+        broadcastPlayerStates(room, socket.playerState.dead);
+        if (areAllPlayersDown(room)) finishRoomGame(room);
+      }
       return;
     }
 
@@ -165,7 +176,7 @@ function joinRoom(socket, code) {
   leaveRoom(socket);
   let room = rooms.get(code);
   if (!room) {
-    room = { code, clients: new Set(), createdAt: Date.now() };
+    room = { code, clients: new Set(), createdAt: Date.now(), gameOver: false };
     rooms.set(code, room);
   }
 
@@ -213,9 +224,9 @@ function broadcastRoom(room) {
   sendPayload(room, payload);
 }
 
-function broadcastPlayerStates(room) {
+function broadcastPlayerStates(room, force = false) {
   const now = Date.now();
-  if (now - (room.lastPlayerBroadcast || 0) < 100) return;
+  if (!force && now - (room.lastPlayerBroadcast || 0) < 100) return;
   room.lastPlayerBroadcast = now;
   const players = [...room.clients]
     .filter((client) => client.playerState)
@@ -227,6 +238,17 @@ function broadcastPlayerStates(room) {
   const payload = JSON.stringify({ type: "player-states", players });
 
   sendPayload(room, payload);
+}
+
+function areAllPlayersDown(room) {
+  const clients = [...(room?.clients || [])];
+  return clients.length >= 2 && clients.every((client) => client.playerState?.dead);
+}
+
+function finishRoomGame(room) {
+  if (room.gameOver) return;
+  room.gameOver = true;
+  broadcastToRoom(room, { type: "game-over" });
 }
 
 function broadcastToRoom(room, message, exclude = null) {
