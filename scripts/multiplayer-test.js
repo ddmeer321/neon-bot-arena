@@ -121,6 +121,21 @@ function connect(dom, pingOnly) {
       multiplayerState?.handleMultiplayerAction?.(data);
       return;
     }
+    if (data.type === "game-over") {
+      if (multiplayerState?.running && !multiplayerState.over && multiplayerState.player) {
+        multiplayerState.player.hp = 0;
+        multiplayerState.player.dead = true;
+        multiplayerState.player.respawnTimer = Math.max(1, Number(multiplayerState.player.respawnTimer) || 20);
+        multiplayerState.remotePlayers = (multiplayerState.remotePlayers || []).map((player) => ({
+          ...player,
+          hp: 0,
+          dead: true,
+          respawnTimer: Math.max(1, Number(player.respawnTimer) || 20)
+        }));
+      }
+      multiplayerState?.handleMultiplayerGameOver?.();
+      return;
+    }
     if (data.type === "room-left") {
       setStatus(dom, "Verbunden", "ok");
       setLobby(dom, null, 0, 2, []);
