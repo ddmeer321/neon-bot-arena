@@ -9,6 +9,7 @@ import { createFPSCounter } from "./fps.js";
 import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=cooprespawn2";
 import { setupTestPanel } from "./test-panel.js?v=cooprespawn2";
 import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopgameover2";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=companionability1";
 
 
 
@@ -57,12 +58,13 @@ export function bootGame() {
   setupEconomyInput(state, dom);
 
   const gameplay = createGameplay({ dom, state, renderLeaderboard });
+  const companionAbilities = setupCompanionAbilities({ state, dom, useHeroSpecial: gameplay.useSpecial });
   setupInput({
     dom,
     state,
     startGame: gameplay.startGame,
     togglePause: gameplay.togglePause,
-    useSpecial: gameplay.useSpecial
+    useSpecial: companionAbilities.useSpecial
   });
   setupTestPanel({ dom, state, startGame: gameplay.startGame });
   setupMultiplayerTest(dom, state, gameplay.startGame);
