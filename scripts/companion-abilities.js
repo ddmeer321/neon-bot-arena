@@ -1,4 +1,4 @@
-import { getEquippedCosmetic } from "./economy.js?v=bossattack2";
+import { getEquippedCosmetic } from "./economy.js?v=musicvolume1";
 
 export const companionAbilities = {
   solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schiessen", stat: "fireRate", multiplier: 1 / 1.25 },

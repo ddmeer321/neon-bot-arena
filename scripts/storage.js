@@ -1,4 +1,4 @@
-import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=bossattack2";
+import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 
 export function loadHighScore() {

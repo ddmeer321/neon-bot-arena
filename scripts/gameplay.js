@@ -1,9 +1,9 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=bossattack2";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=bossattack2";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=bossattack2";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=bossattack2";
-import { sendMultiplayerAction, sendMultiplayerGameOver, sendMultiplayerPlayerState } from "./multiplayer-test.js?v=bossattack2";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=musicvolume1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=musicvolume1";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=musicvolume1";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
+import { sendMultiplayerAction, sendMultiplayerGameOver, sendMultiplayerPlayerState } from "./multiplayer-test.js?v=musicvolume1";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {

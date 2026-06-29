@@ -1,4 +1,4 @@
-let audioContext = null;
+﻿let audioContext = null;
 let masterGain = null;
 let musicGain = null;
 let musicTimer = null;
@@ -6,6 +6,7 @@ let musicStep = 0;
 let mutedByPause = false;
 
 const melody = [196, 247, 294, 247, 220, 262, 330, 262];
+const musicVolume = 0.085;
 
 function getContext() {
   if (audioContext) return audioContext;
@@ -16,7 +17,7 @@ function getContext() {
   masterGain.gain.value = 0.32;
   masterGain.connect(audioContext.destination);
   musicGain = audioContext.createGain();
-  musicGain.gain.value = 0.055;
+  musicGain.gain.value = musicVolume;
   musicGain.connect(masterGain);
   return audioContext;
 }
@@ -59,7 +60,7 @@ function playMusicStep() {
 export async function startMusic() {
   await resumeContext();
   mutedByPause = false;
-  if (musicGain) musicGain.gain.value = 0.055;
+  if (musicGain) musicGain.gain.value = musicVolume;
   if (musicTimer) return;
   playMusicStep();
   musicTimer = window.setInterval(playMusicStep, 260);
@@ -67,7 +68,7 @@ export async function startMusic() {
 
 export function setMusicPaused(paused) {
   mutedByPause = paused;
-  if (musicGain) musicGain.gain.value = paused ? 0 : 0.055;
+  if (musicGain) musicGain.gain.value = paused ? 0 : musicVolume;
 }
 
 export function stopMusic() {

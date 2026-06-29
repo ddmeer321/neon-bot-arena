@@ -1,7 +1,7 @@
-import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=bossattack2";
-import { saveCoins, saveProgression } from "./storage.js?v=bossattack2";
+import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=musicvolume1";
+import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=bossattack2";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=musicvolume1";
 
 export function setupTestPanel({ dom, state, startGame }) {
   renderStoredTestId(dom);

@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=bossattack2";
+import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;

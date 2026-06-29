@@ -1,15 +1,15 @@
-import { getDom } from "./dom.js?v=bossattack2";
-import { createState } from "./state.js?v=bossattack2";
+import { getDom } from "./dom.js?v=musicvolume1";
+import { createState } from "./state.js?v=musicvolume1";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=bossattack2";
-import { setupInput } from "./input.js?v=bossattack2";
-import { createGameplay } from "./gameplay.js?v=bossattack2";
-import { draw } from "./render.js?v=bossattack2";
+import { loadOnlineScores } from "./online-leaderboard.js?v=musicvolume1";
+import { setupInput } from "./input.js?v=musicvolume1";
+import { createGameplay } from "./gameplay.js?v=musicvolume1";
+import { draw } from "./render.js?v=musicvolume1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=bossattack2";
-import { setupTestPanel } from "./test-panel.js?v=bossattack2";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=bossattack2";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=bossattack2";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
+import { setupTestPanel } from "./test-panel.js?v=musicvolume1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=musicvolume1";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1";
 
 
 

@@ -1,6 +1,6 @@
-import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=bossattack2";
+import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=musicvolume1";
 import { escapeHtml } from "./utils.js";
-import { saveCoins, saveProgression } from "./storage.js?v=bossattack2";
+import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
