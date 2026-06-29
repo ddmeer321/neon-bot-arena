@@ -1,15 +1,15 @@
-import { getDom } from "./dom.js?v=cooprespawn2";
-import { createState } from "./state.js?v=cooprespawn2";
+import { getDom } from "./dom.js?v=bossattack2";
+import { createState } from "./state.js?v=bossattack2";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=cooprespawn2";
-import { setupInput } from "./input.js?v=coopgameover2";
-import { createGameplay } from "./gameplay.js?v=coopgameover2";
-import { draw } from "./render.js?v=cooprespawn2";
+import { loadOnlineScores } from "./online-leaderboard.js?v=bossattack2";
+import { setupInput } from "./input.js?v=bossattack2";
+import { createGameplay } from "./gameplay.js?v=bossattack2";
+import { draw } from "./render.js?v=bossattack2";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=cooprespawn2";
-import { setupTestPanel } from "./test-panel.js?v=cooprespawn2";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coopgameover2";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=companionability1";
+import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=bossattack2";
+import { setupTestPanel } from "./test-panel.js?v=bossattack2";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=bossattack2";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=bossattack2";
 
 
 
@@ -91,3 +91,4 @@ export function bootGame() {
 
   loop();
 }
+

@@ -49,7 +49,7 @@ export const heroes = {
   nova: {
     id: "nova",
     name: "Nova Shade",
-    role: "Präzise, Teleportpuls",
+    role: "Praezise, Teleportpuls",
     statsLabel: "Tempo ++ | Leben + | Schaden ++",
     color: "#ff4f92",
     glow: "#b7ff4a",
@@ -81,7 +81,7 @@ export const heroes = {
   frost: {
     id: "frost",
     name: "Frost Byte",
-    role: "Kontrolle, Kältefeld",
+    role: "Kontrolle, Kaeltefeld",
     statsLabel: "Tempo ++ | Leben ++ | Schaden ++",
     color: "#8ee7ff",
     glow: "#f6f7fb",
@@ -91,7 +91,7 @@ export const heroes = {
     bulletDamage: 20,
     bulletSpeed: 700,
     specialCooldown: 8,
-    specialName: "Kältefeld",
+    specialName: "Kaeltefeld",
     price: 550
   },
   pulse: {
@@ -141,37 +141,41 @@ export const companions = {
   solar: {
     id: "solar",
     name: "Solar Drohne",
-    description: "Kleine Flammen-Drohne",
+    description: "Turbofeuer: 5 Sek. 25 % schneller schiessen",
     shape: "spark",
     color: "#ff8f3d",
     glow: "#ffd166",
+    ability: { name: "Turbofeuer", type: "fireRate", duration: 5, multiplier: 1.25 },
     price: 900
   },
   venom: {
     id: "venom",
     name: "Venom Mini",
-    description: "Grüner Energie-Begleiter",
+    description: "Giftladung: 5 Sek. 25 % mehr Schaden",
     shape: "orb",
     color: "#60ff7a",
     glow: "#d6ff4a",
+    ability: { name: "Giftladung", type: "damage", duration: 5, multiplier: 1.25 },
     price: 1200
   },
   royal: {
     id: "royal",
     name: "Royal Wisp",
-    description: "Schwebende Rift-Figur",
+    description: "Phasenschub: 5 Sek. 25 % schneller laufen",
     shape: "wisp",
     color: "#a78bfa",
     glow: "#38d8ff",
+    ability: { name: "Phasenschub", type: "speed", duration: 5, multiplier: 1.25 },
     price: 1600
   },
   eclipse: {
     id: "eclipse",
     name: "Eclipse Core",
-    description: "Dunkler Mini-Kern",
+    description: "Dunkelschild: 5 Sek. 35 % weniger Schaden",
     shape: "core",
     color: "#ef4444",
     glow: "#7f1d1d",
+    ability: { name: "Dunkelschild", type: "guard", duration: 5, multiplier: 0.65 },
     price: 2200
   }
 };

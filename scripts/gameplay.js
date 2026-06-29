@@ -1,9 +1,9 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=cooprespawn2";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=cooprespawn2";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=cooprespawn2";
-import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=cooprespawn2";
-import { sendMultiplayerAction } from "./multiplayer-test.js?v=cooprespawn2";
+import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=bossattack2";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=bossattack2";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=bossattack2";
+import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=bossattack2";
+import { sendMultiplayerAction, sendMultiplayerGameOver, sendMultiplayerPlayerState } from "./multiplayer-test.js?v=bossattack2";
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -67,6 +67,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     return difficultySettings[state.difficulty] || difficultySettings.normal;
   }
 
+  state.handleMultiplayerGameOver = () => {
+    if (!state.running || state.over || !isCoopMode()) return;
+    endGame({ broadcast: false });
+  };
+
   function startGame(options = {}) {
     const hero = getSelectedHeroStats(state);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
@@ -93,6 +98,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bullets: [],
       enemyBullets: [],
       robots: [],
+      bossLasers: [],
       particles: [],
       pickups: [],
       meleeSwings: [],
@@ -113,6 +119,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       healFlash: 0,
       damageBoostTimer: 0,
       speedBoostTimer: 0,
+      companionAbilityTimer: 0,
       pickupFlash: null,
       hero
     };
@@ -196,6 +203,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     updatePlayer(dt);
     updateBullets(dt, state.bullets, true);
     updateBullets(dt, state.enemyBullets, false);
+    updateBossLasers(dt);
     updateRobots(dt);
     updateParticles(dt);
     updatePickups(dt);
@@ -235,6 +243,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     updatePlayer(dt);
     updateGuestDamage(dt);
     updateGuestPickups();
+    updateBossLasers(dt);
     updateParticles(dt);
     updateHud();
   }
@@ -279,6 +288,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       shooter,
       bruiser,
       boss,
+      bossAttackTimer: boss ? 1.5 : 0,
+      bossAttackType: "burst",
       hit: 0,
       stunTimer: 0,
       frozenTimer: 0,
@@ -384,6 +395,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function useSpecial() {
     if (!state.running || state.paused || state.over) return;
     const player = state.player;
+    if (!player || player.dead) return;
     if (player.specialTimer > 0) return;
     const specialAngle = getAimAngle();
     player.specialTimer = player.hero.specialCooldown;
@@ -554,6 +566,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       }
       robot.x = clamp(robot.x, robot.radius + 24, dom.canvas.width - robot.radius - 24);
       robot.y = clamp(robot.y, robot.radius + 70, dom.canvas.height - robot.radius - 28);
+      if (robot.boss && !target.dead) updateBossAttack(robot, target, dt);
       if (robot.shooter || robot.boss) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && !target.dead && distance(robot, target) < 620) {
@@ -594,6 +607,97 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
+  function updateBossAttack(robot, target, dt) {
+    robot.bossAttackTimer = Math.max(0, (robot.bossAttackTimer || 0) - dt);
+    if (robot.bossAttackTimer > 0) return;
+
+    const difficulty = getDifficultySettings();
+    const level = Math.max(1, Math.floor(state.wave / 10));
+    robot.bossAttackTimer = Math.max(1.2, 3.6 - level * 0.18);
+    if (robot.bossAttackType === "laser") {
+      startBossLaser(robot, target, difficulty, level);
+      robot.bossAttackType = "burst";
+    } else {
+      fireBossBurst(robot, target, difficulty, level);
+      robot.bossAttackType = "laser";
+    }
+  }
+
+  function startBossLaser(robot, target, difficulty, level) {
+    const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const laserCount = Math.min(3, Math.max(1, Math.ceil(level / 2)));
+    const spread = laserCount === 1 ? 0 : 0.18;
+    const damage = Math.round((22 + level * 3) * difficulty.enemyDamage * difficulty.bossDamage);
+    for (let i = 0; i < laserCount; i++) {
+      const offset = (i - (laserCount - 1) / 2) * spread;
+      state.bossLasers.push({
+        x: robot.x,
+        y: robot.y,
+        angle: angle + offset,
+        warning: Math.max(0.62, 0.9 - level * 0.035),
+        blast: 0,
+        width: Math.min(30, 16 + level * 1.4),
+        length: 900,
+        damage,
+        hit: false
+      });
+    }
+    state.shake = Math.max(state.shake, 0.22);
+    for (let i = 0; i < 14 + laserCount * 6; i++) addParticle(robot.x, robot.y, "#ff2d55", 1.7);
+  }
+
+  function fireBossBurst(robot, target, difficulty, level) {
+    const count = Math.min(20, 8 + level * 2);
+    const speed = difficulty.bossBulletSpeed * Math.min(1.08, 0.72 + level * 0.045);
+    const damage = Math.round(robot.bulletDamage * (0.68 + Math.min(0.22, level * 0.035)));
+    const start = Math.atan2(target.y - robot.y, target.x - robot.x);
+    for (let i = 0; i < count; i++) {
+      const angle = start + (Math.PI * 2 * i) / count;
+      state.enemyBullets.push({
+        x: robot.x,
+        y: robot.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: 6,
+        life: 2.6,
+        damage,
+        color: "#ff2d55"
+      });
+    }
+    state.shake = Math.max(state.shake, 0.28);
+    pulse(robot.x, robot.y, "#ff2d55", 34);
+  }
+
+  function updateBossLasers(dt) {
+    for (let i = state.bossLasers.length - 1; i >= 0; i--) {
+      const laser = state.bossLasers[i];
+      if (laser.warning > 0) {
+        laser.warning -= dt;
+        if (laser.warning <= 0) {
+          laser.blast = 0.28;
+          state.shake = Math.max(state.shake, 0.45);
+          pulse(laser.x, laser.y, "#ff2d55", 22);
+        }
+      } else {
+        laser.blast -= dt;
+        if (!laser.hit && laser.blast > 0 && !state.player.dead && isPointNearLaser(state.player, laser)) {
+          laser.hit = true;
+          hurtPlayer(laser.damage);
+        }
+        if (laser.blast <= 0) state.bossLasers.splice(i, 1);
+      }
+    }
+  }
+
+  function isPointNearLaser(point, laser) {
+    const dx = point.x - laser.x;
+    const dy = point.y - laser.y;
+    const along = dx * Math.cos(laser.angle) + dy * Math.sin(laser.angle);
+    if (along < 0 || along > laser.length) return false;
+    const side = Math.abs(-Math.sin(laser.angle) * dx + Math.cos(laser.angle) * dy);
+    return side < (laser.width || 18) + (point.radius || 0);
+  }
+
   function knockOutPlayer() {
     const player = state.player;
     player.hp = 0;
@@ -602,12 +706,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.shield = 0;
     player.invincible = 0;
     player.fireTimer = 0;
+    player.companionAbilityTimer = 0;
     state.touch.fire = false;
     state.touch.moveX = 0;
     state.touch.moveY = 0;
     state.mouse.down = false;
     state.shake = Math.max(state.shake, 0.45);
     pulse(player.x, player.y, "#ff4f92", 46);
+    sendMultiplayerPlayerState();
     if (areAllCoopPlayersDown()) endGame();
   }
 
@@ -734,8 +840,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     pulse(item.x, item.y, item.color || "#b7ff4a", 24);
   }
 
-  function endGame() {
+  function endGame({ broadcast = true } = {}) {
+    if (state.over) return;
     state.over = true;
+    if (broadcast && isCoopMode()) sendMultiplayerGameOver();
     state.touch.fire = false;
     state.touch.moveX = 0;
     state.touch.moveY = 0;
@@ -760,7 +868,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
@@ -957,3 +1065,4 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   return { startGame, togglePause, useSpecial, update, handleMultiplayerAction };
 }
+

@@ -1,7 +1,7 @@
-import { getEquippedCosmetic } from "./economy.js?v=companionability1";
+import { getEquippedCosmetic } from "./economy.js?v=bossattack2";
 
 export const companionAbilities = {
-  solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schießen", stat: "fireRate", multiplier: 1 / 1.25 },
+  solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schiessen", stat: "fireRate", multiplier: 1 / 1.25 },
   venom: { name: "Giftladung", description: "5 Sek. 25 % mehr Schaden", stat: "bulletDamage", multiplier: 1.25 },
   royal: { name: "Phasenschub", description: "5 Sek. 25 % schneller laufen", stat: "speed", multiplier: 1.25 },
   eclipse: { name: "Dunkelschild", description: "5 Sek. starkes Schutzschild", stat: "shield", multiplier: 1 }
@@ -90,7 +90,7 @@ function annotateCompanions(dom) {
     const role = card.querySelector(".fighter-role");
     const stats = card.querySelector(".stats");
     const roleText = `${ability.name}: ${ability.description}`;
-    const statsText = "Aktiviert sich mit deiner Spezialfähigkeit";
+    const statsText = "Aktiviert sich mit deiner Spezialfaehigkeit";
     if (role && role.textContent !== roleText) role.textContent = roleText;
     if (stats && stats.textContent !== statsText) stats.textContent = statsText;
   });

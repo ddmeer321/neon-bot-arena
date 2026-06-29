@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=cooprespawn2";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=bossattack2";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -44,7 +44,9 @@ export function createState() {
     bullets: [],
     enemyBullets: [],
     robots: [],
+    bossLasers: [],
     particles: [],
     pickups: []
   };
 }
+

@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=cooprespawn2";
+import { companions, defaultCosmetic } from "./config.js?v=bossattack2";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -9,6 +9,7 @@ export function draw(dom, state) {
   if (state.player) {
     drawPickups(ctx, state);
     drawBullets(ctx, state);
+    drawBossLasers(ctx, state);
     drawRobots(ctx, state);
     drawPlayer(ctx, state);
     drawRemotePlayers(ctx, state);
@@ -175,9 +176,10 @@ function drawCompanion(ctx, state) {
   const y = player.y - 28 + bob;
   const color = companion.color || "#38d8ff";
   const glow = companion.glow || color;
+  const abilityActive = player.companionAbilityTimer > 0;
 
   ctx.save();
-  glowCircle(ctx, x, y, 24, glow, 0.25);
+  glowCircle(ctx, x, y, abilityActive ? 38 : 24, glow, abilityActive ? 0.48 + Math.sin(state.time * 12) * 0.1 : 0.25);
   ctx.translate(x, y);
   ctx.strokeStyle = glow;
   ctx.fillStyle = color;
@@ -213,6 +215,13 @@ function drawCompanion(ctx, state) {
   ctx.fillStyle = "rgba(255,255,255,0.88)";
   ctx.fillRect(-6, -3, 4, 4);
   ctx.fillRect(3, -3, 4, 4);
+  if (abilityActive) {
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 22 + Math.sin(state.time * 10) * 2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -290,6 +299,44 @@ function drawBullets(ctx, state) {
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
     ctx.fill();
   });
+}
+
+function drawBossLasers(ctx, state) {
+  for (const laser of state.bossLasers || []) {
+    const warning = Math.max(0, Number(laser.warning) || 0);
+    const blasting = warning <= 0;
+    const alpha = blasting ? Math.max(0.25, (laser.blast || 0) / 0.28) : 0.25 + Math.sin(state.time * 24) * 0.12;
+    const width = laser.width || 18;
+    ctx.save();
+    ctx.translate(laser.x, laser.y);
+    ctx.rotate(laser.angle);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = blasting ? "#ff2d55" : "#ffc857";
+    ctx.lineWidth = blasting ? width : 4;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(laser.length || 900, 0);
+    ctx.stroke();
+    if (!blasting) {
+      ctx.globalAlpha = 0.18 + Math.sin(state.time * 18) * 0.08;
+      ctx.lineWidth = width;
+      ctx.strokeStyle = "#ff2d55";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(laser.length || 900, 0);
+      ctx.stroke();
+    } else {
+      ctx.globalAlpha = alpha * 0.42;
+      ctx.lineWidth = width * 2.2;
+      ctx.strokeStyle = "#ff7a3d";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(laser.length || 900, 0);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
 }
 
 function drawParticles(ctx, state) {
@@ -582,3 +629,4 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
 }
+

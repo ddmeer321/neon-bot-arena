@@ -1,4 +1,4 @@
-import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=cooprespawn2";
+import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=bossattack2";
 import { cleanName } from "./utils.js";
 
 export function loadHighScore() {
@@ -97,3 +97,4 @@ export function normalizeLeaderboard(entries) {
   }
   return [...bestByName.values()].sort((a, b) => b.score - a.score || b.wave - a.wave);
 }
+

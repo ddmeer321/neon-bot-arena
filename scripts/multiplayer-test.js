@@ -37,7 +37,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
 
   dom.coopStartBtn?.addEventListener("click", () => {
     if (currentLobbyCount < 2) {
-      setStatus(dom, "2 Spieler nötig", "error");
+      setStatus(dom, "2 Spieler noetig", "error");
       return;
     }
     sendWhenConnected(dom, { type: "start-room" });
@@ -196,8 +196,7 @@ function getPlayerName(dom) {
 }
 
 function sendLocalPlayerState(state) {
-  if (socket?.readyState !== WebSocket.OPEN || !state.running || !state.player) return;
-  if (state.over && !state.player.dead) return;
+  if (socket?.readyState !== WebSocket.OPEN || !state.running || state.over || !state.player) return;
   if (socket.bufferedAmount > 50000) return;
   socket.send(JSON.stringify({
     type: "player-state",
@@ -322,6 +321,7 @@ function createWorldSnapshot(state) {
     robots: cloneEntities(state.robots, 50),
     bullets: cloneEntities(state.bullets, 60),
     enemyBullets: cloneEntities(state.enemyBullets, 60),
+    bossLasers: cloneEntities(state.bossLasers, 8),
     pickups: cloneEntities(state.pickups, 20)
   };
 }
@@ -341,6 +341,7 @@ function applyWorldSnapshot(snapshot, state) {
   state.robots = cloneEntities(snapshot.robots, 50);
   state.bullets = cloneEntities(snapshot.bullets, 60);
   state.enemyBullets = cloneEntities(snapshot.enemyBullets, 60);
+  state.bossLasers = cloneEntities(snapshot.bossLasers, 8);
   state.pickups = cloneEntities(snapshot.pickups, 20);
   state.multiplayer.lastWorldAt = performance.now();
 }
@@ -349,4 +350,13 @@ export function sendMultiplayerAction(action) {
   if (multiplayerState?.multiplayer?.role !== "guest" || socket?.readyState !== WebSocket.OPEN) return;
   if (socket.bufferedAmount > 50000) return;
   socket.send(JSON.stringify({ type: "player-action", action }));
+}
+
+export function sendMultiplayerGameOver() {
+  if (!multiplayerState?.multiplayer?.active || socket?.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: "game-over" }));
+}
+
+export function sendMultiplayerPlayerState() {
+  if (multiplayerState) sendLocalPlayerState(multiplayerState);
 }

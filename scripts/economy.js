@@ -1,6 +1,6 @@
-import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=cooprespawn2";
+import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=bossattack2";
 import { escapeHtml } from "./utils.js";
-import { saveCoins, saveProgression } from "./storage.js?v=cooprespawn2";
+import { saveCoins, saveProgression } from "./storage.js?v=bossattack2";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
@@ -214,7 +214,7 @@ function renderCompanionCard(state, companion) {
       <span class="companion-swatch" style="--companion-color:${companion.color}; --companion-glow:${companion.glow};"></span>
       <span class="fighter-name">${escapeHtml(companion.name)}</span>
       <span class="fighter-role">${escapeHtml(companion.description)}</span>
-      <span class="stats">Läuft neben dir, keine Stärke</span>
+      <span class="stats">${companion.ability ? "Aktiviert sich mit deiner Spezialfähigkeit" : "Läuft neben dir"}</span>
       <span class="hero-status">${status}</span>
     </button>
   `;
@@ -237,3 +237,4 @@ function renderHeroDetails(state, dom) {
     <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} Münzen`}</button>
   `;
 }
+
