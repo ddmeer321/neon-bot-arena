@@ -32,31 +32,59 @@ export async function loadOnlineScores(limit = 10, difficulty = "all") {
 }
 
 export async function submitOnlineScore(state) {
+  const name = cleanName(state.playerName);
+  if (BLOCKED_SCORE_NAMES.has(name.toLowerCase())) {
+    return { ok: false, reason: "blocked-name" };
+  }
+
+  const entry = {
+    name,
+    scores: Math.max(0, Math.round(Number(state.score) || 0)),
+    wave: Math.max(1, Math.round(Number(state.wave) || 1)),
+    diffculty: state.difficulty || "normal",
+    bosses: Math.max(0, Math.round(Number(state.bossesDefeated) || 0)),
+    hero: state.player?.hero?.name || state.selectedHero || "Unbekannt"
+  };
+  if (!isPlausibleScore(entry.scores, entry.wave, entry.bosses)) {
+    return { ok: false, reason: "implausible-score" };
+  }
+
   try {
-    const name = cleanName(state.playerName);
-    if (BLOCKED_SCORE_NAMES.has(name.toLowerCase())) return false;
-
-    const entry = {
-      name,
-      scores: Math.max(0, Math.round(Number(state.score) || 0)),
-      wave: Math.max(1, Math.round(Number(state.wave) || 1)),
-      diffculty: state.difficulty || "normal",
-      bosses: Math.max(0, Math.round(Number(state.bossesDefeated) || 0)),
-      hero: state.player?.hero?.name || state.selectedHero || "Unbekannt"
-    };
-    if (!isPlausibleScore(entry.scores, entry.wave, entry.bosses)) return false;
-
     const response = await fetch(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`, {
       method: "POST",
       headers: { ...headers, Prefer: "return=minimal" },
       body: JSON.stringify(entry)
     });
 
-    if (!response.ok) throw new Error(`Score konnte nicht gespeichert werden: ${response.status}`);
-    return true;
+    if (!response.ok) {
+      const details = await readResponseError(response);
+      const reason = response.status === 409 ? "score-conflict" : "http-error";
+      console.warn(`Score konnte nicht gespeichert werden: ${response.status}${details ? ` (${details})` : ""}`);
+      return { ok: false, reason, status: response.status, details };
+    }
+    return { ok: true };
   } catch (error) {
     console.warn(error);
-    return false;
+    return {
+      ok: false,
+      reason: "network-error",
+      details: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+async function readResponseError(response) {
+  try {
+    const text = await response.text();
+    if (!text) return "";
+    try {
+      const payload = JSON.parse(text);
+      return [payload.code, payload.message, payload.details].filter(Boolean).join(": ");
+    } catch {
+      return text.slice(0, 300);
+    }
+  } catch {
+    return "";
   }
 }
 
