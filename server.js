@@ -1,8 +1,9 @@
-import http from "node:http";
+﻿import http from "node:http";
 import { WebSocketServer } from "ws";
 
 const port = Number(process.env.PORT) || 3000;
 const socketOpen = 1;
+const maxRoomPlayers = 3;
 const rooms = new Map();
 
 const server = http.createServer((req, res) => {
@@ -66,10 +67,34 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Keine Lobby aktiv" }));
         return;
       }
-      room.gameOver = false;
+      if (getRoomHost(room) !== socket) {
+        socket.send(JSON.stringify({ type: "room-error", message: "Nur der Host kann starten" }));
+        return;
+      }
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
-      broadcastToRoom(room, { type: "start-game", delayMs, seed, wave: 1, hostId: getRoomHost(room)?.clientId || socket.clientId });
+      const mode = message.mode === "endboss" ? "endboss" : "waves";
+      if (mode === "waves" && room.clients.size !== 2) {
+        socket.send(JSON.stringify({ type: "room-error", message: "Normaler Koop braucht genau 2 Spieler" }));
+        return;
+      }
+      room.gameOver = false;
+      broadcastToRoom(room, {
+        type: "start-game",
+        delayMs,
+        seed,
+        wave: 1,
+        mode,
+        playerCount: room.clients.size,
+        hostId: getRoomHost(room)?.clientId || socket.clientId
+      });
+      return;
+    }
+
+    if (message.type === "endboss-result") {
+      const room = rooms.get(socket.roomCode);
+      if (!room || getRoomHost(room) !== socket) return;
+      broadcastToRoom(room, { type: "endboss-result", victory: Boolean(message.victory) });
       return;
     }
 
@@ -176,11 +201,11 @@ function joinRoom(socket, code) {
   leaveRoom(socket);
   let room = rooms.get(code);
   if (!room) {
-    room = { code, clients: new Set(), createdAt: Date.now(), gameOver: false };
+    room = { code, clients: new Set(), createdAt: Date.now() };
     rooms.set(code, room);
   }
 
-  if (room.clients.size >= 2) {
+  if (room.clients.size >= maxRoomPlayers) {
     socket.send(JSON.stringify({ type: "room-error", message: "Lobby ist voll" }));
     return;
   }
@@ -218,7 +243,7 @@ function broadcastRoom(room) {
     players,
     hostId: host?.clientId || null,
     count: players.length,
-    maxPlayers: 2
+    maxPlayers: maxRoomPlayers
   });
 
   sendPayload(room, payload);
@@ -242,7 +267,7 @@ function broadcastPlayerStates(room, force = false) {
 
 function areAllPlayersDown(room) {
   const clients = [...(room?.clients || [])];
-  return clients.length >= 2 && clients.every((client) => client.playerState?.dead);
+  return clients.length >= 1 && clients.every((client) => client.playerState?.dead);
 }
 
 function finishRoomGame(room) {
@@ -274,13 +299,18 @@ function sanitizeWorldSnapshot(snapshot = {}) {
   return {
     wave: clampNumber(snapshot.wave, 1, 999),
     score: clampNumber(snapshot.score, 0, 99999999),
+    playerCount: clampNumber(snapshot.playerCount, 1, maxRoomPlayers),
     prepTimer: clampNumber(snapshot.prepTimer, 0, 30),
     waveDelay: clampNumber(snapshot.waveDelay, 0, 30),
+    endbossMode: Boolean(snapshot.endbossMode),
+    endbossPhase: clampNumber(snapshot.endbossPhase, 0, 3),
+    endbossTransition: clampNumber(snapshot.endbossTransition, 0, 5),
     bossesDefeated: clampNumber(snapshot.bossesDefeated, 0, 999),
     bossCoinBonus: clampNumber(snapshot.bossCoinBonus, 0, 999999),
     robots: sanitizeEntities(snapshot.robots, 50),
     bullets: sanitizeEntities(snapshot.bullets, 60),
     enemyBullets: sanitizeEntities(snapshot.enemyBullets, 60),
+    bossLasers: sanitizeEntities(snapshot.bossLasers, 8),
     pickups: sanitizeEntities(snapshot.pickups, 20)
   };
 }

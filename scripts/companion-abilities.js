@@ -4,7 +4,8 @@ export const companionAbilities = {
   solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schiessen", stat: "fireRate", multiplier: 1 / 1.25 },
   venom: { name: "Giftladung", description: "5 Sek. 25 % mehr Schaden", stat: "bulletDamage", multiplier: 1.25 },
   royal: { name: "Phasenschub", description: "5 Sek. 25 % schneller laufen", stat: "speed", multiplier: 1.25 },
-  eclipse: { name: "Dunkelschild", description: "5 Sek. starkes Schutzschild", stat: "shield", multiplier: 1 }
+  eclipse: { name: "Dunkelschild", description: "5 Sek. starkes Schutzschild", stat: "shield", multiplier: 1 },
+  "scipios-mask": { name: "Triumphschub", description: "5 Sek. alle Werte +25 %", stat: "all", multiplier: 1.25 }
 };
 
 export function setupCompanionAbilities({ state, dom, useHeroSpecial }) {
@@ -48,25 +49,50 @@ export function setupCompanionAbilities({ state, dom, useHeroSpecial }) {
     if (!ability) return;
     finishAbility();
 
-    active = { player, ability, originalValue: null };
+    active = { player, ability, originalValues: [], originalMaxHp: null };
     player.companionAbilityTimer = 5;
     player.pickupFlash = { color: companion.glow || companion.color, timer: 0.8 };
 
     if (ability.stat === "shield") {
       player.shield = Math.max(player.shield, 5);
+    } else if (ability.stat === "all") {
+      applyAllStatsBoost(player, ability.multiplier);
     } else {
-      active.originalValue = player.hero[ability.stat];
-      player.hero[ability.stat] = active.originalValue * ability.multiplier;
+      boostHeroStat(player, ability.stat, ability.multiplier);
     }
     updateHint();
   }
 
   function finishAbility() {
     if (!active) return;
-    if (active.originalValue !== null) active.player.hero[active.ability.stat] = active.originalValue;
+    for (const original of active.originalValues) {
+      original.target[original.key] = original.value;
+    }
+    if (active.originalMaxHp !== null) {
+      active.player.maxHp = active.originalMaxHp;
+      active.player.hp = Math.min(active.player.hp, active.originalMaxHp);
+    }
     active.player.companionAbilityTimer = 0;
     active = null;
     resetHint();
+  }
+
+  function boostHeroStat(player, stat, multiplier) {
+    const originalValue = Number(player.hero[stat]);
+    if (!Number.isFinite(originalValue)) return;
+    active.originalValues.push({ target: player.hero, key: stat, value: originalValue });
+    player.hero[stat] = originalValue * multiplier;
+  }
+
+  function applyAllStatsBoost(player, multiplier) {
+    boostHeroStat(player, "speed", multiplier);
+    boostHeroStat(player, "bulletDamage", multiplier);
+    boostHeroStat(player, "bulletSpeed", multiplier);
+    boostHeroStat(player, "fireRate", 1 / multiplier);
+    active.originalMaxHp = player.maxHp;
+    const bonusHp = Math.max(1, Math.round(player.maxHp * (multiplier - 1)));
+    player.maxHp += bonusHp;
+    player.hp = Math.min(player.maxHp, player.hp + bonusHp);
   }
 
   function updateHint() {

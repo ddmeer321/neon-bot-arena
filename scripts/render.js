@@ -205,6 +205,18 @@ function drawCompanion(ctx, state) {
     ctx.rotate(state.time);
     ctx.fillRect(-10, -10, 20, 20);
     ctx.strokeRect(-15, -15, 30, 30);
+  } else if (companion.shape === "mask") {
+    ctx.fillStyle = "#9ca3af";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 16, 19, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#05070a";
+    ctx.beginPath();
+    ctx.roundRect(-17, -7, 34, 13, 5);
+    ctx.fill();
+    ctx.fillStyle = "#f3f4f6";
+    ctx.fillRect(-10, -3, 7, 4);
+    ctx.fillRect(3, -3, 7, 4);
   } else {
     ctx.beginPath();
     ctx.arc(0, 0, 14, 0, Math.PI * 2);
@@ -212,9 +224,11 @@ function drawCompanion(ctx, state) {
     ctx.stroke();
   }
 
-  ctx.fillStyle = "rgba(255,255,255,0.88)";
-  ctx.fillRect(-6, -3, 4, 4);
-  ctx.fillRect(3, -3, 4, 4);
+  if (companion.shape !== "mask") {
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
+    ctx.fillRect(-6, -3, 4, 4);
+    ctx.fillRect(3, -3, 4, 4);
+  }
   if (abilityActive) {
     ctx.strokeStyle = "rgba(255,255,255,0.9)";
     ctx.lineWidth = 2;
@@ -229,10 +243,11 @@ function drawRobots(ctx, state) {
   for (const robot of state.robots) {
     ctx.save();
     ctx.translate(robot.x, robot.y);
-    const robotGlow = robot.boss ? "#b11226" : "#ff4f92";
+    if (robot.endboss) drawEndbossQuake(ctx, robot, state.time);
+    const robotGlow = robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#ff4f92";
     glowCircle(ctx, 0, 0, robot.radius + (robot.boss ? 34 : 14), robotGlow, robot.boss ? 0.32 + Math.sin(state.time * 5) * 0.08 : robot.hit > 0 ? 0.34 : 0.15);
     if (robot.boss) {
-      ctx.strokeStyle = "rgba(255,45,85,0.72)";
+      ctx.strokeStyle = robot.endboss ? "rgba(209,213,219,0.8)" : "rgba(255,45,85,0.72)";
       ctx.lineWidth = 3;
       ctx.rotate(Math.sin(state.time * 2) * 0.04);
       for (let i = 0; i < 8; i++) {
@@ -243,18 +258,18 @@ function drawRobots(ctx, state) {
         ctx.stroke();
       }
     }
-    ctx.fillStyle = robot.hit > 0 ? "#f6f7fb" : robot.boss ? "#5a0712" : robot.bruiser ? "#9aa4b8" : "#ff4f92";
+    ctx.fillStyle = robot.hit > 0 ? "#f6f7fb" : robot.endboss ? "#6b7280" : robot.boss ? "#5a0712" : robot.bruiser ? "#9aa4b8" : "#ff4f92";
     ctx.fillRect(-robot.radius, -robot.radius, robot.radius * 2, robot.radius * 2);
     if (robot.boss) {
-      ctx.strokeStyle = "#ff2d55";
+      ctx.strokeStyle = robot.endboss ? "#111318" : "#ff2d55";
       ctx.lineWidth = 4;
       ctx.strokeRect(-robot.radius, -robot.radius, robot.radius * 2, robot.radius * 2);
-      ctx.fillStyle = "rgba(255,45,85,0.28)";
+      ctx.fillStyle = robot.endboss ? "rgba(17,19,24,0.18)" : "rgba(255,45,85,0.28)";
       ctx.fillRect(-robot.radius + 6, -robot.radius + 6, robot.radius * 2 - 12, robot.radius * 2 - 12);
     }
     ctx.fillStyle = "#07121b";
     ctx.fillRect(-robot.radius * 0.55, -robot.radius * 0.22, robot.radius * 1.1, robot.radius * 0.25);
-    ctx.fillStyle = robot.boss ? "#ffb3c1" : "#38d8ff";
+    ctx.fillStyle = robot.endboss ? "#f9fafb" : robot.boss ? "#ffb3c1" : "#38d8ff";
     ctx.fillRect(-robot.radius * 0.44, -robot.radius * 0.18, robot.radius * 0.3, robot.radius * 0.14);
     ctx.fillRect(robot.radius * 0.16, -robot.radius * 0.18, robot.radius * 0.3, robot.radius * 0.14);
     ctx.fillStyle = "rgba(255,255,255,0.2)";
@@ -291,14 +306,93 @@ function drawRobots(ctx, state) {
   }
 }
 
+function drawEndbossQuake(ctx, robot, time) {
+  const warning = Math.max(0, Number(robot.quakeWarning) || 0);
+  const blast = Math.max(0, Number(robot.quakeBlast) || 0);
+  if (warning <= 0 && blast <= 0) return;
+  const radius = Math.max(60, Number(robot.quakeRadius) || 175);
+  ctx.save();
+
+  if (warning > 0) {
+    const maxWarning = Math.max(warning, Number(robot.quakeWarningMax) || warning);
+    const progress = Math.max(0, Math.min(1, 1 - warning / maxWarning));
+    const pulseSize = radius * (0.7 + progress * 0.3);
+    ctx.fillStyle = `rgba(255,159,67,${0.05 + progress * 0.08})`;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffc857";
+    ctx.globalAlpha = 0.55 + Math.sin(time * 18) * 0.2;
+    ctx.lineWidth = 4 + progress * 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, pulseSize, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.82;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 * i) / 12 + Math.sin(time * 5 + i) * 0.035;
+      const inner = robot.radius + 10;
+      const outer = inner + (radius - inner) * (0.42 + progress * 0.42);
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+      ctx.lineTo(Math.cos(angle + 0.08) * outer * 0.58, Math.sin(angle + 0.08) * outer * 0.58);
+      ctx.lineTo(Math.cos(angle - 0.035) * outer, Math.sin(angle - 0.035) * outer);
+      ctx.stroke();
+    }
+  } else {
+    const maxBlast = Math.max(blast, Number(robot.quakeBlastMax) || blast);
+    const progress = Math.max(0, Math.min(1, 1 - blast / maxBlast));
+    ctx.fillStyle = `rgba(255,112,67,${Math.max(0, 0.22 * (1 - progress))})`;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#ff9f43";
+    ctx.globalAlpha = Math.max(0, 1 - progress);
+    ctx.lineWidth = 12 - progress * 6;
+    for (const scale of [0.72, 0.88, 1]) {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * Math.min(1, scale + progress * 0.14), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
 function drawBullets(ctx, state) {
   [...state.bullets, ...state.enemyBullets].forEach((bullet) => {
+    if (bullet.maskBoomerang) {
+      drawMaskBoomerang(ctx, bullet);
+      return;
+    }
     glowCircle(ctx, bullet.x, bullet.y, bullet.radius + 8, bullet.color, 0.45);
     ctx.fillStyle = bullet.color;
     ctx.beginPath();
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
     ctx.fill();
   });
+}
+
+function drawMaskBoomerang(ctx, bullet) {
+  ctx.save();
+  ctx.translate(bullet.x, bullet.y);
+  ctx.rotate((bullet.age || 0) * (bullet.returning ? -12 : 12));
+  glowCircle(ctx, 0, 0, 24, "#d1d5db", 0.34);
+  ctx.fillStyle = "#111318";
+  ctx.strokeStyle = "#d1d5db";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-15, -7);
+  ctx.quadraticCurveTo(0, -15, 15, -7);
+  ctx.lineTo(11, 8);
+  ctx.quadraticCurveTo(0, 14, -11, 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f3f4f6";
+  ctx.fillRect(-9, -3, 6, 4);
+  ctx.fillRect(3, -3, 6, 4);
+  ctx.restore();
 }
 
 function drawBossLasers(ctx, state) {
@@ -311,7 +405,8 @@ function drawBossLasers(ctx, state) {
     ctx.translate(laser.x, laser.y);
     ctx.rotate(laser.angle);
     ctx.globalAlpha = alpha;
-    ctx.strokeStyle = blasting ? "#ff2d55" : "#ffc857";
+    const color = laser.color || "#ff2d55";
+    ctx.strokeStyle = blasting ? color : "#ffc857";
     ctx.lineWidth = blasting ? width : 4;
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -320,7 +415,7 @@ function drawBossLasers(ctx, state) {
     if (!blasting) {
       ctx.globalAlpha = 0.18 + Math.sin(state.time * 18) * 0.08;
       ctx.lineWidth = width;
-      ctx.strokeStyle = "#ff2d55";
+      ctx.strokeStyle = color;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(laser.length || 900, 0);
@@ -328,7 +423,7 @@ function drawBossLasers(ctx, state) {
     } else {
       ctx.globalAlpha = alpha * 0.42;
       ctx.lineWidth = width * 2.2;
-      ctx.strokeStyle = "#ff7a3d";
+      ctx.strokeStyle = laser.color ? "#f9fafb" : "#ff7a3d";
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(laser.length || 900, 0);
@@ -593,16 +688,34 @@ function drawBossHud(ctx, canvas, state) {
     roundRect(ctx, x + 4, y + 4, width - 8, 16, 5);
     ctx.fill();
     const grad = ctx.createLinearGradient(x, y, x + width, y);
-    grad.addColorStop(0, "#5a0712");
-    grad.addColorStop(0.45, "#b11226");
-    grad.addColorStop(1, "#ff2d55");
+    if (boss.endboss) {
+      grad.addColorStop(0, "#374151");
+      grad.addColorStop(0.45, "#9ca3af");
+      grad.addColorStop(1, "#f3f4f6");
+    } else {
+      grad.addColorStop(0, "#5a0712");
+      grad.addColorStop(0.45, "#b11226");
+      grad.addColorStop(1, "#ff2d55");
+    }
     ctx.fillStyle = grad;
     roundRect(ctx, x + 4, y + 4, (width - 8) * pct, 16, 5);
     ctx.fill();
     ctx.fillStyle = "#f6f7fb";
     ctx.font = "800 13px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Boss Welle " + state.wave, canvas.width / 2, y - 8);
+    ctx.fillText(boss.endboss ? `Der Masken Dieb · Stufe ${boss.endbossPhase}/3` : "Boss Welle " + state.wave, canvas.width / 2, y - 8);
+    ctx.restore();
+  }
+
+  if (state.endbossMode && state.endbossTransition > 0) {
+    ctx.save();
+    ctx.fillStyle = "rgba(8,12,20,0.8)";
+    roundRect(ctx, canvas.width / 2 - 165, 118, 330, 38, 8);
+    ctx.fill();
+    ctx.fillStyle = "#d1d5db";
+    ctx.font = "900 16px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Stufe ${state.endbossPhase} in ${Math.ceil(state.endbossTransition)}...`, canvas.width / 2, 143);
     ctx.restore();
   }
 

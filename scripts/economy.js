@@ -49,6 +49,7 @@ export function renderShop(state, dom) {
   const lockedHeroes = Object.values(heroes).filter((hero) => !isHeroUnlocked(state, hero.id));
   const companionCards = Object.values(companions)
     .filter((companion) => companion.id !== defaultCosmetic)
+    .filter((companion) => !companion.hiddenUntilOwned || isCompanionOwned(state, companion.id))
     .map((companion) => renderCompanionCard(state, companion))
     .join("");
   dom.shopList.innerHTML = `
@@ -68,7 +69,7 @@ export function renderShop(state, dom) {
     <div class="shop-section">
       <div class="shop-heading">
         <span>Begleiter</span>
-        <strong>Nur Look</strong>
+        <strong>Spezial-Bonus</strong>
       </div>
       <div class="fighters shop-grid">${companionCards}</div>
     </div>
@@ -154,7 +155,7 @@ export function getEquippedCosmetic(state) {
 
 export function buyCompanion(state, dom, companionId) {
   const companion = companions[companionId];
-  if (!companion || isCompanionOwned(state, companionId) || state.coins < companion.price) return;
+  if (!companion || companion.rewardOnly || isCompanionOwned(state, companionId) || state.coins < companion.price) return;
   state.coins -= companion.price;
   state.ownedCosmetics.push(companionId);
   state.equippedCosmetic = companionId;
@@ -207,8 +208,8 @@ function renderCompanionCard(state, companion) {
   const owned = isCompanionOwned(state, companion.id);
   const equipped = state.equippedCosmetic === companion.id;
   const disabled = !owned && state.coins < companion.price;
-  const action = owned ? `data-equip-companion="${companion.id}"` : `data-buy-companion="${companion.id}"`;
-  const status = equipped ? "Aktiv" : owned ? "Ausrüsten" : `${companion.price} Münzen`;
+  const action = owned ? `data-equip-companion="${companion.id}"` : companion.rewardOnly ? "" : `data-buy-companion="${companion.id}"`;
+  const status = equipped ? "Aktiv" : owned ? "Ausrüsten" : companion.rewardOnly ? "Belohnung" : `${companion.price} Münzen`;
   return `
     <button class="fighter companion-card ${equipped ? "selected" : ""} ${owned ? "" : "locked"}" ${action} ${disabled ? "disabled" : ""}>
       <span class="companion-swatch" style="--companion-color:${companion.color}; --companion-glow:${companion.glow};"></span>

@@ -1,9 +1,20 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry } from "./storage.js?v=musicvolume1";
+import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=musicvolume1";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=musicvolume1";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=musicvolume1";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerGameOver, sendMultiplayerPlayerState } from "./multiplayer-test.js?v=musicvolume1";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop3";
+
+export function getMultiplayerScaling(value = 1) {
+  const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
+  return {
+    playerCount,
+    enemyCount: 1 + (playerCount - 1) * 0.22,
+    enemyHp: 1 + (playerCount - 1) * 0.28,
+    bossHp: 1 + (playerCount - 1) * 0.42,
+    damage: 1 + (playerCount - 1) * 0.08
+  };
+}
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
@@ -63,38 +74,78 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   };
 
+  function getEndbossHeroStats(hero, endbossMode) {
+    if (!endbossMode || state.selectedHero !== "warden") return hero;
+    return {
+      ...hero,
+      hp: Math.round(hero.hp * 1.25),
+      speed: Math.round(hero.speed * 1.12),
+      bulletDamage: Math.round(hero.bulletDamage * 1.3),
+      fireRate: Math.max(0.18, hero.fireRate * 0.86),
+      specialCooldown: Math.max(1, hero.specialCooldown * 0.85)
+    };
+  }
+
   function getDifficultySettings() {
     return difficultySettings[state.difficulty] || difficultySettings.normal;
+  }
+
+  function getActivePlayerCount() {
+    if (!state.multiplayer?.active || state.multiplayer.role === "solo") return 1;
+    return Math.max(1, Math.min(3, Math.round(Number(state.multiplayer.playerCount) || 1)));
+  }
+
+  function getPlayerScaling() {
+    return getMultiplayerScaling(getActivePlayerCount());
+  }
+
+  function nextEntityId(prefix) {
+    state.networkEntitySequence = (Number(state.networkEntitySequence) || 0) + 1;
+    const rawOwner = state.multiplayer?.clientId || state.multiplayer?.role || "local";
+    const owner = String(rawOwner).replace(/[^a-z0-9]/gi, "").slice(-6) || "local";
+    return `${prefix}-${owner}-${state.networkEntitySequence}`;
   }
 
   state.handleMultiplayerGameOver = () => {
     if (!state.running || state.over || !isCoopMode()) return;
     endGame({ broadcast: false });
   };
+  state.handleMultiplayerEndbossResult = (victory) => {
+    if (!state.running || state.over || !state.endbossMode || !isCoopGuest()) return;
+    finishEndbossRun(Boolean(victory), { broadcast: false });
+  };
 
   function startGame(options = {}) {
-    const hero = getSelectedHeroStats(state);
+    const endbossMode = Boolean(options.endboss);
+    const hero = getEndbossHeroStats(getSelectedHeroStats(state), endbossMode);
     state.playerName = cleanName(dom.playerNameInput?.value || state.playerName);
     if (dom.playerNameInput) dom.playerNameInput.value = state.playerName;
     if (!options.coop && state.multiplayer) {
       state.multiplayer.active = false;
       state.multiplayer.role = "solo";
       state.multiplayer.hostId = null;
+      state.multiplayer.playerCount = 1;
       state.multiplayer.lastWorldAt = 0;
+    } else if (options.coop && state.multiplayer) {
+      state.multiplayer.playerCount = Math.max(1, Math.min(3, Number(options.playerCount) || state.multiplayer.playerCount || 1));
     }
     Object.assign(state, {
       running: true,
       paused: false,
       over: false,
-      wave: options.startWave || 1,
-      score: options.startWave ? Math.max(0, (options.startWave - 1) * 100) : 0,
+      wave: endbossMode ? 1 : options.startWave || 1,
+      score: endbossMode ? 0 : options.startWave ? Math.max(0, (options.startWave - 1) * 100) : 0,
       startHighScore: state.highScore,
       bossCoinBonus: 0,
       bossesDefeated: 0,
-      prepTimer: options.skipPrep ? 0 : 5,
+      endbossMode,
+      endbossPhase: endbossMode ? 1 : 0,
+      endbossTransition: 0,
+      prepTimer: endbossMode || options.skipPrep ? 0 : 5,
       waveDelay: 0,
       nextWavePulse: 0,
       time: 0,
+      networkEntitySequence: 0,
       bullets: [],
       enemyBullets: [],
       robots: [],
@@ -120,6 +171,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       damageBoostTimer: 0,
       speedBoostTimer: 0,
       companionAbilityTimer: 0,
+      lastBossQuakeHit: 0,
+      hitMaskIds: new Set(),
       pickupFlash: null,
       hero
     };
@@ -131,7 +184,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.gamePanel.classList.remove("hidden");
     dom.message.classList.add("hidden");
     startMusic();
-    if (state.prepTimer <= 0) spawnWave();
+    if (endbossMode) {
+      spawnEndbossPhase(1);
+    } else if (state.prepTimer <= 0) {
+      spawnWave();
+    }
   }
 
   function applyDeviceMode() {
@@ -196,6 +253,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     state.time += dt;
     state.shake = Math.max(0, state.shake - dt * 14);
     state.nextWavePulse = Math.max(0, state.nextWavePulse - dt);
+    updateMultiplayerInterpolation(state, dt);
     if (isCoopGuest()) {
       updateGuestFrame(dt);
       return;
@@ -207,6 +265,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     updateRobots(dt);
     updateParticles(dt);
     updatePickups(dt);
+
+    if (state.endbossMode) {
+      updateEndbossTransition(dt);
+      updateHud();
+      return;
+    }
 
     if (state.prepTimer > 0) {
       state.prepTimer = Math.max(0, state.prepTimer - dt);
@@ -241,6 +305,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateGuestFrame(dt) {
     updatePlayer(dt);
+    advanceGuestProjectiles(dt);
     updateGuestDamage(dt);
     updateGuestPickups();
     updateBossLasers(dt);
@@ -248,8 +313,24 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     updateHud();
   }
 
+  function advanceGuestProjectiles(dt) {
+    for (const bullet of [...state.bullets, ...state.enemyBullets]) {
+      bullet.x += (Number(bullet.vx) || 0) * dt;
+      bullet.y += (Number(bullet.vy) || 0) * dt;
+      bullet.life = (Number(bullet.life) || 0) - dt;
+    }
+    state.bullets = state.bullets.filter((bullet) => (
+      bullet.life > 0
+      && bullet.x > -40
+      && bullet.x < dom.canvas.width + 40
+      && bullet.y > -40
+      && bullet.y < dom.canvas.height + 40
+    ));
+  }
+
   function spawnWave() {
     const settings = getDifficultySettings();
+    const playerScaling = getPlayerScaling();
     const bossWave = state.wave % settings.bossEvery === 0;
     if (bossWave) {
       state.robots.push(makeRobot(dom.canvas.width / 2, 92, true, true, true));
@@ -257,7 +338,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       return;
     }
 
-    const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount));
+    const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount * playerScaling.enemyCount));
     for (let i = 0; i < count; i++) {
       const side = Math.floor(Math.random() * 4);
       const x = side === 0 ? 42 : side === 1 ? dom.canvas.width - 42 : 42 + Math.random() * (dom.canvas.width - 84);
@@ -268,13 +349,88 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
+  function spawnEndbossPhase(phase) {
+    state.endbossPhase = phase;
+    state.endbossTransition = 0;
+    state.robots = [makeEndboss(phase)];
+    state.enemyBullets = [];
+    state.bossLasers = [];
+    state.nextWavePulse = 1.2;
+    pulse(dom.canvas.width / 2, 92, "#d1d5db", 52);
+  }
+
+  function updateEndbossTransition(dt) {
+    if (state.over || state.endbossTransition <= 0) return;
+    state.endbossTransition = Math.max(0, state.endbossTransition - dt);
+    if (state.endbossTransition <= 0) spawnEndbossPhase(state.endbossPhase);
+  }
+
+  function makeEndboss(phase) {
+    const settings = getDifficultySettings();
+    const playerScaling = getPlayerScaling();
+    const stages = {
+      1: { hp: 1200, speed: 78, damage: 28, bulletDamage: 17, bulletSpeed: 340, fireRate: 1.1, attackRate: 2.5 },
+      2: { hp: 2200, speed: 94, damage: 38, bulletDamage: 24, bulletSpeed: 395, fireRate: 0.92, attackRate: 2.05 },
+      3: { hp: 3600, speed: 112, damage: 50, bulletDamage: 32, bulletSpeed: 455, fireRate: 0.74, attackRate: 1.65 }
+    };
+    const stage = stages[phase] || stages[3];
+    const hp = Math.round(stage.hp * settings.enemyHp * playerScaling.bossHp);
+    const speed = Math.round(stage.speed * settings.enemySpeed);
+    const robot = {
+      id: nextEntityId("eb"),
+      x: dom.canvas.width / 2,
+      y: 92,
+      radius: 38 + phase * 2,
+      hp,
+      maxHp: hp,
+      speed,
+      baseSpeed: speed,
+      damage: Math.round(stage.damage * settings.enemyDamage * playerScaling.damage),
+      bulletDamage: Math.round(stage.bulletDamage * settings.enemyDamage * playerScaling.damage),
+      bulletSpeed: stage.bulletSpeed,
+      fireTimer: 0.7,
+      fireRate: stage.fireRate,
+      shooter: true,
+      bruiser: true,
+      boss: true,
+      endboss: true,
+      endbossPhase: phase,
+      bossAttackTimer: 1.3,
+      bossAttackRate: stage.attackRate,
+      bossAttackIndex: 0,
+      wardenQuakeEnabled: hasIronWardenPlayer(),
+      quakeId: 0,
+      quakeWarning: 0,
+      quakeWarningMax: 0,
+      quakeBlast: 0,
+      quakeBlastMax: 0,
+      quakeRadius: 0,
+      quakeDamage: 0,
+      hit: 0,
+      stunTimer: 0,
+      frozenTimer: 0,
+      burnTimer: 0
+    };
+    return robot;
+  }
+
+  function hasIronWardenPlayer() {
+    if (state.selectedHero === "warden") return true;
+    return (state.remotePlayers || []).some((player) => {
+      const hero = String(player.hero || "").toLowerCase();
+      return hero === "warden" || hero.includes("iron warden");
+    });
+  }
+
   function makeRobot(x, y, shooter, bruiser, boss = false) {
     const settings = getDifficultySettings();
+    const playerScaling = getPlayerScaling();
     const baseSpeed = boss ? 82 : bruiser ? 96 : 135 + state.wave * 4;
     const baseHp = boss ? 720 + state.wave * 52 : bruiser ? 92 + state.wave * 11 : 48 + state.wave * 8;
     const speed = Math.round(baseSpeed * settings.enemySpeed * (boss ? settings.bossSpeed : 1));
-    const hp = Math.round(baseHp * settings.enemyHp * (boss ? settings.bossHp : 1));
+    const hp = Math.round(baseHp * settings.enemyHp * (boss ? settings.bossHp * playerScaling.bossHp : playerScaling.enemyHp));
     return {
+      id: nextEntityId(boss ? "bo" : "r"),
       x,
       y,
       radius: boss ? 34 : bruiser ? 25 : 18,
@@ -282,8 +438,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       maxHp: hp,
       speed,
       baseSpeed: speed,
-      damage: Math.round((boss ? 28 : bruiser ? 20 : 13) * settings.enemyDamage * (boss ? settings.bossDamage : 1)),
-      bulletDamage: Math.round((boss ? 18 : 12) * settings.enemyDamage * (boss ? settings.bossDamage : 1)),
+      damage: Math.round((boss ? 28 : bruiser ? 20 : 13) * settings.enemyDamage * (boss ? settings.bossDamage : 1) * playerScaling.damage),
+      bulletDamage: Math.round((boss ? 18 : 12) * settings.enemyDamage * (boss ? settings.bossDamage : 1) * playerScaling.damage),
       fireTimer: Math.random() * 2,
       shooter,
       bruiser,
@@ -378,6 +534,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function addBullet(x, y, angle, speed, damage, color, pierce) {
     const bullet = {
+      id: nextEntityId("b"),
       x: x + Math.cos(angle) * 24,
       y: y + Math.sin(angle) * 24,
       vx: Math.cos(angle) * speed,
@@ -498,11 +655,17 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function updateBullets(dt, bullets, playerOwned) {
     for (let i = bullets.length - 1; i >= 0; i--) {
       const bullet = bullets[i];
-      bullet.x += bullet.vx * dt;
-      bullet.y += bullet.vy * dt;
+      bullet.age = (Number(bullet.age) || 0) + dt;
+      const returnedToBoss = !playerOwned && bullet.maskBoomerang
+        ? updateMaskBoomerang(bullet, dt)
+        : false;
+      if (!bullet.maskBoomerang || playerOwned) {
+        bullet.x += bullet.vx * dt;
+        bullet.y += bullet.vy * dt;
+      }
       bullet.life -= dt;
       addParticle(bullet.x, bullet.y, bullet.color, 1);
-      if (bullet.life <= 0 || bullet.x < -30 || bullet.x > dom.canvas.width + 30 || bullet.y < -30 || bullet.y > dom.canvas.height + 30) {
+      if (returnedToBoss || bullet.life <= 0 || bullet.x < -30 || bullet.x > dom.canvas.width + 30 || bullet.y < -30 || bullet.y > dom.canvas.height + 30) {
         bullets.splice(i, 1);
         continue;
       }
@@ -517,8 +680,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
           }
         }
       } else if (!state.player.dead && distance(bullet, state.player) < bullet.radius + state.player.radius) {
-        hurtPlayer(bullet.damage || 12 + state.wave * 2);
-        bullets.splice(i, 1);
+        if (bullet.maskBoomerang) {
+          if (!bullet.hitPlayer) {
+            bullet.hitPlayer = true;
+            bullet.returning = true;
+            hurtPlayer(bullet.damage || 12 + state.wave * 2);
+          }
+        } else {
+          hurtPlayer(bullet.damage || 12 + state.wave * 2);
+          bullets.splice(i, 1);
+        }
       }
     }
   }
@@ -528,6 +699,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const settings = getDifficultySettings();
     for (let i = state.robots.length - 1; i >= 0; i--) {
       const robot = state.robots[i];
+      if (robot.endboss && !robot.wardenQuakeEnabled && hasIronWardenPlayer()) robot.wardenQuakeEnabled = true;
+      if (robot.endboss) updateEndbossQuake(robot, dt);
       const target = getRobotTarget(robot);
       const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
       const close = distance(robot, target) < robot.radius + (target.radius || 19) + 5;
@@ -570,16 +743,28 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       if (robot.shooter || robot.boss) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && !target.dead && distance(robot, target) < 620) {
-          const shotSpeed = robot.boss ? settings.bossBulletSpeed : 360;
-          robot.fireTimer = robot.boss ? settings.bossFireRate : 1.5;
-          state.enemyBullets.push({ x: robot.x, y: robot.y, vx: Math.cos(angle) * shotSpeed, vy: Math.sin(angle) * shotSpeed, radius: robot.boss ? 7 : 5, life: 2, damage: robot.bulletDamage, color: robot.boss ? "#b11226" : "#ff4f92" });
+          const shotSpeed = robot.endboss ? robot.bulletSpeed : robot.boss ? settings.bossBulletSpeed : 360;
+          robot.fireTimer = robot.endboss ? robot.fireRate : robot.boss ? settings.bossFireRate : 1.5;
+          state.enemyBullets.push({
+            id: nextEntityId("e"),
+            x: robot.x,
+            y: robot.y,
+            vx: Math.cos(angle) * shotSpeed,
+            vy: Math.sin(angle) * shotSpeed,
+            radius: robot.boss ? 7 : 5,
+            life: 2,
+            damage: robot.bulletDamage,
+            color: robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#ff4f92"
+          });
         }
       }
       if (robot.hp <= 0) {
         state.robots.splice(i, 1);
-        state.score += robot.boss ? 700 : robot.bruiser ? 90 : 45;
-        pulse(robot.x, robot.y, robot.boss ? "#b11226" : "#38d8ff", robot.boss ? 80 : 24);
-        if (robot.boss) {
+        state.score += robot.endboss ? robot.endbossPhase * 1000 : robot.boss ? 700 : robot.bruiser ? 90 : 45;
+        pulse(robot.x, robot.y, robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#38d8ff", robot.boss ? 80 : 24);
+        if (robot.endboss) {
+          finishEndbossPhase(robot);
+        } else if (robot.boss) {
           state.bossesDefeated += 1;
           state.waveDelay = 3;
           state.nextWavePulse = 3;
@@ -591,6 +776,43 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
+  function updateMaskBoomerang(bullet, dt) {
+    if (!bullet.returning && bullet.age >= (bullet.returnAfter || 1.25)) bullet.returning = true;
+    if (bullet.returning) {
+      const boss = state.robots.find((robot) => robot.id === bullet.bossId);
+      const targetX = boss?.x ?? bullet.originX;
+      const targetY = boss?.y ?? bullet.originY;
+      const angle = Math.atan2(targetY - bullet.y, targetX - bullet.x);
+      const speed = bullet.boomerangSpeed || Math.hypot(bullet.vx, bullet.vy) || 330;
+      const turn = 1 - Math.exp(-9 * dt);
+      bullet.vx += (Math.cos(angle) * speed - bullet.vx) * turn;
+      bullet.vy += (Math.sin(angle) * speed - bullet.vy) * turn;
+      if (bullet.age > (bullet.returnAfter || 1.25) + 0.16 && Math.hypot(targetX - bullet.x, targetY - bullet.y) < (boss?.radius || 36) + 12) {
+        return true;
+      }
+    }
+    bullet.x += bullet.vx * dt;
+    bullet.y += bullet.vy * dt;
+    return false;
+  }
+
+  function finishEndbossPhase(robot) {
+    state.bossesDefeated += 1;
+    state.enemyBullets = [];
+    state.bossLasers = [];
+    if (robot.endbossPhase < 3) {
+      const healX = clamp(robot.x + (robot.x < dom.canvas.width / 2 ? 72 : -72), 50, dom.canvas.width - 50);
+      const healY = clamp(robot.y + 58, 92, dom.canvas.height - 58);
+      state.pickups.push(makePickup(healX, healY, "heal"));
+      state.endbossPhase = robot.endbossPhase + 1;
+      state.endbossTransition = 3;
+      state.nextWavePulse = 3;
+      state.player.invincible = Math.max(state.player.invincible, 1.2);
+      return;
+    }
+    finishEndbossRun(true);
+  }
+
   function hurtPlayer(amount) {
     const player = state.player;
     if (player.dead) return;
@@ -599,7 +821,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.hp -= reduced;
     state.shake = Math.max(state.shake, 0.28);
     if (player.hp <= 0) {
-      if (isCoopMode()) {
+      if (isCoopMode() && getActivePlayerCount() > 1) {
         knockOutPlayer();
       } else {
         endGame();
@@ -610,6 +832,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function updateBossAttack(robot, target, dt) {
     robot.bossAttackTimer = Math.max(0, (robot.bossAttackTimer || 0) - dt);
     if (robot.bossAttackTimer > 0) return;
+
+    if (robot.endboss) {
+      updateEndbossAttack(robot, target);
+      return;
+    }
 
     const difficulty = getDifficultySettings();
     const level = Math.max(1, Math.floor(state.wave / 10));
@@ -623,14 +850,219 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
   }
 
-  function startBossLaser(robot, target, difficulty, level) {
+  function updateEndbossAttack(robot, target) {
+    const phase = robot.endbossPhase || 1;
+    const hasQuake = robot.wardenQuakeEnabled && phase >= 2;
+    const attacks = phase === 1
+      ? ["fan", "boomerang"]
+      : phase === 2
+        ? ["fan", "ring", "boomerang", ...(hasQuake ? ["quake"] : [])]
+        : ["fan", "ring", "boomerang", "laser", ...(hasQuake ? ["quake"] : [])];
+    const attack = attacks[robot.bossAttackIndex % attacks.length];
+    robot.bossAttackIndex += 1;
+    robot.bossAttackTimer = robot.bossAttackRate;
+
+    if (attack === "fan") {
+      fireEndbossFan(robot, target, phase);
+    } else if (attack === "ring") {
+      fireEndbossRing(robot, phase);
+    } else if (attack === "boomerang") {
+      throwMaskBoomerangs(robot, target, phase);
+    } else if (attack === "laser") {
+      startBossLaser(robot, target, getDifficultySettings(), phase + 3, "#d1d5db");
+    } else {
+      startEndbossQuake(robot, phase);
+    }
+  }
+
+  function throwMaskBoomerangs(robot, target, phase) {
+    const count = Math.max(1, Math.min(3, phase));
+    const center = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const spread = phase >= 3 ? 0.22 : 0.18;
+    for (let i = 0; i < count; i++) {
+      const angle = center + (i - (count - 1) / 2) * spread;
+      const speed = robot.bulletSpeed * (phase >= 3 ? 0.9 : 0.84);
+      state.enemyBullets.push({
+        id: nextEntityId("em"),
+        bossId: robot.id,
+        x: robot.x + Math.cos(angle) * (robot.radius + 10),
+        y: robot.y + Math.sin(angle) * (robot.radius + 10),
+        originX: robot.x,
+        originY: robot.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: 12,
+        life: 4.2,
+        age: 0,
+        returnAfter: 1.25 + i * 0.1,
+        returning: false,
+        boomerangSpeed: speed * 1.08,
+        maskBoomerang: true,
+        damage: Math.round(robot.bulletDamage * 0.88),
+        color: "#d1d5db"
+      });
+    }
+    state.shake = Math.max(state.shake, 0.24);
+    pulse(robot.x, robot.y, "#111318", 28 + phase * 4);
+  }
+
+  function triggerMaskBoomerangForPlaytest() {
+    if (!state.endbossMode) return false;
+    state.running = true;
+    state.over = false;
+    state.paused = false;
+    dom.message.classList.add("hidden");
+    let boss = state.robots.find((robot) => robot.endboss);
+    if (!boss) {
+      spawnEndbossPhase(Math.max(1, state.endbossPhase || 1));
+      boss = state.robots.find((robot) => robot.endboss);
+    }
+    if (!boss) return false;
+    state.player.dead = false;
+    state.player.respawnTimer = 0;
+    state.player.hp = state.player.maxHp;
+    state.player.invincible = 3;
+    state.player.x = dom.canvas.width / 2;
+    state.player.y = dom.canvas.height * 0.62;
+    boss.stunTimer = Math.max(boss.stunTimer || 0, 3);
+    boss.fireTimer = Math.max(boss.fireTimer || 0, 3);
+    boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 3);
+    throwMaskBoomerangs(boss, state.player, boss.endbossPhase || 1);
+    updateHud();
+    return true;
+  }
+
+  function advanceEndbossPhaseForPlaytest() {
+    if (!state.endbossMode) {
+      startGame({ endboss: true, skipPrep: true, playtest: true });
+      return true;
+    }
+    const phase = Math.max(1, Number(state.endbossPhase) || 1);
+    if (phase < 3) {
+      spawnEndbossPhase(phase + 1);
+      updateHud();
+      return true;
+    }
+    const boss = state.robots.find((robot) => robot.endboss);
+    if (boss) boss.hp = 0;
+    return Boolean(boss);
+  }
+
+  function startEndbossQuake(robot, phase) {
+    const warning = phase >= 3 ? 0.82 : 1.05;
+    robot.quakeId = (Number(robot.quakeId) || 0) + 1;
+    robot.quakeWarning = warning;
+    robot.quakeWarningMax = warning;
+    robot.quakeBlast = 0;
+    robot.quakeBlastMax = 0.38;
+    robot.quakeRadius = phase >= 3 ? 220 : 175;
+    robot.quakeDamage = Math.round(robot.damage * (phase >= 3 ? 1.08 : 0.95));
+    state.shake = Math.max(state.shake, 0.2);
+    pulse(robot.x, robot.y, "#ffc857", 34);
+  }
+
+  function triggerEndbossQuakeForPlaytest() {
+    if (!state.endbossMode || state.selectedHero !== "warden") return false;
+    state.running = true;
+    state.over = false;
+    state.paused = false;
+    dom.message.classList.add("hidden");
+    let boss = state.robots.find((robot) => robot.endboss && robot.endbossPhase >= 2);
+    if (!boss) {
+      spawnEndbossPhase(Math.max(2, state.endbossPhase || 2));
+      boss = state.robots.find((robot) => robot.endboss);
+    }
+    if (!boss) return false;
+    state.player.dead = false;
+    state.player.respawnTimer = 0;
+    state.player.hp = state.player.maxHp;
+    state.player.invincible = 0;
+    state.player.x = boss.x;
+    state.player.y = clamp(boss.y + Math.min(110, (boss.quakeRadius || 175) * 0.56), 82, dom.canvas.height - 42);
+    boss.wardenQuakeEnabled = true;
+    boss.stunTimer = Math.max(boss.stunTimer || 0, 2.2);
+    boss.fireTimer = Math.max(boss.fireTimer || 0, 2.2);
+    boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 2.2);
+    startEndbossQuake(boss, boss.endbossPhase);
+    updateHud();
+    return true;
+  }
+
+  function updateEndbossQuake(robot, dt) {
+    if (robot.quakeWarning > 0) {
+      robot.quakeWarning = Math.max(0, robot.quakeWarning - dt);
+      if (robot.quakeWarning <= 0) {
+        robot.quakeBlast = robot.quakeBlastMax || 0.38;
+        state.shake = Math.max(state.shake, 0.8);
+        pulse(robot.x, robot.y, "#ff9f43", robot.quakeRadius || 175);
+      }
+      return;
+    }
+    if (robot.quakeBlast <= 0) return;
+    robot.quakeBlast = Math.max(0, robot.quakeBlast - dt);
+    damageLocalPlayerFromQuake(robot);
+  }
+
+  function damageLocalPlayerFromQuake(robot) {
+    const player = state.player;
+    if (!player || player.dead || player.lastBossQuakeHit === robot.quakeId) return;
+    if (distance(robot, player) > (robot.quakeRadius || 0) + player.radius) return;
+    player.lastBossQuakeHit = robot.quakeId;
+    hurtPlayer(robot.quakeDamage || robot.damage || 30);
+  }
+
+  function fireEndbossFan(robot, target, phase) {
+    const count = 3 + phase * 2;
+    const center = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const spread = 0.16;
+    for (let i = 0; i < count; i++) {
+      const angle = center + (i - (count - 1) / 2) * spread;
+      state.enemyBullets.push({
+        id: nextEntityId("ef"),
+        x: robot.x,
+        y: robot.y,
+        vx: Math.cos(angle) * robot.bulletSpeed,
+        vy: Math.sin(angle) * robot.bulletSpeed,
+        radius: 7,
+        life: 2.4,
+        damage: Math.round(robot.bulletDamage * 0.9),
+        color: "#d1d5db"
+      });
+    }
+    state.shake = Math.max(state.shake, 0.22);
+  }
+
+  function fireEndbossRing(robot, phase) {
+    const count = 8 + phase * 4;
+    const offset = state.time * (0.4 + phase * 0.15);
+    for (let i = 0; i < count; i++) {
+      const angle = offset + (Math.PI * 2 * i) / count;
+      const speed = robot.bulletSpeed * (0.72 + (i % 2) * 0.16);
+      state.enemyBullets.push({
+        id: nextEntityId("er"),
+        x: robot.x,
+        y: robot.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: phase >= 3 ? 7 : 6,
+        life: 2.8,
+        damage: Math.round(robot.bulletDamage * 0.72),
+        color: i % 2 ? "#9ca3af" : "#f3f4f6"
+      });
+    }
+    state.shake = Math.max(state.shake, 0.32);
+    pulse(robot.x, robot.y, "#9ca3af", 32);
+  }
+
+  function startBossLaser(robot, target, difficulty, level, color = "#ff2d55") {
     const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
     const laserCount = Math.min(3, Math.max(1, Math.ceil(level / 2)));
     const spread = laserCount === 1 ? 0 : 0.18;
-    const damage = Math.round((22 + level * 3) * difficulty.enemyDamage * difficulty.bossDamage);
+    const damage = Math.round((22 + level * 3) * difficulty.enemyDamage * difficulty.bossDamage * getPlayerScaling().damage);
     for (let i = 0; i < laserCount; i++) {
       const offset = (i - (laserCount - 1) / 2) * spread;
       state.bossLasers.push({
+        id: nextEntityId("l"),
         x: robot.x,
         y: robot.y,
         angle: angle + offset,
@@ -639,11 +1071,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         width: Math.min(30, 16 + level * 1.4),
         length: 900,
         damage,
-        hit: false
+        hit: false,
+        color
       });
     }
     state.shake = Math.max(state.shake, 0.22);
-    for (let i = 0; i < 14 + laserCount * 6; i++) addParticle(robot.x, robot.y, "#ff2d55", 1.7);
+    for (let i = 0; i < 14 + laserCount * 6; i++) addParticle(robot.x, robot.y, color, 1.7);
   }
 
   function fireBossBurst(robot, target, difficulty, level) {
@@ -654,6 +1087,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = 0; i < count; i++) {
       const angle = start + (Math.PI * 2 * i) / count;
       state.enemyBullets.push({
+        id: nextEntityId("bb"),
         x: robot.x,
         y: robot.y,
         vx: Math.cos(angle) * speed,
@@ -676,7 +1110,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         if (laser.warning <= 0) {
           laser.blast = 0.28;
           state.shake = Math.max(state.shake, 0.45);
-          pulse(laser.x, laser.y, "#ff2d55", 22);
+          pulse(laser.x, laser.y, laser.color || "#ff2d55", 22);
         }
       } else {
         laser.blast -= dt;
@@ -767,7 +1201,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const roll = Math.random();
     const type = forcedType || (roll < 0.45 ? "heal" : roll < 0.72 ? "damage" : "speed");
     const colors = { heal: "#b7ff4a", damage: "#ff7a3d", speed: "#38d8ff" };
-    return { x, y, type, color: colors[type], radius: 12, life: 9 };
+    return { id: nextEntityId("p"), x, y, type, color: colors[type], radius: 12, life: 9 };
   }
 
   function getRobotTarget(robot) {
@@ -790,15 +1224,24 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
     for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
       const bullet = state.enemyBullets[i];
-      bullet.x += (bullet.vx || 0) * dt;
-      bullet.y += (bullet.vy || 0) * dt;
-      bullet.life = (bullet.life || 0) - dt;
       if (distance(bullet, player) < (bullet.radius || 5) + player.radius) {
-        hurtPlayer(bullet.damage || 12 + state.wave * 2);
-        state.enemyBullets.splice(i, 1);
+        if (bullet.maskBoomerang) {
+          if (!player.hitMaskIds) player.hitMaskIds = new Set();
+          if (!player.hitMaskIds.has(bullet.id)) {
+            player.hitMaskIds.add(bullet.id);
+            hurtPlayer(bullet.damage || 12 + state.wave * 2);
+            if (player.hitMaskIds.size > 80) player.hitMaskIds.clear();
+          }
+        } else {
+          hurtPlayer(bullet.damage || 12 + state.wave * 2);
+          state.enemyBullets.splice(i, 1);
+        }
       } else if (bullet.life <= 0) {
         state.enemyBullets.splice(i, 1);
       }
+    }
+    for (const robot of state.robots || []) {
+      if (robot.endboss && robot.quakeBlast > 0) damageLocalPlayerFromQuake(robot);
     }
   }
 
@@ -841,6 +1284,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function endGame({ broadcast = true } = {}) {
+    if (state.endbossMode) {
+      finishEndbossRun(false);
+      return;
+    }
     if (state.over) return;
     state.over = true;
     if (broadcast && isCoopMode()) sendMultiplayerGameOver();
@@ -867,8 +1314,35 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
 
+  function finishEndbossRun(victory, { broadcast = true } = {}) {
+    if (state.over) return;
+    state.over = true;
+    if (victory && broadcast && isCoopHost()) sendMultiplayerEndbossResult(true);
+    state.touch.fire = false;
+    state.touch.moveX = 0;
+    state.touch.moveY = 0;
+    dom.touchControls?.classList.add("hidden");
+    stopMusic();
+
+    let rewardUnlocked = false;
+    if (victory && !state.ownedCosmetics.includes("scipios-mask")) {
+      state.ownedCosmetics.push("scipios-mask");
+      state.pendingCompanionReward = true;
+      rewardUnlocked = true;
+      saveProgression(state);
+    }
+
+    if (victory) {
+      showMessage(`<strong>Der Masken Dieb besiegt!</strong>Du hast alle drei Stufen in einer Runde bezwungen.${rewardUnlocked ? "<br>Neue Belohnung: Scipios Maske" : ""}<div class="message-actions"><button id="endbossAgainBtn">Erneut kämpfen</button><button id="endbossMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    } else {
+      showMessage(`<strong>Der Masken Dieb wurde nicht besiegt</strong>Du hast Stufe ${Math.max(1, state.endbossPhase)} von 3 erreicht.<div class="message-actions"><button id="endbossAgainBtn">Nochmal versuchen</button><button id="endbossMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+    }
+    bindOverlayButton("#endbossAgainBtn", () => startGame({ endboss: true, skipPrep: true }));
+    bindOverlayButton("#endbossMenuBtn", returnToMenu);
+  }
+
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, endbossMode: false, endbossPhase: 0, endbossTransition: 0, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
@@ -876,16 +1350,20 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.touchControls?.classList.add("hidden");
     document.body.classList.remove("playing");
     dom.menu.classList.remove("hidden");
+    dom.companionReward?.classList.toggle("hidden", !state.pendingCompanionReward);
     renderLeaderboard();
   }
 
   function updateHud() {
     if (!state.player) return;
-    if (state.score > state.highScore) saveHighScore(state, dom);
-    dom.waveText.textContent = state.wave;
+    if (!state.endbossMode && state.score > state.highScore) saveHighScore(state, dom);
+    dom.waveText.textContent = state.endbossMode ? `${state.endbossPhase}/3` : state.wave;
     dom.scoreText.textContent = state.score;
     if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
-    if (dom.difficultyText) dom.difficultyText.textContent = getDifficultySettings().label;
+    if (dom.difficultyText) {
+      const mode = state.endbossMode ? "Endboss" : getDifficultySettings().label;
+      dom.difficultyText.textContent = getActivePlayerCount() > 1 ? `${mode} · ${getActivePlayerCount()} Spieler` : mode;
+    }
     dom.healthBar.style.width = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
     dom.specialBar.style.width = `${clamp(100 - (state.player.specialTimer / state.player.hero.specialCooldown) * 100, 0, 100)}%`;
   }
@@ -925,6 +1403,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function cloneBullet(bullet) {
     return {
+      id: bullet.id,
       x: Math.round(bullet.x),
       y: Math.round(bullet.y),
       vx: bullet.vx,
@@ -948,6 +1427,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (action.kind === "shot") {
       for (const bullet of action.bullets || []) {
         state.bullets.push({
+          id: String(bullet.id || nextEntityId("rb")),
           x: Number(bullet.x) || x,
           y: Number(bullet.y) || y,
           vx: Number(bullet.vx) || Math.cos(angle) * 520,
@@ -1063,6 +1543,15 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   state.handleMultiplayerAction = handleMultiplayerAction;
 
-  return { startGame, togglePause, useSpecial, update, handleMultiplayerAction };
+  return {
+    startGame,
+    togglePause,
+    useSpecial,
+    update,
+    handleMultiplayerAction,
+    triggerEndbossQuakeForPlaytest,
+    triggerMaskBoomerangForPlaytest,
+    advanceEndbossPhaseForPlaytest
+  };
 }
 

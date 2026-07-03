@@ -3,7 +3,7 @@ import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=musicvolume1";
 
-export function setupTestPanel({ dom, state, startGame }) {
+export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask }) {
   renderStoredTestId(dom);
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
@@ -67,6 +67,22 @@ export function setupTestPanel({ dom, state, startGame }) {
     if (!hasTestPanelAccess() || !state.player) return;
     state.player.specialTimer = 0;
   });
+
+  bindAll([dom.testEndbossBtn, dom.testGameEndbossBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    startGame({ endboss: true, skipPrep: true, playtest: true });
+    updateTestPanelAccess(dom, state);
+  });
+
+  dom.testGameBossPhaseBtn?.addEventListener("click", () => {
+    if (hasTestPanelAccess()) advanceBossPhase?.();
+  });
+  dom.testGameBossQuakeBtn?.addEventListener("click", () => {
+    if (hasTestPanelAccess()) triggerBossQuake?.();
+  });
+  dom.testGameBossMaskBtn?.addEventListener("click", () => {
+    if (hasTestPanelAccess()) triggerBossMask?.();
+  });
 }
 
 function bindAll(elements, handler) {
@@ -100,6 +116,8 @@ function updateTestPanelAccess(dom, state) {
 }
 
 function hasTestPanelAccess() {
+  const params = new URLSearchParams(window.location.search);
+  if (["localhost", "127.0.0.1"].includes(window.location.hostname) && params.has("playtest")) return true;
   const id = localStorage.getItem(testIdKey);
   if (!id) return false;
   return testPanelAccess.some((entry) => String(entry) === id);

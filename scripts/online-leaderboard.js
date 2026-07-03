@@ -1,4 +1,4 @@
-import { cleanName } from "./utils.js";
+﻿import { cleanName } from "./utils.js";
 
 const SUPABASE_URL = "https://ncishdfeznjysqswsvzq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NKMtRTJM-5O0rWaJP3pGaw_vvofM_H8";
