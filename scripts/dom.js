@@ -1,4 +1,4 @@
-export function getDom() {
+﻿export function getDom() {
   const canvas = document.querySelector("#game");
 
   if (!canvas) {
@@ -43,6 +43,10 @@ export function getDom() {
     lobbyCodeText: document.querySelector("#lobbyCodeText"),
     lobbyPlayersText: document.querySelector("#lobbyPlayersText"),
     lobbyNames: document.querySelector("#lobbyNames"),
+    endbossBtn: document.querySelector("#endbossBtn"),
+    companionReward: document.querySelector("#companionReward"),
+    rewardEquipBtn: document.querySelector("#rewardEquipBtn"),
+    rewardCloseBtn: document.querySelector("#rewardCloseBtn"),
     testPanel: document.querySelector("#testPanel"),
     testPanelGame: document.querySelector("#testPanelGame"),
     testPanelUser: document.querySelector("#testPanelUser"),
@@ -54,11 +58,16 @@ export function getDom() {
     testMaxHeroBtn: document.querySelector("#testMaxHeroBtn"),
     testHealBtn: document.querySelector("#testHealBtn"),
     testSpecialBtn: document.querySelector("#testSpecialBtn"),
+    testEndbossBtn: document.querySelector("#testEndbossBtn"),
     testGameHealBtn: document.querySelector("#testGameHealBtn"),
     testGameSpecialBtn: document.querySelector("#testGameSpecialBtn"),
     testGameCoinsBtn: document.querySelector("#testGameCoinsBtn"),
     testGameWave10Btn: document.querySelector("#testGameWave10Btn"),
     testGameWave20Btn: document.querySelector("#testGameWave20Btn"),
+    testGameEndbossBtn: document.querySelector("#testGameEndbossBtn"),
+    testGameBossPhaseBtn: document.querySelector("#testGameBossPhaseBtn"),
+    testGameBossQuakeBtn: document.querySelector("#testGameBossQuakeBtn"),
+    testGameBossMaskBtn: document.querySelector("#testGameBossMaskBtn"),
     heroMenuBtn: document.querySelector("#heroMenuBtn"),
     shopMenuBtn: document.querySelector("#shopMenuBtn"),
     heroPanel: document.querySelector("#heroPanel"),

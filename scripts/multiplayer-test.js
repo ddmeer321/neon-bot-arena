@@ -1,4 +1,4 @@
-const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
+﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
 let socket = null;
 let connecting = false;
@@ -9,9 +9,18 @@ let pendingCoopStart = null;
 let coopStartTimer = null;
 let startHandlerReady = false;
 let lastWorldSend = 0;
+let endbossUnlocked = false;
 
 export function setupMultiplayerTest(dom, state, startGame) {
   multiplayerState = state;
+  const updateEndbossAccess = () => {
+    const code = String(dom.lobbyCodeInput?.value || "").replace(/\D/g, "").slice(0, 4);
+    if (code === "7770") endbossUnlocked = true;
+    dom.endbossBtn?.classList.toggle("hidden", !endbossUnlocked);
+  };
+  dom.lobbyCodeInput?.addEventListener("input", updateEndbossAccess);
+  updateEndbossAccess();
+
   dom.multiplayerTestBtn?.addEventListener("click", () => {
     connect(dom, true);
   });
@@ -22,6 +31,13 @@ export function setupMultiplayerTest(dom, state, startGame) {
 
   dom.joinLobbyBtn?.addEventListener("click", () => {
     const code = String(dom.lobbyCodeInput?.value || "").replace(/\D/g, "").slice(0, 4);
+    if (code === "7770") {
+      endbossUnlocked = true;
+      updateEndbossAccess();
+      setStatus(dom, "Endboss-Lobby wird erstellt...", "loading");
+      sendWhenConnected(dom, { type: "create-room", name: getPlayerName(dom) });
+      return;
+    }
     if (code.length !== 4) {
       setStatus(dom, "Code fehlt", "error");
       return;
@@ -30,17 +46,39 @@ export function setupMultiplayerTest(dom, state, startGame) {
   });
 
   dom.leaveLobbyBtn?.addEventListener("click", () => {
-    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave-room" }));
-    setLobby(dom, null, 0, 2, []);
+    if (socket?.readyState === 1) socket.send(JSON.stringify({ type: "leave-room" }));
+    setLobby(dom, null, 0, 3, []);
     resetMultiplayerState();
   });
 
   dom.coopStartBtn?.addEventListener("click", () => {
-    if (currentLobbyCount < 2) {
-      setStatus(dom, "2 Spieler noetig", "error");
+    if (currentLobbyCount !== 2) {
+      setStatus(dom, "Normaler Koop braucht genau 2 Spieler", "error");
       return;
     }
     sendWhenConnected(dom, { type: "start-room" });
+  });
+
+  dom.endbossBtn?.addEventListener("click", () => {
+    if (!endbossUnlocked) return;
+    const playtest = ["localhost", "127.0.0.1"].includes(window.location?.hostname)
+      && new URLSearchParams(window.location?.search || "").has("playtest");
+    if (state.multiplayer?.active && socket?.readyState === WebSocket.OPEN) {
+      if (state.multiplayer.role !== "host") {
+        setStatus(dom, "Nur der Host kann starten", "error");
+        return;
+      }
+      setStatus(dom, "Endboss startet", "ok");
+      socket.send(JSON.stringify({ type: "start-room", mode: "endboss" }));
+      return;
+    }
+    if (playtest) {
+      setStatus(dom, "Endboss startet", "ok");
+      startGame({ endboss: true, skipPrep: true, playtest: true });
+      return;
+    }
+    setStatus(dom, "Endboss-Lobby wird erstellt...", "loading");
+    sendWhenConnected(dom, { type: "create-room", name: getPlayerName(dom) });
   });
 
   window.setInterval(() => {
@@ -136,9 +174,13 @@ function connect(dom, pingOnly) {
       multiplayerState?.handleMultiplayerGameOver?.();
       return;
     }
+    if (data.type === "endboss-result") {
+      multiplayerState?.handleMultiplayerEndbossResult?.(Boolean(data.victory));
+      return;
+    }
     if (data.type === "room-left") {
       setStatus(dom, "Verbunden", "ok");
-      setLobby(dom, null, 0, 2, []);
+      setLobby(dom, null, 0, 3, []);
       resetMultiplayerState();
       return;
     }
@@ -156,7 +198,7 @@ function connect(dom, pingOnly) {
     connecting = false;
     socket = null;
     setStatus(dom, "Getrennt", "error");
-    setLobby(dom, null, 0, 2, []);
+    setLobby(dom, null, 0, 3, []);
     resetMultiplayerState();
   });
 
@@ -179,9 +221,20 @@ function setStatus(dom, text, state) {
 
 function setLobby(dom, code, count, maxPlayers, players = []) {
   currentLobbyCount = count;
+  if (multiplayerState?.multiplayer) {
+    multiplayerState.multiplayer.playerCount = Math.max(1, Math.min(3, Number(count) || 1));
+  }
   if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : "Keine Lobby";
-  if (dom.lobbyPlayersText) dom.lobbyPlayersText.textContent = `${count}/${maxPlayers} Spieler`;
-  if (dom.coopStartText) dom.coopStartText.textContent = count >= 2 ? "Bereit" : "Warte auf 2 Spieler";
+  if (dom.lobbyPlayersText) {
+    dom.lobbyPlayersText.textContent = count > 2 ? `${count} Spieler` : `${count}/2 Spieler`;
+  }
+  if (dom.coopStartText) {
+    dom.coopStartText.textContent = count === 2
+      ? "2/2 Spieler bereit"
+      : count === 1
+        ? "1/2 · Zweiter Spieler fehlt"
+        : "Koop: 2 Spieler";
+  }
   if (dom.lobbyNames) {
     dom.lobbyNames.textContent = players.length
       ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}${player.host ? " (Host)" : ""}`).join(" | ")
@@ -215,21 +268,49 @@ function sendLocalPlayerState(state) {
 function updateRemotePlayers(players, state) {
   if (!state) return;
   const now = performance.now();
+  const previousById = new Map((state.remotePlayers || []).map((player) => [player.id, player]));
   state.remotePlayers = players
     .filter((player) => player.id !== clientId)
-    .map((player) => ({
-      id: player.id,
-      name: player.name || "Spieler",
-      hero: player.hero || "Held",
-      x: Number(player.x) || 0,
-      y: Number(player.y) || 0,
-      color: player.color || "#38d8ff",
-      hp: Number(player.hp) || 0,
-      maxHp: Number(player.maxHp) || 1,
-      dead: Boolean(player.dead),
-      respawnTimer: Math.max(0, Number(player.respawnTimer) || 0),
-      seenAt: now
-    }));
+    .map((player) => {
+      const existing = previousById.get(player.id);
+      const targetX = Number(player.x) || 0;
+      const targetY = Number(player.y) || 0;
+      const elapsed = Math.max(0.05, (now - (existing?._networkAt || now - 100)) / 1000);
+      if (!existing) {
+        return {
+          id: player.id,
+          name: player.name || "Spieler",
+          hero: player.hero || "Held",
+          x: targetX,
+          y: targetY,
+          _networkX: targetX,
+          _networkY: targetY,
+          _networkVx: 0,
+          _networkVy: 0,
+          _networkAt: now,
+          color: player.color || "#38d8ff",
+          hp: Number(player.hp) || 0,
+          maxHp: Number(player.maxHp) || 1,
+          dead: Boolean(player.dead),
+          respawnTimer: Math.max(0, Number(player.respawnTimer) || 0),
+          seenAt: now
+        };
+      }
+      existing._networkVx = clampVelocity((targetX - (existing._networkX ?? existing.x)) / elapsed);
+      existing._networkVy = clampVelocity((targetY - (existing._networkY ?? existing.y)) / elapsed);
+      existing._networkX = targetX;
+      existing._networkY = targetY;
+      existing._networkAt = now;
+      existing.name = player.name || "Spieler";
+      existing.hero = player.hero || "Held";
+      existing.color = player.color || "#38d8ff";
+      existing.hp = Number(player.hp) || 0;
+      existing.maxHp = Number(player.maxHp) || 1;
+      existing.dead = Boolean(player.dead);
+      existing.respawnTimer = Math.max(0, Number(player.respawnTimer) || 0);
+      existing.seenAt = now;
+      return existing;
+    });
 }
 
 function updateRemotePlayerAges(state) {
@@ -250,8 +331,16 @@ function setupStartHandler(dom, state, startGame) {
     state.remotePlayers = [];
     state.multiplayer.active = true;
     state.multiplayer.hostId = payload.hostId || state.multiplayer.hostId;
+    state.multiplayer.playerCount = Math.max(1, Math.min(3, Number(payload.playerCount) || state.multiplayer.playerCount || 1));
     state.multiplayer.role = payload.hostId && payload.hostId === clientId ? "host" : "guest";
-    startGame({ startWave: Number(payload.wave) || 1, coop: true });
+    const endboss = payload.mode === "endboss";
+    startGame({
+      startWave: Number(payload.wave) || 1,
+      coop: true,
+      playerCount: state.multiplayer.playerCount,
+      endboss,
+      skipPrep: endboss
+    });
   };
 
   window.__neonStartCoopGame = (payload) => {
@@ -295,6 +384,7 @@ function resetMultiplayerState() {
     multiplayerState.multiplayer.active = false;
     multiplayerState.multiplayer.role = "solo";
     multiplayerState.multiplayer.hostId = null;
+    multiplayerState.multiplayer.playerCount = 1;
     multiplayerState.multiplayer.lastWorldAt = 0;
   }
 }
@@ -314,8 +404,12 @@ function createWorldSnapshot(state) {
   return {
     wave: state.wave,
     score: state.score,
+    playerCount: Math.max(1, Math.min(3, Number(state.multiplayer?.playerCount) || 1)),
     prepTimer: state.prepTimer,
     waveDelay: state.waveDelay,
+    endbossMode: Boolean(state.endbossMode),
+    endbossPhase: state.endbossPhase,
+    endbossTransition: state.endbossTransition,
     bossesDefeated: state.bossesDefeated,
     bossCoinBonus: state.bossCoinBonus,
     robots: cloneEntities(state.robots, 50),
@@ -327,23 +421,112 @@ function createWorldSnapshot(state) {
 }
 
 function cloneEntities(items, limit) {
-  return (Array.isArray(items) ? items : []).slice(0, limit).map((item) => ({ ...item }));
+  return (Array.isArray(items) ? items : []).slice(0, limit).map((item) => {
+    const clone = {};
+    for (const [key, value] of Object.entries(item || {})) {
+      if (!key.startsWith("_")) clone[key] = value;
+    }
+    return clone;
+  });
 }
 
 function applyWorldSnapshot(snapshot, state) {
   if (!snapshot || state?.multiplayer?.role !== "guest") return;
+  const snapshotAt = performance.now();
+  const previousAt = Number(state.multiplayer.lastWorldAt) || snapshotAt - 180;
   state.wave = Number(snapshot.wave) || state.wave;
   state.score = Number(snapshot.score) || 0;
+  state.multiplayer.playerCount = Math.max(1, Math.min(3, Number(snapshot.playerCount) || state.multiplayer.playerCount || 1));
   state.prepTimer = Number(snapshot.prepTimer) || 0;
   state.waveDelay = Number(snapshot.waveDelay) || 0;
+  state.endbossMode = Boolean(snapshot.endbossMode);
+  state.endbossPhase = Number(snapshot.endbossPhase) || 0;
+  state.endbossTransition = Number(snapshot.endbossTransition) || 0;
   state.bossesDefeated = Number(snapshot.bossesDefeated) || 0;
   state.bossCoinBonus = Number(snapshot.bossCoinBonus) || 0;
-  state.robots = cloneEntities(snapshot.robots, 50);
-  state.bullets = cloneEntities(snapshot.bullets, 60);
-  state.enemyBullets = cloneEntities(snapshot.enemyBullets, 60);
-  state.bossLasers = cloneEntities(snapshot.bossLasers, 8);
-  state.pickups = cloneEntities(snapshot.pickups, 20);
-  state.multiplayer.lastWorldAt = performance.now();
+  state.robots = reconcileNetworkEntities(state.robots, snapshot.robots, "robot", snapshotAt, previousAt, 50);
+  state.bullets = reconcileNetworkEntities(state.bullets, snapshot.bullets, "bullet", snapshotAt, previousAt, 60);
+  state.enemyBullets = reconcileNetworkEntities(state.enemyBullets, snapshot.enemyBullets, "enemy-bullet", snapshotAt, previousAt, 60);
+  state.bossLasers = reconcileNetworkEntities(state.bossLasers, snapshot.bossLasers, "boss-laser", snapshotAt, previousAt, 8);
+  state.pickups = reconcileNetworkEntities(state.pickups, snapshot.pickups, "pickup", snapshotAt, previousAt, 20);
+  state.multiplayer.lastWorldAt = snapshotAt;
+}
+
+function reconcileNetworkEntities(currentItems, incomingItems, prefix, snapshotAt, previousAt, limit) {
+  const currentById = new Map((Array.isArray(currentItems) ? currentItems : []).map((item) => [item.id, item]));
+  const snapshotDelta = Math.max(0.05, Math.min(0.5, (snapshotAt - previousAt) / 1000));
+  return (Array.isArray(incomingItems) ? incomingItems : []).slice(0, limit).map((incoming, index) => {
+    const id = String(incoming?.id || `${prefix}-${index}`);
+    const targetX = Number(incoming?.x) || 0;
+    const targetY = Number(incoming?.y) || 0;
+    const existing = currentById.get(id);
+    if (!existing) {
+      return {
+        ...incoming,
+        id,
+        x: targetX,
+        y: targetY,
+        _networkX: targetX,
+        _networkY: targetY,
+        _networkVx: Number(incoming?.vx) || 0,
+        _networkVy: Number(incoming?.vy) || 0,
+        _networkAt: snapshotAt
+      };
+    }
+
+    const currentX = Number(existing.x) || 0;
+    const currentY = Number(existing.y) || 0;
+    const previousTargetX = Number(existing._networkX ?? currentX);
+    const previousTargetY = Number(existing._networkY ?? currentY);
+    for (const [key, value] of Object.entries(incoming || {})) {
+      if (key !== "x" && key !== "y" && !key.startsWith("_")) existing[key] = value;
+    }
+    existing.id = id;
+    existing.x = currentX;
+    existing.y = currentY;
+    existing._networkX = targetX;
+    existing._networkY = targetY;
+    existing._networkAt = snapshotAt;
+    existing._networkVx = Number.isFinite(Number(incoming?.vx))
+      ? Number(incoming.vx)
+      : clampVelocity((targetX - previousTargetX) / snapshotDelta);
+    existing._networkVy = Number.isFinite(Number(incoming?.vy))
+      ? Number(incoming.vy)
+      : clampVelocity((targetY - previousTargetY) / snapshotDelta);
+    return existing;
+  });
+}
+
+export function updateMultiplayerInterpolation(state, dt) {
+  if (!state?.multiplayer?.active) return;
+  const now = performance.now();
+  smoothNetworkEntities(state.remotePlayers, dt, now, 13, 0.12);
+  if (state.multiplayer.role !== "guest") return;
+  smoothNetworkEntities(state.robots, dt, now, 12, 0.16);
+  smoothNetworkEntities(state.bullets, dt, now, 9, 0.2);
+  smoothNetworkEntities(state.enemyBullets, dt, now, 9, 0.2);
+  smoothNetworkEntities(state.bossLasers, dt, now, 14, 0.08);
+  smoothNetworkEntities(state.pickups, dt, now, 14, 0);
+}
+
+function smoothNetworkEntities(items, dt, now, strength, maxExtrapolation) {
+  const alpha = 1 - Math.exp(-strength * Math.max(0, Math.min(0.05, Number(dt) || 0)));
+  for (const entity of Array.isArray(items) ? items : []) {
+    if (!Number.isFinite(entity._networkX) || !Number.isFinite(entity._networkY)) continue;
+    const elapsed = Math.min(maxExtrapolation, Math.max(0, (now - (entity._networkAt || stateSnapshotTime(entity))) / 1000));
+    const targetX = entity._networkX + (Number(entity._networkVx) || 0) * elapsed;
+    const targetY = entity._networkY + (Number(entity._networkVy) || 0) * elapsed;
+    entity.x += (targetX - entity.x) * alpha;
+    entity.y += (targetY - entity.y) * alpha;
+  }
+}
+
+function stateSnapshotTime(entity) {
+  return Number(entity._networkAt) || performance.now();
+}
+
+function clampVelocity(value) {
+  return Math.max(-1200, Math.min(1200, Number(value) || 0));
 }
 
 export function sendMultiplayerAction(action) {
@@ -355,6 +538,11 @@ export function sendMultiplayerAction(action) {
 export function sendMultiplayerGameOver() {
   if (!multiplayerState?.multiplayer?.active || socket?.readyState !== WebSocket.OPEN) return;
   socket.send(JSON.stringify({ type: "game-over" }));
+}
+
+export function sendMultiplayerEndbossResult(victory) {
+  if (multiplayerState?.multiplayer?.role !== "host" || socket?.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: "endboss-result", victory: Boolean(victory) }));
 }
 
 export function sendMultiplayerPlayerState() {

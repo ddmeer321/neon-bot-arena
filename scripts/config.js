@@ -1,4 +1,4 @@
-export const highScoreKey = "neon-bot-arena-high-score";
+﻿export const highScoreKey = "neon-bot-arena-high-score";
 export const leaderboardKey = "neon-bot-arena-leaderboard";
 export const coinKey = "neon-bot-arena-coins";
 export const progressionKey = "neon-bot-arena-progression";
@@ -9,7 +9,8 @@ export const starterHeroes = ["volt", "titan", "nova"];
 export const defaultCosmetic = "classic";
 export const testPanelAccess = [
   "755051",
-  "809587"
+  "809587",
+  "535127"
 ];
 
 export const heroes = {
@@ -176,6 +177,18 @@ export const companions = {
     glow: "#7f1d1d",
     ability: { name: "Dunkelschild", type: "guard", duration: 5, multiplier: 0.65 },
     price: 2200
+  },
+  "scipios-mask": {
+    id: "scipios-mask",
+    name: "Scipios Maske",
+    description: "Triumphschub: 5 Sek. alle Werte +25 %",
+    shape: "mask",
+    color: "#9ca3af",
+    glow: "#f3f4f6",
+    ability: { name: "Triumphschub", type: "all", duration: 5, multiplier: 1.25 },
+    rewardOnly: true,
+    hiddenUntilOwned: true,
+    price: 0
   }
 };
 

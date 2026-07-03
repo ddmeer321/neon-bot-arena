@@ -1,14 +1,14 @@
 import { getDom } from "./dom.js?v=musicvolume1";
-import { createState } from "./state.js?v=musicvolume1";
+import { createState } from "./state.js?v=coop3";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=musicvolume1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=musicvolume1";
+import { createGameplay } from "./gameplay.js?v=coop3";
 import { draw } from "./render.js?v=musicvolume1";
 import { createFPSCounter } from "./fps.js";
-import { renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
+import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
 import { setupTestPanel } from "./test-panel.js?v=musicvolume1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=musicvolume1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop3";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1";
 
 
@@ -16,6 +16,9 @@ import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1
 export function bootGame() {
   const dom = getDom();
   const state = createState();
+  const playtestParams = new URLSearchParams(window.location.search);
+  const isLocalPlaytest = ["localhost", "127.0.0.1"].includes(window.location.hostname) && playtestParams.has("playtest");
+  if (isLocalPlaytest && playtestParams.get("hero") === "warden") state.selectedHero = "warden";
   state.leaderboardFilter = "all";
 
   if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = state.highScore;
@@ -56,6 +59,15 @@ export function bootGame() {
   renderHeroMenu(state, dom);
   renderShop(state, dom);
   setupEconomyInput(state, dom);
+  dom.rewardEquipBtn?.addEventListener("click", () => {
+    equipCompanion(state, dom, "scipios-mask");
+    dom.companionReward?.classList.add("hidden");
+    state.pendingCompanionReward = false;
+  });
+  dom.rewardCloseBtn?.addEventListener("click", () => {
+    dom.companionReward?.classList.add("hidden");
+    state.pendingCompanionReward = false;
+  });
 
   const gameplay = createGameplay({ dom, state, renderLeaderboard });
   const companionAbilities = setupCompanionAbilities({ state, dom, useHeroSpecial: gameplay.useSpecial });
@@ -66,7 +78,14 @@ export function bootGame() {
     togglePause: gameplay.togglePause,
     useSpecial: companionAbilities.useSpecial
   });
-  setupTestPanel({ dom, state, startGame: gameplay.startGame });
+  setupTestPanel({
+    dom,
+    state,
+    startGame: gameplay.startGame,
+    advanceBossPhase: gameplay.advanceEndbossPhaseForPlaytest,
+    triggerBossQuake: gameplay.triggerEndbossQuakeForPlaytest,
+    triggerBossMask: gameplay.triggerMaskBoomerangForPlaytest
+  });
   setupMultiplayerTest(dom, state, gameplay.startGame);
 
   dom.heroMenuBtn?.addEventListener("click", () => {
