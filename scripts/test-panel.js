@@ -1,12 +1,14 @@
 import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=musicvolume1";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=musicvolume1";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=settings6";
+import { t } from "./settings.js?v=settings6";
 
 export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask }) {
   renderStoredTestId(dom);
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
+  window.addEventListener("languagechange", () => renderStoredTestId(dom));
 
   dom.testIdBtn?.addEventListener("click", async () => {
     const id = getOrCreateTestId();
@@ -105,7 +107,7 @@ function getOrCreateTestId() {
 
 function renderStoredTestId(dom) {
   const id = localStorage.getItem(testIdKey);
-  if (dom.testIdText) dom.testIdText.textContent = id ? `ID ${id}` : "Nicht erstellt";
+  if (dom.testIdText) dom.testIdText.textContent = id ? `ID ${id}` : t("multiplayer.notCreated");
 }
 
 function updateTestPanelAccess(dom, state) {

@@ -1,5 +1,7 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
+import { t } from "./settings.js?v=settings6";
+
 let socket = null;
 let connecting = false;
 let clientId = null;
@@ -12,6 +14,8 @@ let lastWorldSend = 0;
 let endbossUnlocked = false;
 let currentRoomCode = null;
 let activeRoundId = 0;
+let currentLobbyPlayers = [];
+let currentLobbyMaxPlayers = 2;
 
 export function setupMultiplayerTest(dom, state, startGame) {
   multiplayerState = state;
@@ -36,12 +40,12 @@ export function setupMultiplayerTest(dom, state, startGame) {
     if (code === "7770") {
       endbossUnlocked = true;
       updateEndbossAccess();
-      setStatus(dom, "Endboss-Lobby wird erstellt...", "loading");
+      setStatus(dom, t("multiplayer.endbossLobby"), "loading");
       sendWhenConnected(dom, { type: "create-room", name: getPlayerName(dom) });
       return;
     }
     if (code.length !== 4) {
-      setStatus(dom, "Code fehlt", "error");
+      setStatus(dom, t("multiplayer.codeMissing"), "error");
       return;
     }
     sendWhenConnected(dom, { type: "join-room", code, name: getPlayerName(dom) });
@@ -55,7 +59,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
 
   dom.coopStartBtn?.addEventListener("click", () => {
     if (currentLobbyCount !== 2) {
-      setStatus(dom, "Normaler Koop braucht genau 2 Spieler", "error");
+      setStatus(dom, t("multiplayer.needsTwo"), "error");
       return;
     }
     sendWhenConnected(dom, { type: "start-room" });
@@ -67,19 +71,19 @@ export function setupMultiplayerTest(dom, state, startGame) {
       && new URLSearchParams(window.location?.search || "").has("playtest");
     if (state.multiplayer?.active && socket?.readyState === WebSocket.OPEN) {
       if (state.multiplayer.role !== "host") {
-        setStatus(dom, "Nur der Host kann starten", "error");
+        setStatus(dom, t("multiplayer.hostOnly"), "error");
         return;
       }
-      setStatus(dom, "Endboss startet", "ok");
+      setStatus(dom, t("multiplayer.endbossStarting"), "ok");
       socket.send(JSON.stringify({ type: "start-room", mode: "endboss" }));
       return;
     }
     if (playtest) {
-      setStatus(dom, "Endboss startet", "ok");
+      setStatus(dom, t("multiplayer.endbossStarting"), "ok");
       startGame({ endboss: true, skipPrep: true, playtest: true });
       return;
     }
-    setStatus(dom, "Endboss-Lobby wird erstellt...", "loading");
+    setStatus(dom, t("multiplayer.endbossLobby"), "loading");
     sendWhenConnected(dom, { type: "create-room", name: getPlayerName(dom) });
   });
 
@@ -96,6 +100,9 @@ export function setupMultiplayerTest(dom, state, startGame) {
   });
 
   setupStartHandler(dom, state, startGame);
+  window.addEventListener("languagechange", () => {
+    setLobby(dom, currentRoomCode, currentLobbyCount, currentLobbyMaxPlayers, currentLobbyPlayers);
+  });
 }
 
 function sendWhenConnected(dom, message) {
@@ -118,12 +125,12 @@ function connect(dom, pingOnly) {
   if (connecting) return true;
 
   connecting = true;
-  setStatus(dom, "Verbinde...", "loading");
+  setStatus(dom, t("multiplayer.connecting"), "loading");
   socket = new WebSocket(multiplayerUrl);
 
   socket.addEventListener("open", () => {
     connecting = false;
-    setStatus(dom, "Verbunden", "ok");
+    setStatus(dom, t("multiplayer.connected"), "ok");
     if (pingOnly) socket.send(JSON.stringify({ type: "ping" }));
   });
 
@@ -131,7 +138,7 @@ function connect(dom, pingOnly) {
     const data = parseMessage(event.data);
     if (!data) return;
     if (data.type === "pong") {
-      setStatus(dom, "Verbunden", "ok");
+      setStatus(dom, t("multiplayer.connected"), "ok");
       return;
     }
     if (data.type === "welcome") {
@@ -140,7 +147,7 @@ function connect(dom, pingOnly) {
       return;
     }
     if (data.type === "room-state") {
-      setStatus(dom, "Lobby verbunden", "ok");
+      setStatus(dom, t("multiplayer.lobbyConnected"), "ok");
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
       setMultiplayerRole(data.hostId);
       pruneRemotePlayers(data.players || [], multiplayerState);
@@ -183,25 +190,25 @@ function connect(dom, pingOnly) {
       return;
     }
     if (data.type === "room-left") {
-      setStatus(dom, "Verbunden", "ok");
+      setStatus(dom, t("multiplayer.connected"), "ok");
       setLobby(dom, null, 0, 3, []);
       resetMultiplayerState();
       return;
     }
     if (data.type === "room-error" || data.type === "error") {
-      setStatus(dom, data.message || "Fehler", "error");
+      setStatus(dom, data.message || t("multiplayer.error"), "error");
     }
   });
 
   socket.addEventListener("error", () => {
     connecting = false;
-    setStatus(dom, "Fehler", "error");
+    setStatus(dom, t("multiplayer.error"), "error");
   });
 
   socket.addEventListener("close", () => {
     connecting = false;
     socket = null;
-    setStatus(dom, "Getrennt", "error");
+    setStatus(dom, t("multiplayer.disconnected"), "error");
     setLobby(dom, null, 0, 3, []);
     resetMultiplayerState();
   });
@@ -226,31 +233,33 @@ function setStatus(dom, text, state) {
 function setLobby(dom, code, count, maxPlayers, players = []) {
   currentRoomCode = code || null;
   currentLobbyCount = count;
+  currentLobbyPlayers = players;
+  currentLobbyMaxPlayers = maxPlayers;
   if (multiplayerState?.multiplayer) {
     multiplayerState.multiplayer.playerCount = Math.max(1, Math.min(3, Number(count) || 1));
   }
-  if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : "Keine Lobby";
+  if (dom.lobbyCodeText) dom.lobbyCodeText.textContent = code ? `Lobby ${code}` : t("multiplayer.noLobby");
   if (dom.lobbyPlayersText) {
-    dom.lobbyPlayersText.textContent = count > 2 ? `${count} Spieler` : `${count}/2 Spieler`;
+    dom.lobbyPlayersText.textContent = count > 2 ? `${count} ${t("multiplayer.players")}` : `${count}/2 ${t("multiplayer.players")}`;
   }
   if (dom.coopStartText) {
     dom.coopStartText.textContent = count === 2
-      ? "2/2 Spieler bereit"
+      ? `2/2 ${t("multiplayer.ready")}`
       : count === 1
-        ? "1/2 · Zweiter Spieler fehlt"
-        : "Koop: 2 Spieler";
+        ? `1/2 · ${t("multiplayer.secondMissing")}`
+        : t("multiplayer.coopPlayers");
   }
   if (dom.lobbyNames) {
     dom.lobbyNames.textContent = players.length
-      ? players.map((player) => `${player.slot}. ${player.name || "Spieler"}${player.host ? " (Host)" : ""}`).join(" | ")
-      : "Noch niemand in der Lobby";
+      ? players.map((player) => `${player.slot}. ${player.name || t("multiplayer.player")}${player.host ? " (Host)" : ""}`).join(" | ")
+      : t("multiplayer.emptyLobby");
   }
   if (code && dom.lobbyCodeInput) dom.lobbyCodeInput.value = code;
 }
 
 function getPlayerName(dom) {
   const value = String(dom.playerNameInput?.value || "").trim().replace(/\s+/g, " ").slice(0, 16);
-  return value || "Spieler";
+  return value || t("multiplayer.player");
 }
 
 function sendLocalPlayerState(state) {
@@ -358,8 +367,8 @@ function setupStartHandler(dom, state, startGame) {
   };
 
   window.__neonStartCoopGame = (payload) => {
-    if (dom.coopStartText) dom.coopStartText.textContent = "Startet...";
-    setStatus(dom, "Koop startet...", "ok");
+    if (dom.coopStartText) dom.coopStartText.textContent = t("multiplayer.starting");
+    setStatus(dom, t("multiplayer.coopStarting"), "ok");
     const delay = Math.max(0, Math.min(5000, Number(payload.delayMs) || 1200));
     pendingCoopStart = {
       ...payload,

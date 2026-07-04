@@ -1,4 +1,5 @@
 import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
+import { drawArenaBackground, t } from "./settings.js?v=settings6";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -31,7 +32,7 @@ function drawRemotePlayers(ctx, state) {
     ctx.save();
     ctx.translate(player.x, player.y);
     if (dead) {
-      drawRespawnMarker(ctx, player.name || "Spieler", player.respawnTimer, color);
+      drawRespawnMarker(ctx, player.name || t("multiplayer.player"), player.respawnTimer, color);
       ctx.restore();
       continue;
     }
@@ -51,31 +52,26 @@ function drawRemotePlayers(ctx, state) {
     ctx.fillStyle = "#f6f7fb";
     ctx.font = "800 12px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(player.name || "Spieler", 0, -34);
+    ctx.fillText(player.name || t("multiplayer.player"), 0, -34);
     ctx.fillStyle = "rgba(255,255,255,0.18)";
     ctx.fillRect(-22, 25, 44, 5);
     ctx.fillStyle = "#b7ff4a";
     ctx.fillRect(-22, 25, 44 * hpPct, 5);
     ctx.fillStyle = color;
     ctx.font = "700 10px Inter, system-ui, sans-serif";
-    ctx.fillText(player.hero || "Held", 0, 43);
+    ctx.fillText(player.hero || t("hud.hero"), 0, 43);
     ctx.restore();
   }
 }
 
 function drawArena(ctx, canvas) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, "#07121b");
-  gradient.addColorStop(0.5, "#090b10");
-  gradient.addColorStop(1, "#15101a");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "rgba(56,216,255,0.11)";
+  const theme = drawArenaBackground(ctx, canvas);
+  ctx.strokeStyle = theme.grid;
   ctx.lineWidth = 1;
   for (let x = 0; x < canvas.width; x += 64) line(ctx, x, 0, x, canvas.height);
   for (let y = 0; y < canvas.height; y += 64) line(ctx, 0, y, canvas.width, y);
-  ctx.strokeStyle = "rgba(183,255,74,0.28)";
+  ctx.strokeStyle = theme.border;
   ctx.lineWidth = 4;
   ctx.strokeRect(22, 64, canvas.width - 44, canvas.height - 90);
 }
@@ -670,7 +666,7 @@ function drawBossHud(ctx, canvas, state) {
     ctx.fillStyle = "#38d8ff";
     ctx.font = "900 17px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Vorbereitung: " + Math.ceil(state.prepTimer), canvas.width / 2, 145);
+    ctx.fillText(`${t("arena.preparation")}: ${Math.ceil(state.prepTimer)}`, canvas.width / 2, 145);
     ctx.restore();
   }
 
@@ -703,7 +699,7 @@ function drawBossHud(ctx, canvas, state) {
     ctx.fillStyle = "#f6f7fb";
     ctx.font = "800 13px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(boss.endboss ? `Der Masken Dieb · Stufe ${boss.endbossPhase}/3` : "Boss Welle " + state.wave, canvas.width / 2, y - 8);
+    ctx.fillText(boss.endboss ? `${t("boss.name")} · ${t("arena.stage")} ${boss.endbossPhase}/3` : `${t("arena.bossWave")} ${state.wave}`, canvas.width / 2, y - 8);
     ctx.restore();
   }
 
@@ -715,7 +711,7 @@ function drawBossHud(ctx, canvas, state) {
     ctx.fillStyle = "#d1d5db";
     ctx.font = "900 16px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`Stufe ${state.endbossPhase} in ${Math.ceil(state.endbossTransition)}...`, canvas.width / 2, 143);
+    ctx.fillText(`${t("arena.stage")} ${state.endbossPhase} · ${Math.ceil(state.endbossTransition)}...`, canvas.width / 2, 143);
     ctx.restore();
   }
 
@@ -727,7 +723,7 @@ function drawBossHud(ctx, canvas, state) {
     ctx.fillStyle = "#b7ff4a";
     ctx.font = "900 16px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("N\u00e4chste Welle in " + Math.ceil(state.waveDelay) + "...", canvas.width / 2, 140);
+    ctx.fillText(`${t("arena.nextWave")} ${Math.ceil(state.waveDelay)}...`, canvas.width / 2, 140);
     ctx.restore();
   }
 }

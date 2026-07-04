@@ -1,4 +1,5 @@
-import { getEquippedCosmetic } from "./economy.js?v=musicvolume1";
+import { getEquippedCosmetic } from "./economy.js?v=settings6";
+import { t } from "./settings.js?v=settings6";
 
 export const companionAbilities = {
   solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schiessen", stat: "fireRate", multiplier: 1 / 1.25 },
@@ -101,7 +102,7 @@ export function setupCompanionAbilities({ state, dom, useHeroSpecial }) {
   }
 
   function resetHint() {
-    if (dom.specialHint) dom.specialHint.textContent = state.device === "mobile" ? "Spezial" : "Leertaste";
+    if (dom.specialHint) dom.specialHint.textContent = state.device === "mobile" ? t("hud.special") : t("controls.space");
   }
 
   return { useSpecial };
@@ -113,11 +114,8 @@ function annotateCompanions(dom) {
     const id = card.dataset.buyCompanion || card.dataset.equipCompanion;
     const ability = companionAbilities[id];
     if (!ability) return;
-    const role = card.querySelector(".fighter-role");
     const stats = card.querySelector(".stats");
-    const roleText = `${ability.name}: ${ability.description}`;
-    const statsText = "Aktiviert sich mit deiner Spezialfaehigkeit";
-    if (role && role.textContent !== roleText) role.textContent = roleText;
+    const statsText = t("shop.abilityActivated");
     if (stats && stats.textContent !== statsText) stats.textContent = statsText;
   });
 }

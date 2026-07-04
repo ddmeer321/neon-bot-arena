@@ -1,6 +1,7 @@
 import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=musicvolume1";
 import { escapeHtml } from "./utils.js";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
+import { t } from "./settings.js?v=settings6";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
@@ -55,21 +56,21 @@ export function renderShop(state, dom) {
   dom.shopList.innerHTML = `
     <div class="shop-section">
       <div class="shop-heading">
-        <span>Helden</span>
-        <strong>${lockedHeroes.length === 0 ? "Fertig" : `${lockedHeroes.length} offen`}</strong>
+        <span>${t("shop.heroes")}</span>
+        <strong>${lockedHeroes.length === 0 ? t("shop.done") : `${lockedHeroes.length} ${t("shop.open")}`}</strong>
       </div>
       <div class="fighters shop-grid">
         ${
           lockedHeroes.length === 0
-            ? `<div class="empty-shop">Alle Helden freigeschaltet.</div>`
+            ? `<div class="empty-shop">${t("shop.allUnlocked")}</div>`
             : lockedHeroes.map((hero) => renderHeroCard(state, hero, false, false)).join("")
         }
       </div>
     </div>
     <div class="shop-section">
       <div class="shop-heading">
-        <span>Begleiter</span>
-        <strong>Spezial-Bonus</strong>
+        <span>${t("shop.companions")}</span>
+        <strong>${t("shop.specialBonus")}</strong>
       </div>
       <div class="fighters shop-grid">${companionCards}</div>
     </div>
@@ -191,14 +192,14 @@ export function showShopPanel(dom) {
 function renderHeroCard(state, hero, unlocked, selectable) {
   const level = getHeroLevel(state, hero.id);
   const selected = state.selectedHero === hero.id;
-  const status = unlocked ? `Stufe ${level}` : `${hero.price} Münzen`;
+  const status = unlocked ? `${t("shop.level")} ${level}` : `${hero.price} ${t("shop.coins")}`;
   const action = selectable ? `data-hero="${hero.id}"` : `data-buy-hero="${hero.id}"`;
   return `
     <button class="fighter ${selected ? "selected" : ""} ${unlocked ? "" : "locked"}" ${action}>
       <span class="portrait ${starterHeroes.includes(hero.id) ? hero.id : ""}" style="color:${hero.color}"></span>
       <span class="fighter-name">${escapeHtml(hero.name)}</span>
-      <span class="fighter-role">${escapeHtml(hero.role)}</span>
-      <span class="stats">${escapeHtml(hero.statsLabel)}</span>
+      <span class="fighter-role">${t("hud.special")}</span>
+      <span class="stats">${escapeHtml(translateStatsLabel(hero.statsLabel))}</span>
       <span class="hero-status">${status}</span>
     </button>
   `;
@@ -209,13 +210,13 @@ function renderCompanionCard(state, companion) {
   const equipped = state.equippedCosmetic === companion.id;
   const disabled = !owned && state.coins < companion.price;
   const action = owned ? `data-equip-companion="${companion.id}"` : companion.rewardOnly ? "" : `data-buy-companion="${companion.id}"`;
-  const status = equipped ? "Aktiv" : owned ? "Ausrüsten" : companion.rewardOnly ? "Belohnung" : `${companion.price} Münzen`;
+  const status = equipped ? t("shop.active") : owned ? t("shop.equip") : companion.rewardOnly ? t("shop.reward") : `${companion.price} ${t("shop.coins")}`;
   return `
     <button class="fighter companion-card ${equipped ? "selected" : ""} ${owned ? "" : "locked"}" ${action} ${disabled ? "disabled" : ""}>
       <span class="companion-swatch" style="--companion-color:${companion.color}; --companion-glow:${companion.glow};"></span>
       <span class="fighter-name">${escapeHtml(companion.name)}</span>
-      <span class="fighter-role">${escapeHtml(companion.description)}</span>
-      <span class="stats">${companion.ability ? "Aktiviert sich mit deiner Spezialfähigkeit" : "Läuft neben dir"}</span>
+      <span class="fighter-role">${companion.ability ? companionAbilitySummary(companion) : t("shop.follows")}</span>
+      <span class="stats">${companion.ability ? t("shop.abilityActivated") : t("shop.follows")}</span>
       <span class="hero-status">${status}</span>
     </button>
   `;
@@ -231,11 +232,24 @@ function renderHeroDetails(state, dom) {
   const companion = getEquippedCosmetic(state);
   dom.heroDetails.innerHTML = `
     <div>
-      <span class="label">Ausgewählt</span>
+      <span class="label">${t("shop.selected")}</span>
       <strong>${escapeHtml(hero.name)}</strong>
-      <p>Stufe ${level}/${maxUpgradeLevel} | Leben ${upgraded.hp} | Schaden ${upgraded.bulletDamage} | Tempo ${upgraded.speed} | Begleiter ${escapeHtml(companion.name)}</p>
+      <p>${t("shop.level")} ${level}/${maxUpgradeLevel} | ${t("shop.health")} ${upgraded.hp} | ${t("shop.damage")} ${upgraded.bulletDamage} | ${t("shop.speed")} ${upgraded.speed} | ${t("shop.companion")} ${escapeHtml(companion.name)}</p>
     </div>
-    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? "Max Stufe" : `Upgrade ${cost} Münzen`}</button>
+    <button id="upgradeHeroBtn" ${maxed || state.coins < cost ? "disabled" : ""}>${maxed ? t("shop.maxLevel") : `${t("shop.upgrade")} ${cost} ${t("shop.coins")}`}</button>
   `;
+}
+
+function translateStatsLabel(label) {
+  return String(label)
+    .replace("Tempo", t("shop.speed"))
+    .replace("Leben", t("shop.health"))
+    .replace("Schaden", t("shop.damage"));
+}
+
+function companionAbilitySummary(companion) {
+  const multiplier = Number(companion.ability?.multiplier) || 1;
+  const percent = Math.round(Math.abs(multiplier - 1) * 100);
+  return `${Number(companion.ability?.duration) || 5} s · ${percent}%`;
 }
 
