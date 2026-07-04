@@ -10,6 +10,8 @@ let coopStartTimer = null;
 let startHandlerReady = false;
 let lastWorldSend = 0;
 let endbossUnlocked = false;
+let currentRoomCode = null;
+let activeRoundId = 0;
 
 export function setupMultiplayerTest(dom, state, startGame) {
   multiplayerState = state;
@@ -141,6 +143,7 @@ function connect(dom, pingOnly) {
       setStatus(dom, "Lobby verbunden", "ok");
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
       setMultiplayerRole(data.hostId);
+      pruneRemotePlayers(data.players || [], multiplayerState);
       return;
     }
     if (data.type === "start-game") {
@@ -148,6 +151,7 @@ function connect(dom, pingOnly) {
       return;
     }
     if (data.type === "player-states") {
+      if (activeRoundId && Number(data.roundId) && Number(data.roundId) !== activeRoundId) return;
       updateRemotePlayers(data.players || [], multiplayerState);
       return;
     }
@@ -220,6 +224,7 @@ function setStatus(dom, text, state) {
 }
 
 function setLobby(dom, code, count, maxPlayers, players = []) {
+  currentRoomCode = code || null;
   currentLobbyCount = count;
   if (multiplayerState?.multiplayer) {
     multiplayerState.multiplayer.playerCount = Math.max(1, Math.min(3, Number(count) || 1));
@@ -319,6 +324,12 @@ function updateRemotePlayerAges(state) {
   state.remotePlayers = state.remotePlayers.filter((player) => now - (player.seenAt || 0) < 3000);
 }
 
+function pruneRemotePlayers(players, state) {
+  if (!state?.remotePlayers) return;
+  const activeIds = new Set(players.map((player) => player.id));
+  state.remotePlayers = state.remotePlayers.filter((player) => activeIds.has(player.id));
+}
+
 function setupStartHandler(dom, state, startGame) {
   const runPendingStart = () => {
     if (!pendingCoopStart) return;
@@ -328,11 +339,14 @@ function setupStartHandler(dom, state, startGame) {
       window.clearTimeout(coopStartTimer);
       coopStartTimer = null;
     }
+    if (payload.roomCode && payload.roomCode !== currentRoomCode) return;
     state.remotePlayers = [];
     state.multiplayer.active = true;
     state.multiplayer.hostId = payload.hostId || state.multiplayer.hostId;
     state.multiplayer.playerCount = Math.max(1, Math.min(3, Number(payload.playerCount) || state.multiplayer.playerCount || 1));
     state.multiplayer.role = payload.hostId && payload.hostId === clientId ? "host" : "guest";
+    activeRoundId = Math.max(0, Number(payload.roundId) || 0);
+    state.multiplayer.roundId = activeRoundId;
     const endboss = payload.mode === "endboss";
     startGame({
       startWave: Number(payload.wave) || 1,
@@ -378,6 +392,13 @@ function setMultiplayerRole(hostId) {
 }
 
 function resetMultiplayerState() {
+  pendingCoopStart = null;
+  if (coopStartTimer) {
+    window.clearTimeout(coopStartTimer);
+    coopStartTimer = null;
+  }
+  activeRoundId = 0;
+  currentRoomCode = null;
   if (!multiplayerState) return;
   multiplayerState.remotePlayers = [];
   if (multiplayerState.multiplayer) {
@@ -386,6 +407,7 @@ function resetMultiplayerState() {
     multiplayerState.multiplayer.hostId = null;
     multiplayerState.multiplayer.playerCount = 1;
     multiplayerState.multiplayer.lastWorldAt = 0;
+    multiplayerState.multiplayer.roundId = 0;
   }
 }
 

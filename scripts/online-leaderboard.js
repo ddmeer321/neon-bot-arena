@@ -3,7 +3,8 @@
 const SUPABASE_URL = "https://ncishdfeznjysqswsvzq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NKMtRTJM-5O0rWaJP3pGaw_vvofM_H8";
 const SCORE_TABLE = "scores";
-const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,created_at";
+const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,player_count,created_at";
+const LEGACY_SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,created_at";
 const BLOCKED_SCORE_NAMES = new Set([["co", "de", "24", ".", "4"].join("")]);
 
 const headers = {
@@ -12,15 +13,24 @@ const headers = {
   "Content-Type": "application/json"
 };
 
-export async function loadOnlineScores(limit = 10, difficulty = "all") {
+export async function loadOnlineScores(limit = 10, filter = "all") {
   try {
     const url = new URL(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`);
     url.searchParams.set("select", SCORE_FIELDS);
     url.searchParams.set("order", "scores.desc,wave.desc,created_at.desc");
     url.searchParams.set("limit", String(Math.max(limit * 6, 50)));
-    if (difficulty && difficulty !== "all") url.searchParams.set("diffculty", `eq.${difficulty}`);
+    if (filter === "players-2") {
+      url.searchParams.set("player_count", "eq.2");
+    } else if (filter && filter !== "all") {
+      url.searchParams.set("diffculty", `eq.${filter}`);
+    }
 
-    const response = await fetch(url, { headers });
+    let response = await fetch(url, { headers });
+    if (!response.ok && response.status === 400) {
+      if (filter === "players-2") return [];
+      url.searchParams.set("select", LEGACY_SCORE_FIELDS);
+      response = await fetch(url, { headers });
+    }
     if (!response.ok) throw new Error(`Rangliste konnte nicht geladen werden: ${response.status}`);
 
     const rows = await response.json();
@@ -43,18 +53,28 @@ export async function submitOnlineScore(state) {
     wave: Math.max(1, Math.round(Number(state.wave) || 1)),
     diffculty: state.difficulty || "normal",
     bosses: Math.max(0, Math.round(Number(state.bossesDefeated) || 0)),
-    hero: state.player?.hero?.name || state.selectedHero || "Unbekannt"
+    hero: state.player?.hero?.name || state.selectedHero || "Unbekannt",
+    player_count: Math.max(1, Math.min(3, Math.round(Number(state.multiplayer?.playerCount) || 1)))
   };
   if (!isPlausibleScore(entry.scores, entry.wave, entry.bosses)) {
     return { ok: false, reason: "implausible-score" };
   }
 
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`, {
+    let response = await fetch(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`, {
       method: "POST",
       headers: { ...headers, Prefer: "return=minimal" },
       body: JSON.stringify(entry)
     });
+
+    if (!response.ok && response.status === 400) {
+      const { player_count: _playerCount, ...legacyEntry } = entry;
+      response = await fetch(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`, {
+        method: "POST",
+        headers: { ...headers, Prefer: "return=minimal" },
+        body: JSON.stringify(legacyEntry)
+      });
+    }
 
     if (!response.ok) {
       const details = await readResponseError(response);
@@ -104,6 +124,7 @@ function normalizeScoreRow(row) {
     difficulty: row.diffculty || "normal",
     bosses,
     hero: row.hero || "",
+    playerCount: Math.max(1, Math.min(3, Math.round(Number(row.player_count) || 1))),
     date: row.created_at || new Date().toISOString()
   };
 }

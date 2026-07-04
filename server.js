@@ -50,6 +50,10 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Lobby nicht gefunden" }));
         return;
       }
+      if (rooms.get(code)?.gameActive) {
+        socket.send(JSON.stringify({ type: "room-error", message: "Runde läuft bereits" }));
+        return;
+      }
       socket.playerName = normalizePlayerName(message.name);
       joinRoom(socket, code);
       return;
@@ -71,6 +75,10 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Nur der Host kann starten" }));
         return;
       }
+      if (room.gameActive) {
+        socket.send(JSON.stringify({ type: "room-error", message: "Runde läuft bereits" }));
+        return;
+      }
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
       const mode = message.mode === "endboss" ? "endboss" : "waves";
@@ -78,13 +86,15 @@ wss.on("connection", (socket) => {
         socket.send(JSON.stringify({ type: "room-error", message: "Normaler Koop braucht genau 2 Spieler" }));
         return;
       }
-      room.gameOver = false;
+      beginRoomGame(room, delayMs);
       broadcastToRoom(room, {
         type: "start-game",
         delayMs,
         seed,
         wave: 1,
         mode,
+        roomCode: room.code,
+        roundId: room.roundId,
         playerCount: room.clients.size,
         hostId: getRoomHost(room)?.clientId || socket.clientId
       });
@@ -94,6 +104,7 @@ wss.on("connection", (socket) => {
     if (message.type === "endboss-result") {
       const room = rooms.get(socket.roomCode);
       if (!room || getRoomHost(room) !== socket) return;
+      room.gameActive = false;
       broadcastToRoom(room, { type: "endboss-result", victory: Boolean(message.victory) });
       return;
     }
@@ -130,6 +141,8 @@ wss.on("connection", (socket) => {
     }
 
     if (message.type === "player-state") {
+      const room = rooms.get(socket.roomCode);
+      if (!room || !room.gameActive || Date.now() < (room.acceptPlayerStatesAt || 0)) return;
       socket.playerState = {
         x: clampNumber(message.x, 0, 1280),
         y: clampNumber(message.y, 0, 720),
@@ -141,11 +154,8 @@ wss.on("connection", (socket) => {
         respawnTimer: clampNumber(message.respawnTimer, 0, 30),
         time: Date.now()
       };
-      const room = rooms.get(socket.roomCode);
-      if (room) {
-        broadcastPlayerStates(room, socket.playerState.dead);
-        if (areAllPlayersDown(room)) finishRoomGame(room);
-      }
+      broadcastPlayerStates(room, socket.playerState.dead);
+      if (areAllPlayersDown(room)) finishRoomGame(room);
       return;
     }
 
@@ -199,9 +209,18 @@ function clampNumber(value, min, max) {
 
 function joinRoom(socket, code) {
   leaveRoom(socket);
+  socket.playerState = null;
   let room = rooms.get(code);
   if (!room) {
-    room = { code, clients: new Set(), createdAt: Date.now() };
+    room = {
+      code,
+      clients: new Set(),
+      createdAt: Date.now(),
+      gameActive: false,
+      gameOver: false,
+      roundId: 0,
+      acceptPlayerStatesAt: 0
+    };
     rooms.set(code, room);
   }
 
@@ -217,6 +236,7 @@ function joinRoom(socket, code) {
 
 function leaveRoom(socket) {
   const code = socket.roomCode;
+  socket.playerState = null;
   if (!code) return;
   const room = rooms.get(code);
   socket.roomCode = null;
@@ -227,6 +247,7 @@ function leaveRoom(socket) {
     return;
   }
   broadcastRoom(room);
+  broadcastPlayerStates(room, true);
 }
 
 function broadcastRoom(room) {
@@ -260,7 +281,7 @@ function broadcastPlayerStates(room, force = false) {
       name: client.playerName || "Spieler",
       ...client.playerState
     }));
-  const payload = JSON.stringify({ type: "player-states", players });
+  const payload = JSON.stringify({ type: "player-states", roundId: room.roundId || 0, players });
 
   sendPayload(room, payload);
 }
@@ -273,7 +294,18 @@ function areAllPlayersDown(room) {
 function finishRoomGame(room) {
   if (room.gameOver) return;
   room.gameOver = true;
+  room.gameActive = false;
   broadcastToRoom(room, { type: "game-over" });
+}
+
+function beginRoomGame(room, delayMs) {
+  room.gameOver = false;
+  room.gameActive = true;
+  room.roundId = (Number(room.roundId) || 0) + 1;
+  room.acceptPlayerStatesAt = Date.now() + Math.max(0, Number(delayMs) || 0) - 100;
+  room.lastPlayerBroadcast = 0;
+  for (const client of room.clients) client.playerState = null;
+  broadcastPlayerStates(room, true);
 }
 
 function broadcastToRoom(room, message, exclude = null) {
