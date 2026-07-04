@@ -1,4 +1,4 @@
-import { bootGame } from "./scripts/main.js?v=settings6";
+import { bootGame } from "./scripts/main.js?v=security1";
 
 bootGame();
 
