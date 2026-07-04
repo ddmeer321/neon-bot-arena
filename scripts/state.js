@@ -45,7 +45,8 @@ export function createState() {
       clientId: null,
       hostId: null,
       playerCount: 1,
-      lastWorldAt: 0
+      lastWorldAt: 0,
+      roundId: 0
     },
     bullets: [],
     enemyBullets: [],

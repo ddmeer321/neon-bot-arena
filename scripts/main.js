@@ -1,14 +1,14 @@
 import { getDom } from "./dom.js?v=musicvolume1";
-import { createState } from "./state.js?v=coop3";
+import { createState } from "./state.js?v=coop5";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=musicvolume1";
+import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard2";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=coop3";
+import { createGameplay } from "./gameplay.js?v=coop5";
 import { draw } from "./render.js?v=musicvolume1";
 import { createFPSCounter } from "./fps.js";
 import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
 import { setupTestPanel } from "./test-panel.js?v=musicvolume1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop3";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop5";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1";
 
 
@@ -30,13 +30,19 @@ export function bootGame() {
     if (!dom.leaderboardList) return;
     const hasOnlineScores = Array.isArray(state.onlineLeaderboard);
     const topScores = (hasOnlineScores ? state.onlineLeaderboard : state.leaderboard).slice(0, 10);
-    if (dom.leaderboardMode) dom.leaderboardMode.textContent = hasOnlineScores ? "Online Rangliste" : "Lokale Rangliste";
+    if (dom.leaderboardMode) {
+      const mode = hasOnlineScores ? "Online Rangliste" : "Lokale Rangliste";
+      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${mode} · 2 Spieler` : mode;
+    }
     if (topScores.length === 0) {
       dom.leaderboardList.innerHTML = `<li><span>--</span><b>Noch kein Score</b><em>0</em></li>`;
       return;
     }
     dom.leaderboardList.innerHTML = topScores
-      .map((entry, index) => `<li><span>#${index + 1}</span><b>${escapeHtml(entry.name)}</b><em>${entry.score}</em></li>`)
+      .map((entry, index) => {
+        const playerBadge = Number(entry.playerCount) === 2 ? " <small>2P</small>" : "";
+        return `<li><span>#${index + 1}</span><b>${escapeHtml(entry.name)}${playerBadge}</b><em>${entry.score}</em></li>`;
+      })
       .join("");
   };
 

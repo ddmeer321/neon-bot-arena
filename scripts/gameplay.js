@@ -1,9 +1,9 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=musicvolume1";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=musicvolume1";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=musicvolume1";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard2";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop3";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop5";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
