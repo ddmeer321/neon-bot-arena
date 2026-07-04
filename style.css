@@ -660,6 +660,14 @@ h1 {
   overflow: hidden;
 }
 
+.duo-leaderboard {
+  margin-top: 12px;
+}
+
+.duo-leaderboard .leaderboard-title > span {
+  color: #38d8ff;
+}
+
 .leaderboard-title {
   display: flex;
   justify-content: space-between;
