@@ -1,9 +1,9 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=musicvolume1";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=musicvolume1";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard3";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard4";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop6";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop7";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -1303,13 +1303,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     saveHighScore(state, dom);
     saveLeaderboardEntry(state);
     submitOnlineScore(state)
-      .then(() => Promise.all([
-        loadOnlineScores(10, state.leaderboardFilter || "all"),
-        loadOnlineScores(10, "players-2")
-      ]))
-      .then(([onlineScores, duoScores]) => {
+      .then(() => loadOnlineScores(10, state.leaderboardFilter || "all"))
+      .then((onlineScores) => {
         if (onlineScores) state.onlineLeaderboard = onlineScores;
-        if (duoScores) state.duoOnlineLeaderboard = duoScores;
         renderLeaderboard();
       });
     renderLeaderboard();

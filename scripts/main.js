@@ -1,14 +1,14 @@
 import { getDom } from "./dom.js?v=musicvolume1";
-import { createState } from "./state.js?v=coop6";
+import { createState } from "./state.js?v=coop7";
 import { escapeHtml } from "./utils.js";
-import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard3";
+import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard4";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=coop6";
+import { createGameplay } from "./gameplay.js?v=coop7";
 import { draw } from "./render.js?v=musicvolume1";
 import { createFPSCounter } from "./fps.js";
 import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
 import { setupTestPanel } from "./test-panel.js?v=musicvolume1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop6";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop7";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1";
 
 
@@ -31,19 +31,15 @@ export function bootGame() {
     const hasOnlineScores = Array.isArray(state.onlineLeaderboard);
     const topScores = (hasOnlineScores ? state.onlineLeaderboard : state.leaderboard).slice(0, 10);
     if (dom.leaderboardMode) {
-      dom.leaderboardMode.textContent = hasOnlineScores ? "Online Solo-Rangliste" : "Lokale Solo-Rangliste";
+      const mode = hasOnlineScores ? "Online Rangliste" : "Lokale Rangliste";
+      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${mode} · 2 Spieler` : mode;
     }
-    renderScoreList(dom.leaderboardList, topScores);
-    renderScoreList(dom.duoLeaderboardList, (state.duoOnlineLeaderboard || []).slice(0, 10), true);
+    renderScoreList(dom.leaderboardList, topScores, state.leaderboardFilter === "players-2");
   };
 
   async function refreshOnlineLeaderboard() {
-    const [onlineScores, duoScores] = await Promise.all([
-      loadOnlineScores(10, state.leaderboardFilter),
-      loadOnlineScores(10, "players-2")
-    ]);
+    const onlineScores = await loadOnlineScores(10, state.leaderboardFilter);
     if (onlineScores) state.onlineLeaderboard = onlineScores;
-    if (duoScores) state.duoOnlineLeaderboard = duoScores;
     renderLeaderboard();
   }
 

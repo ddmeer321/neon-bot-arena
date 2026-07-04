@@ -79,7 +79,6 @@
     specialBar: document.querySelector("#specialBar"),
     leaderboardMode: document.querySelector("#leaderboardMode"),
     leaderboardFilter: document.querySelector("#leaderboardFilter"),
-    leaderboardList: document.querySelector("#leaderboardList"),
-    duoLeaderboardList: document.querySelector("#duoLeaderboardList")
+    leaderboardList: document.querySelector("#leaderboardList")
   };
 }
