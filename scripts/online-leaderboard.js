@@ -21,14 +21,16 @@ export async function loadOnlineScores(limit = 10, filter = "all") {
     url.searchParams.set("limit", String(Math.max(limit * 6, 50)));
     if (filter === "players-2") {
       url.searchParams.set("player_count", "eq.2");
-    } else if (filter && filter !== "all") {
-      url.searchParams.set("diffculty", `eq.${filter}`);
+    } else {
+      url.searchParams.set("player_count", "eq.1");
+      if (filter && filter !== "all") url.searchParams.set("diffculty", `eq.${filter}`);
     }
 
     let response = await fetch(url, { headers });
     if (!response.ok && response.status === 400) {
       if (filter === "players-2") return [];
       url.searchParams.set("select", LEGACY_SCORE_FIELDS);
+      url.searchParams.delete("player_count");
       response = await fetch(url, { headers });
     }
     if (!response.ok) throw new Error(`Rangliste konnte nicht geladen werden: ${response.status}`);
