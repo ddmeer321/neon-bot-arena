@@ -27,6 +27,323 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+body.custom-background {
+  background-image: linear-gradient(rgba(5, 8, 14, 0.7), rgba(5, 8, 14, 0.82)), var(--custom-background);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+body[data-background-theme="neon"] {
+  background: radial-gradient(circle at 30% 20%, rgba(56, 216, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 78% 15%, rgba(255, 79, 146, 0.16), transparent 30%), #090b10;
+}
+
+body[data-background-theme="space"] {
+  background: radial-gradient(circle at 78% 16%, rgba(151, 126, 255, 0.32), transparent 18%),
+    radial-gradient(circle at 21% 72%, rgba(42, 119, 255, 0.2), transparent 25%),
+    linear-gradient(145deg, #020617, #11123b 55%, #1c0b35);
+  background-attachment: fixed;
+}
+
+body[data-background-theme="sunset"] {
+  background: radial-gradient(circle at 76% 18%, rgba(255, 230, 155, 0.4), transparent 19%),
+    linear-gradient(145deg, #281044 5%, #6e2148 52%, #c45132);
+  background-attachment: fixed;
+}
+
+body[data-background-theme="ice"] {
+  background: radial-gradient(circle at 22% 18%, rgba(190, 247, 255, 0.28), transparent 25%),
+    linear-gradient(145deg, #061b2b, #0b3a50 58%, #146b77);
+  background-attachment: fixed;
+}
+
+.settings-button {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 80;
+  min-height: 42px;
+  border: 1px solid rgba(56, 216, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(8, 12, 20, 0.88);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.settings-button:hover,
+.settings-button:focus-visible {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.settings-button > span {
+  color: var(--cyan);
+  font-size: 1.2rem;
+}
+
+body.playing .settings-button {
+  display: none;
+}
+
+#fpsCounter {
+  top: 64px !important;
+  right: 14px !important;
+}
+
+body.playing #fpsCounter {
+  top: 10px !important;
+  right: 10px !important;
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 5, 10, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.settings-dialog {
+  width: min(520px, 100%);
+  max-height: min(680px, calc(100dvh - 36px));
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(56, 216, 255, 0.35);
+  border-radius: 14px;
+  background: rgba(10, 15, 24, 0.97);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.settings-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-heading h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.settings-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.settings-group {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.settings-group > label,
+.settings-group > span,
+.settings-group > strong {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.settings-group small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.background-presets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.background-preset {
+  min-width: 0;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(5, 9, 16, 0.76);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
+}
+
+.background-preset:hover,
+.background-preset:focus-visible {
+  border-color: rgba(56, 216, 255, 0.68);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.background-preset.selected {
+  border-color: var(--lime);
+  background: rgba(183, 255, 74, 0.09);
+  box-shadow: 0 0 0 1px rgba(183, 255, 74, 0.18);
+}
+
+.background-preset strong {
+  display: block;
+  padding: 6px 4px 4px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-preview {
+  display: block;
+  aspect-ratio: 1.5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.preset-neon .preset-preview {
+  background: radial-gradient(circle at 25% 25%, rgba(56, 216, 255, 0.7), transparent 29%),
+    linear-gradient(135deg, #07121b, #311224);
+}
+
+.preset-space .preset-preview {
+  background: radial-gradient(circle at 74% 26%, #bca9ff 0 5%, transparent 6%),
+    radial-gradient(circle at 20% 30%, white 0 1%, transparent 2%),
+    radial-gradient(circle at 48% 67%, white 0 1%, transparent 2%),
+    linear-gradient(135deg, #020617, #251152);
+}
+
+.preset-sunset .preset-preview {
+  background: radial-gradient(circle at 72% 28%, #ffe4a3 0 12%, transparent 13%),
+    linear-gradient(155deg, #351142, #ad3843 58%, #ed7e45);
+}
+
+.preset-ice .preset-preview {
+  background: linear-gradient(125deg, transparent 36%, rgba(215, 250, 255, 0.44) 37% 41%, transparent 42%),
+    linear-gradient(145deg, #061b2b, #168292);
+}
+
+.settings-group select {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.9);
+  color: var(--text);
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 800;
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+#backgroundImageInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.file-button,
+.settings-actions button,
+.danger-button {
+  min-height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 9px 12px;
+  font: inherit;
+  font-weight: 900;
+}
+
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(56, 216, 255, 0.55);
+  background: rgba(56, 216, 255, 0.12);
+  color: var(--cyan);
+}
+
+.danger-zone {
+  border-color: rgba(255, 79, 146, 0.42);
+}
+
+.danger-button {
+  border: 1px solid rgba(255, 79, 146, 0.7);
+  background: rgba(255, 79, 146, 0.14);
+  color: #ff8ab5;
+}
+
+.delete-warning {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 200, 87, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 200, 87, 0.09);
+}
+
+.delete-warning p,
+.settings-status {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.settings-status {
+  min-height: 1.2em;
+  color: var(--lime);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.settings-status[data-state="error"] {
+  color: #ff8ab5;
+}
+
+@media (max-width: 560px) {
+  .settings-button strong {
+    display: none;
+  }
+
+  .settings-button {
+    width: 44px;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .settings-dialog {
+    padding: 15px;
+  }
+
+  .settings-actions {
+    display: grid;
+  }
+
+  .background-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 button {
   font: inherit;
   -webkit-tap-highlight-color: transparent;

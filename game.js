@@ -1,3 +1,3 @@
-import { bootGame } from "./scripts/main.js?v=coop7";
+import { bootGame } from "./scripts/main.js?v=settings6";
 
 bootGame();

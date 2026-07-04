@@ -3,17 +3,19 @@ import { createState } from "./state.js?v=coop7";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard4";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=coop7";
-import { draw } from "./render.js?v=musicvolume1";
+import { createGameplay } from "./gameplay.js?v=settings6";
+import { draw } from "./render.js?v=settings6";
 import { createFPSCounter } from "./fps.js";
-import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=musicvolume1";
-import { setupTestPanel } from "./test-panel.js?v=musicvolume1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=coop7";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=musicvolume1";
+import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
+import { setupTestPanel } from "./test-panel.js?v=settings6";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=settings6";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
+import { setupSettings, t } from "./settings.js?v=settings6";
 
 
 
 export function bootGame() {
+  setupSettings();
   const dom = getDom();
   const state = createState();
   const playtestParams = new URLSearchParams(window.location.search);
@@ -23,7 +25,7 @@ export function bootGame() {
 
   if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = state.highScore;
   if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
-  if (dom.difficultyText) dom.difficultyText.textContent = "Normal";
+  if (dom.difficultyText) dom.difficultyText.textContent = t("menu.normal");
   updateCoinDisplay(state, dom);
 
   const renderLeaderboard = () => {
@@ -31,8 +33,8 @@ export function bootGame() {
     const hasOnlineScores = Array.isArray(state.onlineLeaderboard);
     const topScores = (hasOnlineScores ? state.onlineLeaderboard : state.leaderboard).slice(0, 10);
     if (dom.leaderboardMode) {
-      const mode = hasOnlineScores ? "Online Rangliste" : "Lokale Rangliste";
-      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${mode} · 2 Spieler` : mode;
+      const mode = hasOnlineScores ? t("leaderboard.online") : t("leaderboard.local");
+      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${mode} · ${t("menu.twoPlayers")}` : mode;
     }
     renderScoreList(dom.leaderboardList, topScores, state.leaderboardFilter === "players-2");
   };
@@ -67,7 +69,7 @@ export function bootGame() {
   function renderScoreList(list, scores, showDuoBadge = false) {
     if (!list) return;
     if (scores.length === 0) {
-      list.innerHTML = `<li><span>--</span><b>Noch kein Score</b><em>0</em></li>`;
+      list.innerHTML = `<li><span>--</span><b>${t("leaderboard.empty")}</b><em>0</em></li>`;
       return;
     }
     list.innerHTML = scores
@@ -96,6 +98,13 @@ export function bootGame() {
     triggerBossMask: gameplay.triggerMaskBoomerangForPlaytest
   });
   setupMultiplayerTest(dom, state, gameplay.startGame);
+
+  window.addEventListener("languagechange", () => {
+    renderLeaderboard();
+    renderHeroMenu(state, dom);
+    renderShop(state, dom);
+    if (dom.difficultyText) dom.difficultyText.textContent = t(`menu.${state.difficulty || "normal"}`);
+  });
 
   dom.heroMenuBtn?.addEventListener("click", () => {
     showHeroPanel(dom);

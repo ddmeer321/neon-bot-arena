@@ -27,11 +27,12 @@ BEGIN
 END
 $$;
 
--- Only these two confirmed scores above 200,000 were achieved with two players.
+-- Only these exact two confirmed records were achieved with two players.
+-- Matching exact scores keeps future solo players with the same names untouched.
 UPDATE public.scores
    SET player_count = 2
- WHERE lower(btrim(name)) IN ('niklas', 'spieler')
-   AND scores > 200000;
+ WHERE (lower(btrim(name)) = 'niklas' AND scores = 234370)
+    OR (lower(btrim(name)) = 'spieler' AND scores = 234100);
 
 CREATE INDEX IF NOT EXISTS scores_player_count_scores_idx
   ON public.scores (player_count, scores DESC);
@@ -39,6 +40,6 @@ CREATE INDEX IF NOT EXISTS scores_player_count_scores_idx
 -- Verification: should return exactly the two confirmed records.
 SELECT name, scores, player_count
   FROM public.scores
- WHERE lower(btrim(name)) IN ('niklas', 'spieler')
-   AND scores > 200000
+ WHERE (lower(btrim(name)) = 'niklas' AND scores = 234370)
+    OR (lower(btrim(name)) = 'spieler' AND scores = 234100)
  ORDER BY scores DESC;

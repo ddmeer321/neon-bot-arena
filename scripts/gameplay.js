@@ -1,9 +1,10 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=musicvolume1";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=musicvolume1";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=settings6";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard4";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=coop7";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=settings6";
+import { t, tf } from "./settings.js?v=settings6";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -19,7 +20,7 @@ export function getMultiplayerScaling(value = 1) {
 export function createGameplay({ dom, state, renderLeaderboard }) {
   const difficultySettings = {
     easy: {
-      label: "Einfach",
+      labelKey: "menu.easy",
       enemyCount: 0.72,
       enemyHp: 0.78,
       enemySpeed: 0.84,
@@ -37,7 +38,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bossBulletSpeed: 300
     },
     normal: {
-      label: "Normal",
+      labelKey: "menu.normal",
       enemyCount: 1,
       enemyHp: 1,
       enemySpeed: 1,
@@ -55,7 +56,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       bossBulletSpeed: 360
     },
     hard: {
-      label: "Schwer",
+      labelKey: "menu.hard",
       enemyCount: 1.18,
       enemyHp: 1.15,
       enemySpeed: 1.1,
@@ -177,9 +178,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       hero
     };
     dom.heroName.textContent = hero.name;
-    if (dom.difficultyText) dom.difficultyText.textContent = getDifficultySettings().label;
+    if (dom.difficultyText) dom.difficultyText.textContent = t(getDifficultySettings().labelKey);
     applyDeviceMode();
     document.body.classList.add("playing");
+    window.scrollTo(0, 0);
     dom.menu.classList.add("hidden");
     dom.gamePanel.classList.remove("hidden");
     dom.message.classList.add("hidden");
@@ -196,9 +198,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.gamePanel.classList.toggle("mobile-mode", mobile);
     dom.touchControls?.classList.toggle("hidden", !mobile);
     if (dom.moveHint) dom.moveHint.textContent = mobile ? "Stick" : "WASD";
-    if (dom.aimHint) dom.aimHint.textContent = mobile ? "Auto-Ziel" : "Maus";
-    if (dom.fireHint) dom.fireHint.textContent = mobile ? "Feuer" : "Klick";
-    if (dom.specialHint) dom.specialHint.textContent = mobile ? "Spezial" : "Leertaste";
+    if (dom.aimHint) dom.aimHint.textContent = mobile ? t("controls.autoAim") : t("controls.mouse");
+    if (dom.fireHint) dom.fireHint.textContent = mobile ? t("controls.fire") : t("controls.click");
+    if (dom.specialHint) dom.specialHint.textContent = mobile ? t("hud.special") : t("controls.space");
     state.mouse.down = false;
     state.touch.fire = false;
     state.touch.moveX = 0;
@@ -244,7 +246,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function showPauseMenu() {
-    showMessage(`<strong>Pause</strong>${state.playerName}, du bist bei Welle ${state.wave}.<div class="message-actions"><button id="resumeBtn">Weiter</button><button id="menuBtn" class="secondary-btn">Hauptmen\u00fc</button></div>`);
+    showMessage(`<strong>${t("game.pause")}</strong>${tf("game.pauseStatus", { name: state.playerName, wave: state.wave })}<div class="message-actions"><button id="resumeBtn">${t("game.resume")}</button><button id="menuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
     bindOverlayButton("#resumeBtn", togglePause);
     bindOverlayButton("#menuBtn", returnToMenu);
   }
@@ -1309,7 +1311,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         renderLeaderboard();
       });
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? "Neuer Highscore!" : "Game Over"}</strong>${state.playerName}, du hast Welle ${state.wave} erreicht und ${state.score} Punkte gesammelt.<br>Besiegte Bosse: ${state.bossesDefeated}<br>Bossbonus: +${state.bossCoinBonus} M\u00fcnzen<br>Schwierigkeit: ${getDifficultySettings().label}<br>Belohnung: +${reward} M\u00fcnzen<br>Highscore: ${state.highScore}<div class="message-actions"><button id="againBtn">Nochmal</button><button id="gameOverMenuBtn" class="secondary-btn">Hauptmen\u00fc</button></div>`);
+    showMessage(`<strong>${isRecord ? t("game.newHighScore") : t("game.over")}</strong>${tf("game.summary", { name: state.playerName, wave: state.wave, score: state.score })}<br>${t("game.defeatedBosses")}: ${state.bossesDefeated}<br>${t("game.bossBonus")}: +${state.bossCoinBonus} ${t("shop.coins")}<br>${t("game.difficulty")}: ${t(getDifficultySettings().labelKey)}<br>${t("game.reward")}: +${reward} ${t("shop.coins")}<br>${t("game.highScore")}: ${state.highScore}<div class="message-actions"><button id="againBtn">${t("game.again")}</button><button id="gameOverMenuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
     bindOverlayButton("#againBtn", startGame);
     bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
@@ -1333,9 +1335,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
 
     if (victory) {
-      showMessage(`<strong>Der Masken Dieb besiegt!</strong>Du hast alle drei Stufen in einer Runde bezwungen.${rewardUnlocked ? "<br>Neue Belohnung: Scipios Maske" : ""}<div class="message-actions"><button id="endbossAgainBtn">Erneut kämpfen</button><button id="endbossMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+      showMessage(`<strong>${t("game.maskThiefDefeated")}</strong>${t("game.endbossVictory")}${rewardUnlocked ? `<br>${t("game.newReward")}` : ""}<div class="message-actions"><button id="endbossAgainBtn">${t("game.fightAgain")}</button><button id="endbossMenuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
     } else {
-      showMessage(`<strong>Der Masken Dieb wurde nicht besiegt</strong>Du hast Stufe ${Math.max(1, state.endbossPhase)} von 3 erreicht.<div class="message-actions"><button id="endbossAgainBtn">Nochmal versuchen</button><button id="endbossMenuBtn" class="secondary-btn">Hauptmenü</button></div>`);
+      showMessage(`<strong>${t("game.maskThiefNotDefeated")}</strong>${tf("game.endbossProgress", { stage: Math.max(1, state.endbossPhase) })}<div class="message-actions"><button id="endbossAgainBtn">${t("game.tryAgain")}</button><button id="endbossMenuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
     }
     bindOverlayButton("#endbossAgainBtn", () => startGame({ endboss: true, skipPrep: true }));
     bindOverlayButton("#endbossMenuBtn", returnToMenu);
@@ -1361,8 +1363,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.scoreText.textContent = state.score;
     if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
     if (dom.difficultyText) {
-      const mode = state.endbossMode ? "Endboss" : getDifficultySettings().label;
-      dom.difficultyText.textContent = getActivePlayerCount() > 1 ? `${mode} · ${getActivePlayerCount()} Spieler` : mode;
+      const mode = state.endbossMode ? "Endboss" : t(getDifficultySettings().labelKey);
+      dom.difficultyText.textContent = getActivePlayerCount() > 1 ? `${mode} · ${getActivePlayerCount()} ${t("multiplayer.players")}` : mode;
     }
     dom.healthBar.style.width = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
     dom.specialBar.style.width = `${clamp(100 - (state.player.specialTimer / state.player.hero.specialCooldown) * 100, 0, 100)}%`;
