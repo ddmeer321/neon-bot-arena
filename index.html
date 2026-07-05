@@ -63,6 +63,21 @@
           </select>
         </label>
 
+        <div class="settings-group online-score-settings">
+          <strong data-i18n="scoreManage.title">Meine Online-Scores</strong>
+          <small data-i18n="scoreManage.hint">Nur Einträge, die auf diesem Gerät mit einem Löschschlüssel gespeichert wurden, können hier gelöscht werden.</small>
+          <div id="ownedScoresList" class="owned-scores-list"></div>
+          <button id="deleteAllOnlineScoresBtn" class="secondary-btn hidden" type="button" data-i18n="scoreManage.deleteAll">Alle meine Online-Scores löschen</button>
+          <div id="deleteOnlineScoresWarning" class="delete-warning hidden" role="alert">
+            <p data-i18n="scoreManage.confirmText">Diese Einträge werden dauerhaft aus der Online-Rangliste gelöscht.</p>
+            <div class="settings-actions">
+              <button id="cancelDeleteOnlineScoresBtn" class="secondary-btn" type="button" data-i18n="settings.cancel">Abbrechen</button>
+              <button id="confirmDeleteOnlineScoresBtn" class="danger-button" type="button" data-i18n="scoreManage.confirm">Online-Scores löschen</button>
+            </div>
+          </div>
+          <p id="ownedScoresStatus" class="settings-status" aria-live="polite"></p>
+        </div>
+
         <div class="settings-group danger-zone">
           <strong data-i18n="settings.deleteTitle">Lokale Daten</strong>
           <small data-i18n="settings.deleteHint">Löscht Fortschritt, Coins, Einstellungen, Test-ID und lokale Rekorde auf diesem Gerät.</small>
@@ -128,6 +143,7 @@
         <label class="name-field">
           <span data-i18n="menu.playerName">Spielername</span>
           <input id="playerName" type="text" maxlength="16" placeholder="Dein Name" data-i18n-placeholder="menu.namePlaceholder" autocomplete="nickname" />
+          <small class="name-privacy-hint" data-i18n="menu.namePrivacyHint">Bitte verwende nicht deinen echten Namen.</small>
         </label>
 
         <div class="menu-score">
@@ -138,11 +154,6 @@
         <div class="menu-score coins-box">
           <span data-i18n="menu.coins">Münzen</span>
           <strong id="coinCount">0</strong>
-        </div>
-
-        <div class="test-id-box">
-          <button id="testIdBtn" type="button" data-i18n="multiplayer.testId">Test-ID</button>
-          <span id="testIdText" data-i18n="multiplayer.notCreated">Nicht erstellt</span>
         </div>
 
         <div class="multiplayer-test">
@@ -218,7 +229,7 @@
             <button id="testSpecialBtn" type="button">Spezial bereit</button>
             <button id="testEndbossBtn" type="button">Endboss starten</button>
           </div>
-          <p>Nur für freigegebene Test-IDs.</p>
+          <p>Nur lokal mit <code>?playtest=1</code>.</p>
         </section>
 
         <button id="startBtn" class="start-btn" data-i18n="menu.start">Spiel starten</button>
@@ -290,6 +301,10 @@
         <div id="message" class="message hidden"></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
+    </footer>
 
     <script type="module" src="game.js?v=security1"></script>
   </body>

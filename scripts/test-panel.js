@@ -1,21 +1,12 @@
-import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess } from "./config.js?v=musicvolume1";
+import { heroes, maxUpgradeLevel } from "./config.js?v=musicvolume1";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=settings6";
-import { t } from "./settings.js?v=settings6";
 
 export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask }) {
-  renderStoredTestId(dom);
+  if (!hasTestPanelAccess()) return;
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
-  window.addEventListener("languagechange", () => renderStoredTestId(dom));
-
-  dom.testIdBtn?.addEventListener("click", async () => {
-    const id = getOrCreateTestId();
-    renderStoredTestId(dom);
-    await copyTestId(id);
-    updateTestPanelAccess(dom, state);
-  });
 
   dom.playerNameInput?.addEventListener("input", () => updateTestPanelAccess(dom, state));
 
@@ -97,19 +88,6 @@ function updateEconomyViews(state, dom) {
   renderShop(state, dom);
 }
 
-function getOrCreateTestId() {
-  const existing = localStorage.getItem(testIdKey);
-  if (existing) return existing;
-  const generated = String(getRandomNumber(100000, 999999));
-  localStorage.setItem(testIdKey, generated);
-  return generated;
-}
-
-function renderStoredTestId(dom) {
-  const id = localStorage.getItem(testIdKey);
-  if (dom.testIdText) dom.testIdText.textContent = id ? `ID ${id}` : t("multiplayer.notCreated");
-}
-
 function updateTestPanelAccess(dom, state) {
   const active = hasTestPanelAccess();
   dom.testPanel?.classList.toggle("hidden", !active);
@@ -118,27 +96,10 @@ function updateTestPanelAccess(dom, state) {
 }
 
 function hasTestPanelAccess() {
-  const params = new URLSearchParams(window.location.search);
-  if (["localhost", "127.0.0.1"].includes(window.location.hostname) && params.has("playtest")) return true;
-  const id = localStorage.getItem(testIdKey);
-  if (!id) return false;
-  return testPanelAccess.some((entry) => String(entry) === id);
+  return isLocalPlaytestLocation(window.location.hostname, window.location.search);
 }
 
-function getRandomNumber(min, max) {
-  const range = max - min + 1;
-  if (window.crypto?.getRandomValues) {
-    const value = new Uint32Array(1);
-    window.crypto.getRandomValues(value);
-    return min + (value[0] % range);
-  }
-  return min + Math.floor(Math.random() * range);
-}
-
-async function copyTestId(id) {
-  try {
-    await navigator.clipboard?.writeText(id);
-  } catch {
-    // Kopieren ist nur Komfort. Die ID bleibt trotzdem sichtbar gespeichert.
-  }
+export function isLocalPlaytestLocation(hostname, search = "") {
+  const params = new URLSearchParams(search);
+  return ["localhost", "127.0.0.1"].includes(hostname) && params.has("playtest");
 }

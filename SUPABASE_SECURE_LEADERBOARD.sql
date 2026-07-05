@@ -19,7 +19,15 @@ END
 $$;
 
 REVOKE ALL ON TABLE public.scores FROM anon, authenticated;
-GRANT SELECT ON TABLE public.scores TO anon, authenticated;
+GRANT SELECT (
+  name,
+  scores,
+  wave,
+  diffculty,
+  bosses,
+  hero,
+  player_count
+) ON TABLE public.scores TO anon, authenticated;
 
 CREATE POLICY scores_public_read
   ON public.scores
@@ -172,6 +180,13 @@ SELECT grantee, privilege_type
    AND table_name = 'scores'
    AND grantee IN ('anon', 'authenticated')
  ORDER BY grantee, privilege_type;
+
+SELECT grantee, privilege_type, column_name
+  FROM information_schema.column_privileges
+ WHERE table_schema = 'public'
+   AND table_name = 'scores'
+   AND grantee IN ('anon', 'authenticated')
+ ORDER BY grantee, column_name;
 
 SELECT policyname, cmd, roles
   FROM pg_policies

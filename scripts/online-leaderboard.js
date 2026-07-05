@@ -1,11 +1,19 @@
 ﻿import { cleanName } from "./utils.js";
 
+import {
+  addOwnedScoreReceipt,
+  normalizeDeletionReceipt,
+  OWNED_SCORE_STORAGE_KEY,
+  removeOwnedScoreReceipt,
+  sanitizeOwnedScoreReceipts
+} from "./owned-score-store.js?v=deletion1";
+
 const SUPABASE_URL = "https://ncishdfeznjysqswsvzq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_NKMtRTJM-5O0rWaJP3pGaw_vvofM_H8";
 const SCORE_TABLE = "scores";
 const SCORE_SUBMIT_URL = `${SUPABASE_URL}/functions/v1/submit-score`;
-const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,player_count,created_at";
-const LEGACY_SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,created_at";
+const SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero,player_count";
+const LEGACY_SCORE_FIELDS = "name,scores,wave,diffculty,bosses,hero";
 const BLOCKED_SCORE_NAMES = new Set([["co", "de", "24", ".", "4"].join("")]);
 
 const headers = {
@@ -18,7 +26,7 @@ export async function loadOnlineScores(limit = 10, filter = "all") {
   try {
     const url = new URL(`${SUPABASE_URL}/rest/v1/${SCORE_TABLE}`);
     url.searchParams.set("select", SCORE_FIELDS);
-    url.searchParams.set("order", "scores.desc,wave.desc,created_at.desc");
+    url.searchParams.set("order", "scores.desc,wave.desc");
     url.searchParams.set("limit", String(Math.max(limit * 6, 50)));
     if (filter === "players-2") {
       url.searchParams.set("player_count", "eq.2");
@@ -76,7 +84,10 @@ export async function submitOnlineScore(state) {
       console.warn(`Score wurde vom sicheren Endpunkt abgelehnt: ${response.status}${details ? ` (${details})` : ""}`);
       return { ok: false, reason, status: response.status, details };
     }
-    return { ok: true };
+    const payload = await readJsonResponse(response);
+    const receipt = normalizeDeletionReceipt(payload, entry);
+    if (receipt) saveOwnedOnlineScores(addOwnedScoreReceipt(getOwnedOnlineScores(), receipt));
+    return { ok: true, deletionStored: Boolean(receipt) };
   } catch (error) {
     console.warn(error);
     return {
@@ -84,6 +95,59 @@ export async function submitOnlineScore(state) {
       reason: "network-error",
       details: error instanceof Error ? error.message : String(error)
     };
+  }
+}
+
+export function getOwnedOnlineScores() {
+  try {
+    return sanitizeOwnedScoreReceipts(JSON.parse(localStorage.getItem(OWNED_SCORE_STORAGE_KEY) || "[]"));
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteOwnedOnlineScore(scoreId) {
+  const receipt = getOwnedOnlineScores().find((entry) => entry.scoreId === scoreId);
+  if (!receipt) return { ok: false, reason: "missing-deletion-token" };
+
+  try {
+    const response = await fetch(SCORE_SUBMIT_URL, {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({
+        score_id: receipt.scoreId,
+        delete_token: receipt.deleteToken
+      })
+    });
+    if (!response.ok) {
+      return {
+        ok: false,
+        reason: response.status === 429 ? "rate-limited" : "delete-rejected",
+        status: response.status,
+        details: await readResponseError(response)
+      };
+    }
+    saveOwnedOnlineScores(removeOwnedScoreReceipt(getOwnedOnlineScores(), receipt.scoreId));
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "network-error",
+      details: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+function saveOwnedOnlineScores(records) {
+  localStorage.setItem(OWNED_SCORE_STORAGE_KEY, JSON.stringify(sanitizeOwnedScoreReceipts(records)));
+  window.dispatchEvent(new CustomEvent("ownedscoreschange"));
+}
+
+async function readJsonResponse(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
   }
 }
 
@@ -118,8 +182,7 @@ function normalizeScoreRow(row) {
     difficulty: row.diffculty || "normal",
     bosses,
     hero: row.hero || "",
-    playerCount: Math.max(1, Math.min(3, Math.round(Number(row.player_count) || 1))),
-    date: row.created_at || new Date().toISOString()
+    playerCount: Math.max(1, Math.min(3, Math.round(Number(row.player_count) || 1)))
   };
 }
 

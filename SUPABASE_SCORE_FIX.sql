@@ -2,6 +2,19 @@
 -- Fixes HTTP 409 when two players achieve the same score.
 -- The numeric score value must not be globally UNIQUE.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+ALTER TABLE public.scores
+  ADD COLUMN IF NOT EXISTS public_id UUID DEFAULT gen_random_uuid();
+
+UPDATE public.scores
+   SET public_id = gen_random_uuid()
+ WHERE public_id IS NULL;
+
+ALTER TABLE public.scores
+  ALTER COLUMN public_id SET DEFAULT gen_random_uuid(),
+  ALTER COLUMN public_id SET NOT NULL;
+
 DO $$
 DECLARE
   score_column SMALLINT;
@@ -20,17 +33,17 @@ BEGIN
   END IF;
 
   FOR unique_constraint IN
-    SELECT conname
+    SELECT conname, contype
       FROM pg_constraint
      WHERE conrelid = 'public.scores'::regclass
-       AND contype = 'u'
+       AND contype IN ('p', 'u')
        AND conkey = ARRAY[score_column]
   LOOP
     EXECUTE format(
       'ALTER TABLE public.scores DROP CONSTRAINT %I',
       unique_constraint.conname
     );
-    RAISE NOTICE 'Removed UNIQUE constraint %', unique_constraint.conname;
+    RAISE NOTICE 'Removed score uniqueness constraint %', unique_constraint.conname;
   END LOOP;
 
   -- Also handle a manually-created unique index that is not backed by a constraint.
@@ -49,14 +62,25 @@ BEGIN
     EXECUTE format('DROP INDEX public.%I', unique_index.index_name);
     RAISE NOTICE 'Removed UNIQUE index %', unique_index.index_name;
   END LOOP;
+
+  IF NOT EXISTS (
+    SELECT 1
+      FROM pg_constraint
+     WHERE conrelid = 'public.scores'::regclass
+       AND contype = 'p'
+  ) THEN
+    ALTER TABLE public.scores
+      ADD CONSTRAINT scores_pkey PRIMARY KEY (public_id);
+    RAISE NOTICE 'Created primary key on public_id';
+  END IF;
 END
 $$;
 
--- Verification: this query must return no row.
+-- Verification: this query must return no row. The primary key is public_id.
 SELECT conname, pg_get_constraintdef(oid)
   FROM pg_constraint
  WHERE conrelid = 'public.scores'::regclass
-   AND contype = 'u'
+   AND contype IN ('p', 'u')
    AND conkey = ARRAY[
      (SELECT attnum
         FROM pg_attribute

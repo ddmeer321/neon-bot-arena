@@ -2,16 +2,10 @@
 export const leaderboardKey = "neon-bot-arena-leaderboard";
 export const coinKey = "neon-bot-arena-coins";
 export const progressionKey = "neon-bot-arena-progression";
-export const testIdKey = "neon-bot-arena-test-id";
 
 export const maxUpgradeLevel = 10;
 export const starterHeroes = ["volt", "titan", "nova"];
 export const defaultCosmetic = "classic";
-export const testPanelAccess = [
-  "755051",
-  "809587",
-  "535127"
-];
 
 export const heroes = {
   volt: {
