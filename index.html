@@ -237,6 +237,7 @@
             <button id="testHealBtn" type="button">Heilen</button>
             <button id="testSpecialBtn" type="button">Spezial bereit</button>
             <button id="testEndbossBtn" type="button">Endboss starten</button>
+            <button id="openTestLogsBtn" class="test-log-open" type="button">Logs anzeigen</button>
           </div>
           <p>Testversion: Dieses Panel ist automatisch aktiv. Ergebnisse werden nicht an die Online-Rangliste gesendet.</p>
         </section>
@@ -296,6 +297,7 @@
             <button id="testGameBossPhaseBtn" type="button">Bossphase +</button>
             <button id="testGameBossQuakeBtn" type="button">Erdbeben</button>
             <button id="testGameBossMaskBtn" type="button">Maskenwurf</button>
+            <button id="testGameBossBatsBtn" type="button">Fledermausschwarm</button>
           </div>
         </div>
         <div id="touchControls" class="touch-controls hidden" aria-label="Handy Steuerung">
@@ -311,10 +313,32 @@
       </section>
     </main>
 
+    <div id="testLogOverlay" class="test-log-overlay hidden">
+      <section class="test-log-dialog" role="dialog" aria-modal="true" aria-labelledby="testLogTitle">
+        <header class="test-log-heading">
+          <div>
+            <p>TESTLABOR · NUR LOKAL</p>
+            <h2 id="testLogTitle">Spielprotokoll</h2>
+          </div>
+          <button id="closeTestLogsBtn" class="test-log-close" type="button" aria-label="Logs schließen">×</button>
+        </header>
+        <div class="test-log-toolbar">
+          <span id="testLogSummary">0/500 lokale Ereignisse</span>
+          <div>
+            <button id="downloadTestLogsBtn" type="button">JSON herunterladen</button>
+            <button id="clearTestLogsBtn" class="danger-button" type="button">Logs löschen</button>
+          </div>
+        </div>
+        <p class="test-log-hint">Diese Daten bleiben in diesem Browser, bis du sie löschst. Es werden keine Logs an einen Server übertragen.</p>
+        <div id="testLogList" class="test-log-list" aria-live="polite"></div>
+        <p id="testLogStatus" class="settings-status" aria-live="polite"></p>
+      </section>
+    </div>
+
     <footer class="site-footer">
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testsite1"></script>
+    <script type="module" src="game.js?v=testbats1"></script>
   </body>
 </html>

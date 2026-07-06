@@ -1,7 +1,10 @@
+import { appendTestLog } from "./test-logger.js?v=testlogs1";
+
 export function createFPSCounter() {
   let lastTime = performance.now();
   let frames = 0;
   let fps = 0;
+  let lastLowFpsLog = 0;
 
   const el = document.createElement("div");
   el.id = "fpsCounter";
@@ -32,6 +35,10 @@ export function createFPSCounter() {
       frames = 0;
       lastTime = now;
       el.textContent = `FPS: ${fps}`;
+      if (fps < 35 && now - lastLowFpsLog >= 15000) {
+        lastLowFpsLog = now;
+        appendTestLog("low_fps", { fps });
+      }
     }
 
     requestAnimationFrame(update);

@@ -3,8 +3,9 @@ import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=settings6";
 import { t } from "./settings.js?v=settings6";
+import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
-export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask }) {
+export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask, triggerBossBats }) {
   renderStoredTestId(dom);
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
@@ -21,7 +22,7 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
 
   bindAll([dom.testCoinsBtn, dom.testGameCoinsBtn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "coins_5000");
     state.coins += 5000;
     saveCoins(state.coins);
     updateEconomyViews(state, dom);
@@ -29,7 +30,7 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
 
   bindAll([dom.testMaxCoinsBtn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "coins_50000");
     state.coins = Math.max(state.coins, 50000);
     saveCoins(state.coins);
     updateEconomyViews(state, dom);
@@ -37,21 +38,21 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
 
   bindAll([dom.testWave10Btn, dom.testGameWave10Btn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "wave_10");
     startGame({ startWave: 10 });
     updateTestPanelAccess(dom, state);
   });
 
   bindAll([dom.testWave20Btn, dom.testGameWave20Btn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "wave_20");
     startGame({ startWave: 20 });
     updateTestPanelAccess(dom, state);
   });
 
   bindAll([dom.testUnlockBtn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "unlock_heroes");
     state.unlockedHeroes = Object.keys(heroes);
     saveProgression(state);
     updateEconomyViews(state, dom);
@@ -59,7 +60,7 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
 
   bindAll([dom.testMaxHeroBtn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "max_hero");
     state.upgrades[state.selectedHero] = maxUpgradeLevel;
     saveProgression(state);
     updateEconomyViews(state, dom);
@@ -67,43 +68,55 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
 
   bindAll([dom.testHealBtn, dom.testGameHealBtn], () => {
     if (!hasTestPanelAccess() || !state.player) return;
-    activateTestMode(state);
+    activateTestMode(state, "heal");
     state.player.hp = state.player.maxHp;
     state.player.healFlash = 0.8;
   });
 
   bindAll([dom.testSpecialBtn, dom.testGameSpecialBtn], () => {
     if (!hasTestPanelAccess() || !state.player) return;
-    activateTestMode(state);
+    activateTestMode(state, "special_ready");
     state.player.specialTimer = 0;
   });
 
   bindAll([dom.testEndbossBtn, dom.testGameEndbossBtn], () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "start_endboss");
     startGame({ endboss: true, skipPrep: true, playtest: true });
     updateTestPanelAccess(dom, state);
   });
 
   dom.testGameBossPhaseBtn?.addEventListener("click", () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "boss_phase_next");
     advanceBossPhase?.();
   });
   dom.testGameBossQuakeBtn?.addEventListener("click", () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "boss_quake");
     triggerBossQuake?.();
   });
   dom.testGameBossMaskBtn?.addEventListener("click", () => {
     if (!hasTestPanelAccess()) return;
-    activateTestMode(state);
+    activateTestMode(state, "boss_mask");
     triggerBossMask?.();
+  });
+  dom.testGameBossBatsBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "boss_bat_swarm");
+    triggerBossBats?.();
   });
 }
 
-export function activateTestMode(state) {
-  if (state && typeof state === "object") state.testMode = true;
+export function activateTestMode(state, action = "unknown") {
+  if (state && typeof state === "object") {
+    state.testMode = true;
+    appendTestLog("test_action", {
+      action,
+      wave: state.wave,
+      endbossPhase: state.endbossPhase
+    });
+  }
 }
 
 function bindAll(elements, handler) {

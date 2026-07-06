@@ -3,8 +3,9 @@ import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=settings6";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=testids1";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=settings6";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=testlogs1";
 import { t, tf } from "./settings.js?v=settings6";
+import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -172,11 +173,21 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       damageBoostTimer: 0,
       speedBoostTimer: 0,
       companionAbilityTimer: 0,
+      blindnessTimer: 0,
       lastBossQuakeHit: 0,
       hitMaskIds: new Set(),
+      hitBatIds: new Set(),
       pickupFlash: null,
       hero
     };
+    appendTestLog("game_start", {
+      mode: endbossMode ? "endboss" : "normal",
+      hero: state.selectedHero,
+      difficulty: state.difficulty,
+      wave: state.wave,
+      playerCount: getActivePlayerCount(),
+      coop: Boolean(options.coop)
+    });
     dom.heroName.textContent = hero.name;
     if (dom.difficultyText) dom.difficultyText.textContent = t(getDifficultySettings().labelKey);
     applyDeviceMode();
@@ -337,10 +348,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (bossWave) {
       state.robots.push(makeRobot(dom.canvas.width / 2, 92, true, true, true));
       state.nextWavePulse = 1.2;
+      appendTestLog("wave_spawn", { wave: state.wave, boss: true, enemies: 1, playerCount: playerScaling.playerCount });
       return;
     }
 
     const count = Math.max(3, Math.round((4 + state.wave * 2) * settings.enemyCount * playerScaling.enemyCount));
+    appendTestLog("wave_spawn", { wave: state.wave, boss: false, enemies: count, playerCount: playerScaling.playerCount });
     for (let i = 0; i < count; i++) {
       const side = Math.floor(Math.random() * 4);
       const x = side === 0 ? 42 : side === 1 ? dom.canvas.width - 42 : 42 + Math.random() * (dom.canvas.width - 84);
@@ -483,6 +496,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.healFlash = Math.max(0, player.healFlash - dt);
     player.damageBoostTimer = Math.max(0, player.damageBoostTimer - dt);
     player.speedBoostTimer = Math.max(0, player.speedBoostTimer - dt);
+    player.blindnessTimer = Math.max(0, (player.blindnessTimer || 0) - dt);
     if (player.pickupFlash) {
       player.pickupFlash.timer -= dt;
       if (player.pickupFlash.timer <= 0) player.pickupFlash = null;
@@ -658,6 +672,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = bullets.length - 1; i >= 0; i--) {
       const bullet = bullets[i];
       bullet.age = (Number(bullet.age) || 0) + dt;
+      if (!playerOwned && bullet.batSwarm && bullet.batWarning > 0) {
+        bullet.batWarning = Math.max(0, bullet.batWarning - dt);
+        bullet.life -= dt;
+        if (bullet.batWarning <= 0 && !bullet.batLaunched) {
+          bullet.batLaunched = true;
+          bullet.vx = bullet.batVx;
+          bullet.vy = bullet.batVy;
+        }
+        continue;
+      }
       const returnedToBoss = !playerOwned && bullet.maskBoomerang
         ? updateMaskBoomerang(bullet, dt)
         : false;
@@ -682,7 +706,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
           }
         }
       } else if (!state.player.dead && distance(bullet, state.player) < bullet.radius + state.player.radius) {
-        if (bullet.maskBoomerang) {
+        if (bullet.batSwarm) {
+          applyBatBlindness(state.player, bullet);
+          hurtPlayer(bullet.damage || 8);
+          bullets.splice(i, 1);
+        } else if (bullet.maskBoomerang) {
           if (!bullet.hitPlayer) {
             bullet.hitPlayer = true;
             bullet.returning = true;
@@ -821,6 +849,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (player.invincible > 0) return;
     const reduced = player.shield > 0 ? amount * 0.28 : amount;
     player.hp -= reduced;
+    appendTestLog("player_damage", {
+      amount: reduced,
+      hpAfter: Math.max(0, player.hp),
+      shielded: player.shield > 0,
+      wave: state.wave
+    });
     state.shake = Math.max(state.shake, 0.28);
     if (player.hp <= 0) {
       if (isCoopMode() && getActivePlayerCount() > 1) {
@@ -858,11 +892,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const attacks = phase === 1
       ? ["fan", "boomerang"]
       : phase === 2
-        ? ["fan", "ring", "boomerang", ...(hasQuake ? ["quake"] : [])]
-        : ["fan", "ring", "boomerang", "laser", ...(hasQuake ? ["quake"] : [])];
-    const attack = attacks[robot.bossAttackIndex % attacks.length];
+        ? ["fan", "ring", "boomerang", "bats", ...(hasQuake ? ["quake"] : [])]
+        : ["fan", "ring", "boomerang", "bats", "laser", ...(hasQuake ? ["quake"] : [])];
+    let attack = attacks[robot.bossAttackIndex % attacks.length];
     robot.bossAttackIndex += 1;
     robot.bossAttackTimer = robot.bossAttackRate;
+    if (attack === "bats" && state.time - (robot.lastBatAttackAt ?? -99) < 14) attack = "fan";
 
     if (attack === "fan") {
       fireEndbossFan(robot, target, phase);
@@ -872,9 +907,56 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       throwMaskBoomerangs(robot, target, phase);
     } else if (attack === "laser") {
       startBossLaser(robot, target, getDifficultySettings(), phase + 3, "#d1d5db");
+    } else if (attack === "bats") {
+      launchBatSwarm(robot, target, phase);
     } else {
       startEndbossQuake(robot, phase);
     }
+  }
+
+  function launchBatSwarm(robot, target, phase) {
+    const count = phase >= 3 ? 11 : 9;
+    const spacing = 32;
+    const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const sideX = -Math.sin(angle);
+    const sideY = Math.cos(angle);
+    const speed = robot.bulletSpeed * (phase >= 3 ? 0.72 : 0.66);
+    const warning = phase >= 3 ? 0.78 : 0.92;
+    for (let index = 0; index < count; index += 1) {
+      const offset = (index - (count - 1) / 2) * spacing;
+      state.enemyBullets.push({
+        id: nextEntityId("bat"),
+        x: robot.x + sideX * offset,
+        y: robot.y + sideY * offset,
+        vx: 0,
+        vy: 0,
+        batVx: Math.cos(angle) * speed,
+        batVy: Math.sin(angle) * speed,
+        radius: 14,
+        life: 4.4,
+        age: 0,
+        batWarning: warning,
+        batWarningMax: warning,
+        batLaunched: false,
+        batSwarm: true,
+        damage: Math.round(robot.bulletDamage * 0.42),
+        color: "#15131d"
+      });
+    }
+    robot.lastBatAttackAt = state.time;
+    robot.bossAttackTimer = Math.max(robot.bossAttackTimer, 3.4);
+    state.shake = Math.max(state.shake, 0.3);
+    pulse(robot.x, robot.y, "#6d4c7d", 46);
+    appendTestLog("boss_bat_swarm", { phase, bats: count, warning });
+  }
+
+  function applyBatBlindness(player, bullet) {
+    if (!player.hitBatIds) player.hitBatIds = new Set();
+    if (player.hitBatIds.has(bullet.id)) return;
+    player.hitBatIds.add(bullet.id);
+    if (player.hitBatIds.size > 100) player.hitBatIds.clear();
+    player.blindnessTimer = Math.max(Number(player.blindnessTimer) || 0, 10);
+    appendTestLog("blindness_applied", { duration: 10, phase: state.endbossPhase });
   }
 
   function throwMaskBoomerangs(robot, target, phase) {
@@ -930,6 +1012,28 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     boss.fireTimer = Math.max(boss.fireTimer || 0, 3);
     boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 3);
     throwMaskBoomerangs(boss, state.player, boss.endbossPhase || 1);
+    updateHud();
+    return true;
+  }
+
+  function triggerBatSwarmForPlaytest() {
+    if (!state.endbossMode) {
+      startGame({ endboss: true, skipPrep: true, playtest: true });
+    }
+    const boss = state.robots.find((robot) => robot.endboss);
+    if (!boss || !state.player) return false;
+    state.running = true;
+    state.over = false;
+    state.paused = false;
+    state.player.dead = false;
+    state.player.invincible = 3.2;
+    state.player.blindnessTimer = 0;
+    state.player.x = dom.canvas.width / 2;
+    state.player.y = dom.canvas.height * 0.62;
+    boss.stunTimer = Math.max(boss.stunTimer || 0, 4);
+    boss.fireTimer = Math.max(boss.fireTimer || 0, 4);
+    boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 4);
+    launchBatSwarm(boss, state.player, Math.max(2, boss.endbossPhase || 2));
     updateHud();
     return true;
   }
@@ -1227,7 +1331,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
       const bullet = state.enemyBullets[i];
       if (distance(bullet, player) < (bullet.radius || 5) + player.radius) {
-        if (bullet.maskBoomerang) {
+        if (bullet.batSwarm) {
+          applyBatBlindness(player, bullet);
+          hurtPlayer(bullet.damage || 8);
+          state.enemyBullets.splice(i, 1);
+        } else if (bullet.maskBoomerang) {
           if (!player.hitMaskIds) player.hitMaskIds = new Set();
           if (!player.hitMaskIds.has(bullet.id)) {
             player.hitMaskIds.add(bullet.id);
@@ -1292,6 +1400,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
     if (state.over) return;
     state.over = true;
+    appendTestLog("game_over", {
+      wave: state.wave,
+      score: state.score,
+      bosses: state.bossesDefeated,
+      difficulty: state.difficulty,
+      playerCount: getActivePlayerCount()
+    });
     if (broadcast && isCoopMode()) sendMultiplayerGameOver();
     state.touch.fire = false;
     state.touch.moveX = 0;
@@ -1319,6 +1434,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function finishEndbossRun(victory, { broadcast = true } = {}) {
     if (state.over) return;
     state.over = true;
+    appendTestLog("endboss_result", {
+      victory: Boolean(victory),
+      phase: state.endbossPhase,
+      hero: state.selectedHero,
+      playerCount: getActivePlayerCount()
+    });
     if (victory && broadcast && isCoopHost()) sendMultiplayerEndbossResult(true);
     state.touch.fire = false;
     state.touch.moveX = 0;
@@ -1553,6 +1674,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     handleMultiplayerAction,
     triggerEndbossQuakeForPlaytest,
     triggerMaskBoomerangForPlaytest,
+    triggerBatSwarmForPlaytest,
     advanceEndbossPhaseForPlaytest
   };
 }

@@ -1,6 +1,7 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
 import { t } from "./settings.js?v=settings6";
+import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
 let socket = null;
 let connecting = false;
@@ -28,6 +29,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
   updateEndbossAccess();
 
   dom.multiplayerTestBtn?.addEventListener("click", () => {
+    appendTestLog("multiplayer_connect");
     connect(dom, true);
   });
 
@@ -131,6 +133,7 @@ function connect(dom, pingOnly) {
   socket.addEventListener("open", () => {
     connecting = false;
     setStatus(dom, t("multiplayer.connected"), "ok");
+    appendTestLog("multiplayer_connected");
     if (pingOnly) socket.send(JSON.stringify({ type: "ping" }));
   });
 
@@ -139,6 +142,7 @@ function connect(dom, pingOnly) {
     if (!data) return;
     if (data.type === "pong") {
       setStatus(dom, t("multiplayer.connected"), "ok");
+      appendTestLog("multiplayer_pong");
       return;
     }
     if (data.type === "welcome") {
@@ -151,9 +155,18 @@ function connect(dom, pingOnly) {
       setLobby(dom, data.code, data.count, data.maxPlayers, data.players);
       setMultiplayerRole(data.hostId);
       pruneRemotePlayers(data.players || [], multiplayerState);
+      appendTestLog("lobby_state", {
+        playerCount: Number(data.count) || 0,
+        maxPlayers: Number(data.maxPlayers) || 2,
+        role: multiplayerState?.multiplayer?.role || "solo"
+      });
       return;
     }
     if (data.type === "start-game") {
+      appendTestLog("multiplayer_game_start", {
+        mode: data.mode === "endboss" ? "endboss" : "normal",
+        playerCount: Number(data.playerCount) || 1
+      });
       startCoopGame(data);
       return;
     }
@@ -197,12 +210,14 @@ function connect(dom, pingOnly) {
     }
     if (data.type === "room-error" || data.type === "error") {
       setStatus(dom, data.message || t("multiplayer.error"), "error");
+      appendTestLog("multiplayer_error", { message: data.message || "unknown" });
     }
   });
 
   socket.addEventListener("error", () => {
     connecting = false;
     setStatus(dom, t("multiplayer.error"), "error");
+    appendTestLog("multiplayer_socket_error");
   });
 
   socket.addEventListener("close", () => {
@@ -211,6 +226,7 @@ function connect(dom, pingOnly) {
     setStatus(dom, t("multiplayer.disconnected"), "error");
     setLobby(dom, null, 0, 3, []);
     resetMultiplayerState();
+    appendTestLog("multiplayer_disconnected");
   });
 
   return true;

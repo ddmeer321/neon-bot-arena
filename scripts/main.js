@@ -1,23 +1,25 @@
-import { getDom } from "./dom.js?v=musicvolume1";
+import { getDom } from "./dom.js?v=testbats1";
 import { createState } from "./state.js?v=testsite1";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=testids1";
-import { draw } from "./render.js?v=settings6";
-import { createFPSCounter } from "./fps.js";
+import { createGameplay } from "./gameplay.js?v=testbats1";
+import { draw } from "./render.js?v=testbats1";
+import { createFPSCounter } from "./fps.js?v=testlogs1";
 import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
-import { setupTestPanel } from "./test-panel.js?v=testsite1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=settings6";
+import { setupTestPanel } from "./test-panel.js?v=testbats1";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=testlogs1";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
+import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 
 
 
 export function bootGame() {
   setupSettings();
   setupScoreManagement();
+  setupTestLoggerUI();
   const dom = getDom();
   const state = createState();
   const playtestParams = new URLSearchParams(window.location.search);
@@ -98,7 +100,8 @@ export function bootGame() {
     startGame: gameplay.startGame,
     advanceBossPhase: gameplay.advanceEndbossPhaseForPlaytest,
     triggerBossQuake: gameplay.triggerEndbossQuakeForPlaytest,
-    triggerBossMask: gameplay.triggerMaskBoomerangForPlaytest
+    triggerBossMask: gameplay.triggerMaskBoomerangForPlaytest,
+    triggerBossBats: gameplay.triggerBatSwarmForPlaytest
   });
   setupMultiplayerTest(dom, state, gameplay.startGame);
 

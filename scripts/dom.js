@@ -68,6 +68,7 @@
     testGameBossPhaseBtn: document.querySelector("#testGameBossPhaseBtn"),
     testGameBossQuakeBtn: document.querySelector("#testGameBossQuakeBtn"),
     testGameBossMaskBtn: document.querySelector("#testGameBossMaskBtn"),
+    testGameBossBatsBtn: document.querySelector("#testGameBossBatsBtn"),
     heroMenuBtn: document.querySelector("#heroMenuBtn"),
     shopMenuBtn: document.querySelector("#shopMenuBtn"),
     heroPanel: document.querySelector("#heroPanel"),
