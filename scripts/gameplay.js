@@ -915,23 +915,35 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function launchBatSwarm(robot, target, phase) {
-    const count = phase >= 3 ? 11 : 9;
-    const spacing = 32;
+    const columns = phase >= 3 ? 7 : 5;
+    const rows = 3;
+    const count = columns * rows;
+    const columnSpacing = phase >= 3 ? 34 : 36;
+    const rowSpacing = 29;
     const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const forwardX = Math.cos(angle);
+    const forwardY = Math.sin(angle);
     const sideX = -Math.sin(angle);
     const sideY = Math.cos(angle);
     const speed = robot.bulletSpeed * (phase >= 3 ? 0.72 : 0.66);
     const warning = phase >= 3 ? 0.78 : 0.92;
     for (let index = 0; index < count; index += 1) {
-      const offset = (index - (count - 1) / 2) * spacing;
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      const stagger = row % 2 ? columnSpacing * 0.5 : 0;
+      const sideOffset = (column - (columns - 1) / 2) * columnSpacing + stagger;
+      const forwardOffset = (row - 1) * rowSpacing;
       state.enemyBullets.push({
         id: nextEntityId("bat"),
-        x: robot.x + sideX * offset,
-        y: robot.y + sideY * offset,
+        x: robot.x + sideX * sideOffset + forwardX * forwardOffset,
+        y: robot.y + sideY * sideOffset + forwardY * forwardOffset,
         vx: 0,
         vy: 0,
-        batVx: Math.cos(angle) * speed,
-        batVy: Math.sin(angle) * speed,
+        batVx: forwardX * speed,
+        batVy: forwardY * speed,
+        batAngle: angle,
+        batVariant: index % 3,
+        batScale: 0.9 + (index % 4) * 0.06,
         radius: 14,
         life: 4.4,
         age: 0,
@@ -940,13 +952,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         batLaunched: false,
         batSwarm: true,
         damage: Math.round(robot.bulletDamage * 0.42),
-        color: "#15131d"
+        color: index % 3 === 0 ? "#0ea5e9" : index % 3 === 1 ? "#0284c7" : "#2563eb"
       });
     }
     robot.lastBatAttackAt = state.time;
     robot.bossAttackTimer = Math.max(robot.bossAttackTimer, 3.4);
     state.shake = Math.max(state.shake, 0.3);
-    pulse(robot.x, robot.y, "#6d4c7d", 46);
+    pulse(robot.x, robot.y, "#38bdf8", 54);
     appendTestLog("boss_bat_swarm", { phase, bats: count, warning });
   }
 
