@@ -377,16 +377,16 @@ function drawBullets(ctx, state) {
 function drawBat(ctx, bullet, time) {
   const warning = Math.max(0, Number(bullet.batWarning) || 0);
   const flap = Math.sin(time * 20 + (bullet.x + bullet.y) * 0.025) * 4;
-  const colors = ["#19b5fe", "#0ea5e9", "#2563eb"];
+  const colors = ["#08090c", "#24272d", "#4b5058"];
   const color = colors[Math.abs(Number(bullet.batVariant) || 0) % colors.length];
   ctx.save();
   ctx.translate(bullet.x, bullet.y);
   ctx.rotate((Number(bullet.batAngle) || 0) - Math.PI / 2);
   ctx.scale(Number(bullet.batScale) || 1, Number(bullet.batScale) || 1);
   ctx.globalAlpha = warning > 0 ? 0.35 + Math.sin(time * 20) * 0.14 : 1;
-  glowCircle(ctx, 0, 0, 25, warning > 0 ? "#7dd3fc" : color, warning > 0 ? 0.24 : 0.42);
-  ctx.fillStyle = warning > 0 ? "#7dd3fc" : color;
-  ctx.strokeStyle = warning > 0 ? "#e0f2fe" : "#082f49";
+  glowCircle(ctx, 0, 0, 25, warning > 0 ? "#9ca3af" : "#6b7280", warning > 0 ? 0.22 : 0.32);
+  ctx.fillStyle = warning > 0 ? "#64748b" : color;
+  ctx.strokeStyle = warning > 0 ? "#cbd5e1" : "#64748b";
   ctx.lineWidth = 1.4;
   ctx.beginPath();
   ctx.moveTo(-3, -2);
@@ -403,7 +403,7 @@ function drawBat(ctx, bullet, time) {
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = warning > 0 ? "#bae6fd" : "#075985";
+  ctx.fillStyle = warning > 0 ? "#565b64" : "#050608";
   ctx.beginPath();
   ctx.ellipse(0, 1, 5, 11, 0, 0, Math.PI * 2);
   ctx.fill();

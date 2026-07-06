@@ -952,13 +952,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         batLaunched: false,
         batSwarm: true,
         damage: Math.round(robot.bulletDamage * 0.42),
-        color: index % 3 === 0 ? "#0ea5e9" : index % 3 === 1 ? "#0284c7" : "#2563eb"
+        color: index % 3 === 0 ? "#08090c" : index % 3 === 1 ? "#24272d" : "#4b5058"
       });
     }
     robot.lastBatAttackAt = state.time;
     robot.bossAttackTimer = Math.max(robot.bossAttackTimer, 3.4);
     state.shake = Math.max(state.shake, 0.3);
-    pulse(robot.x, robot.y, "#38bdf8", 54);
+    pulse(robot.x, robot.y, "#6b7280", 54);
     appendTestLog("boss_bat_swarm", { phase, bats: count, warning });
   }
 
