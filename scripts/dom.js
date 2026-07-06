@@ -30,6 +30,8 @@
     difficultyText: document.querySelector("#difficultyHud"),
     menuHighScoreText: document.querySelector("#menuHighScore"),
     coinCount: document.querySelector("#coinCount"),
+    testIdBtn: document.querySelector("#testIdBtn"),
+    testIdText: document.querySelector("#testIdText"),
     multiplayerTestBtn: document.querySelector("#multiplayerTestBtn"),
     multiplayerStatus: document.querySelector("#multiplayerStatus"),
     createLobbyBtn: document.querySelector("#createLobbyBtn"),

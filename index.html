@@ -3,10 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=settings6" />
+    <title>Neon Bot Arena – Testlabor</title>
+    <link rel="stylesheet" href="style.css?v=testsite1" />
   </head>
-  <body>
+  <body class="test-build">
+    <aside class="test-build-banner" aria-label="Hinweis zur Testversion">
+      <strong>TESTLABOR</strong>
+      <span>Geschützte Vorschau · Testpanel aktiv · Online-Scores deaktiviert</span>
+    </aside>
     <button id="settingsBtn" class="settings-button" type="button" aria-controls="settingsOverlay" data-i18n-aria-label="settings.open">
       <span aria-hidden="true">⚙</span>
       <strong data-i18n="settings.open">Einstellungen</strong>
@@ -156,6 +160,11 @@
           <strong id="coinCount">0</strong>
         </div>
 
+        <div class="test-access-badge">
+          <strong>Testzugang aktiv</strong>
+          <span>Geschützt durch Cloudflare Access</span>
+        </div>
+
         <div class="multiplayer-test">
           <div class="multiplayer-row">
             <button id="multiplayerTestBtn" type="button" data-i18n="multiplayer.testConnection">Verbindung testen</button>
@@ -229,7 +238,7 @@
             <button id="testSpecialBtn" type="button">Spezial bereit</button>
             <button id="testEndbossBtn" type="button">Endboss starten</button>
           </div>
-          <p>Nur lokal mit <code>?playtest=1</code>.</p>
+          <p>Testversion: Dieses Panel ist automatisch aktiv. Ergebnisse werden nicht an die Online-Rangliste gesendet.</p>
         </section>
 
         <button id="startBtn" class="start-btn" data-i18n="menu.start">Spiel starten</button>
@@ -306,6 +315,6 @@
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=security1"></script>
+    <script type="module" src="game.js?v=testsite1"></script>
   </body>
 </html>

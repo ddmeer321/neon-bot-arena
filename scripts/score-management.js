@@ -1,4 +1,4 @@
-import { deleteOwnedOnlineScore, getOwnedOnlineScores } from "./online-leaderboard.js?v=leaderboard6";
+import { deleteOwnedOnlineScore, getOwnedOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { t } from "./settings.js?v=settings6";
 import { escapeHtml } from "./utils.js";
 

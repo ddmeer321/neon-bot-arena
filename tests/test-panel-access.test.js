@@ -1,11 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isLocalPlaytestLocation } from "../scripts/test-panel.js";
+import { activateTestMode, isTestPanelAllowed } from "../scripts/test-panel.js";
+import { isOnlineScoreEligible } from "../scripts/online-leaderboard.js";
 
-test("allows the test panel only on localhost with the playtest flag", () => {
-  assert.equal(isLocalPlaytestLocation("localhost", "?playtest=1"), true);
-  assert.equal(isLocalPlaytestLocation("127.0.0.1", "?playtest=1"), true);
-  assert.equal(isLocalPlaytestLocation("localhost", ""), false);
-  assert.equal(isLocalPlaytestLocation("ddmeer321.github.io", "?playtest=1"), false);
-  assert.equal(isLocalPlaytestLocation("ddmeer321.github.io", "?testId=123456"), false);
+test("allows the test panel locally or with a configured test id", () => {
+  const allowedIds = ["755051", "809587", "535127"];
+  assert.equal(isTestPanelAllowed("localhost", "?playtest=1", "", allowedIds), true);
+  assert.equal(isTestPanelAllowed("127.0.0.1", "?playtest=1", "", allowedIds), true);
+  assert.equal(isTestPanelAllowed("localhost", "", "", allowedIds), false);
+  assert.equal(isTestPanelAllowed("ddmeer321.github.io", "", "755051", allowedIds), true);
+  assert.equal(isTestPanelAllowed("ddmeer321.github.io", "", "123456", allowedIds), false);
+  assert.equal(isTestPanelAllowed("ddmeer321.github.io", "?testId=755051", "", allowedIds), false);
+  assert.equal(isTestPanelAllowed("test.neon-bot-arena-test.pages.dev", "", "", allowedIds, true), true);
+});
+
+test("using the test panel blocks online scores for the session", () => {
+  const state = { testMode: false };
+  assert.equal(isOnlineScoreEligible(state), true);
+  activateTestMode(state);
+  assert.equal(state.testMode, true);
+  assert.equal(isOnlineScoreEligible(state), false);
 });

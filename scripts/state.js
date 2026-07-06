@@ -1,4 +1,5 @@
 import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=musicvolume1";
+import { testSiteBuild } from "./config.js?v=testsite1";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -10,6 +11,7 @@ export function createState() {
     running: false,
     paused: false,
     over: false,
+    testMode: testSiteBuild,
     wave: 1,
     score: 0,
     highScore,
