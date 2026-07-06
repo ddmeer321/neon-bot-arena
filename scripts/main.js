@@ -3,7 +3,7 @@ import { createState } from "./state.js?v=coop7";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard6";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=bats1";
+import { createGameplay } from "./gameplay.js?v=bats2";
 import { draw } from "./render.js?v=bats1";
 import { createFPSCounter } from "./fps.js";
 import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";

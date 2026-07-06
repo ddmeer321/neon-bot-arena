@@ -880,7 +880,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     let attack = attacks[robot.bossAttackIndex % attacks.length];
     robot.bossAttackIndex += 1;
     robot.bossAttackTimer = robot.bossAttackRate;
-    if (attack === "bats" && state.time - (robot.lastBatAttackAt ?? -99) < 14) attack = "fan";
+    if (attack === "bats" && state.time - (robot.lastBatAttackAt ?? -99) < 8) attack = "fan";
 
     if (attack === "fan") {
       fireEndbossFan(robot, target, phase);
