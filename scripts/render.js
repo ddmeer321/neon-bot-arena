@@ -19,6 +19,7 @@ export function draw(dom, state) {
     drawBossHud(ctx, dom.canvas, state);
   }
   ctx.restore();
+  drawBlindness(ctx, canvas, state);
 }
 
 function drawRemotePlayers(ctx, state) {
@@ -357,6 +358,10 @@ function drawEndbossQuake(ctx, robot, time) {
 
 function drawBullets(ctx, state) {
   [...state.bullets, ...state.enemyBullets].forEach((bullet) => {
+    if (bullet.batSwarm) {
+      drawBat(ctx, bullet, state.time);
+      return;
+    }
     if (bullet.maskBoomerang) {
       drawMaskBoomerang(ctx, bullet);
       return;
@@ -367,6 +372,78 @@ function drawBullets(ctx, state) {
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
     ctx.fill();
   });
+}
+
+function drawBat(ctx, bullet, time) {
+  const warning = Math.max(0, Number(bullet.batWarning) || 0);
+  const flap = Math.sin(time * 20 + (bullet.x + bullet.y) * 0.025) * 4;
+  const colors = ["#08090c", "#24272d", "#4b5058"];
+  const color = colors[Math.abs(Number(bullet.batVariant) || 0) % colors.length];
+  ctx.save();
+  ctx.translate(bullet.x, bullet.y);
+  ctx.rotate((Number(bullet.batAngle) || 0) - Math.PI / 2);
+  ctx.scale(Number(bullet.batScale) || 1, Number(bullet.batScale) || 1);
+  ctx.globalAlpha = warning > 0 ? 0.35 + Math.sin(time * 20) * 0.14 : 1;
+  glowCircle(ctx, 0, 0, 25, warning > 0 ? "#9ca3af" : "#6b7280", warning > 0 ? 0.22 : 0.32);
+  ctx.fillStyle = warning > 0 ? "#64748b" : color;
+  ctx.strokeStyle = warning > 0 ? "#cbd5e1" : "#64748b";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(-3, -2);
+  ctx.quadraticCurveTo(-12, -14 - flap, -25, -10 - flap);
+  ctx.lineTo(-19, -1);
+  ctx.lineTo(-24, 7 + flap * 0.45);
+  ctx.quadraticCurveTo(-13, 5, -5, 3);
+  ctx.lineTo(0, 9);
+  ctx.lineTo(5, 3);
+  ctx.quadraticCurveTo(13, 5, 24, 7 + flap * 0.45);
+  ctx.lineTo(19, -1);
+  ctx.lineTo(25, -10 - flap);
+  ctx.quadraticCurveTo(12, -14 - flap, 3, -2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = warning > 0 ? "#565b64" : "#050608";
+  ctx.beginPath();
+  ctx.ellipse(0, 1, 5, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-4, -7);
+  ctx.lineTo(-2, -14);
+  ctx.lineTo(0, -8);
+  ctx.lineTo(2, -14);
+  ctx.lineTo(4, -7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#e0f2fe";
+  ctx.fillRect(-3, -6, 1.8, 1.8);
+  ctx.fillRect(1.2, -6, 1.8, 1.8);
+  ctx.restore();
+}
+
+function drawBlindness(ctx, canvas, state) {
+  const player = state.player;
+  const remaining = Number(player?.blindnessTimer) || 0;
+  if (!player || player.dead || remaining <= 0 || state.over) return;
+  const radius = 140;
+  ctx.save();
+  ctx.fillStyle = "rgba(3, 3, 9, 0.92)";
+  ctx.beginPath();
+  ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.arc(player.x, player.y, radius, 0, Math.PI * 2, true);
+  ctx.fill("evenodd");
+  const fade = ctx.createRadialGradient(player.x, player.y, radius * 0.46, player.x, player.y, radius);
+  fade.addColorStop(0, "rgba(3,3,9,0)");
+  fade.addColorStop(1, "rgba(3,3,9,0.92)");
+  ctx.fillStyle = fade;
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#7dd3fc";
+  ctx.font = "900 15px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(`BLINDHEIT ${Math.ceil(remaining)}s`, canvas.width / 2, 132);
+  ctx.restore();
 }
 
 function drawMaskBoomerang(ctx, bullet) {

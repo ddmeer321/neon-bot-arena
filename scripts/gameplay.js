@@ -172,8 +172,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       damageBoostTimer: 0,
       speedBoostTimer: 0,
       companionAbilityTimer: 0,
+      blindnessTimer: 0,
       lastBossQuakeHit: 0,
       hitMaskIds: new Set(),
+      hitBatIds: new Set(),
       pickupFlash: null,
       hero
     };
@@ -483,6 +485,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     player.healFlash = Math.max(0, player.healFlash - dt);
     player.damageBoostTimer = Math.max(0, player.damageBoostTimer - dt);
     player.speedBoostTimer = Math.max(0, player.speedBoostTimer - dt);
+    player.blindnessTimer = Math.max(0, (player.blindnessTimer || 0) - dt);
     if (player.pickupFlash) {
       player.pickupFlash.timer -= dt;
       if (player.pickupFlash.timer <= 0) player.pickupFlash = null;
@@ -658,6 +661,16 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = bullets.length - 1; i >= 0; i--) {
       const bullet = bullets[i];
       bullet.age = (Number(bullet.age) || 0) + dt;
+      if (!playerOwned && bullet.batSwarm && bullet.batWarning > 0) {
+        bullet.batWarning = Math.max(0, bullet.batWarning - dt);
+        bullet.life -= dt;
+        if (bullet.batWarning <= 0 && !bullet.batLaunched) {
+          bullet.batLaunched = true;
+          bullet.vx = bullet.batVx;
+          bullet.vy = bullet.batVy;
+        }
+        continue;
+      }
       const returnedToBoss = !playerOwned && bullet.maskBoomerang
         ? updateMaskBoomerang(bullet, dt)
         : false;
@@ -682,7 +695,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
           }
         }
       } else if (!state.player.dead && distance(bullet, state.player) < bullet.radius + state.player.radius) {
-        if (bullet.maskBoomerang) {
+        if (bullet.batSwarm) {
+          applyBatBlindness(state.player, bullet);
+          hurtPlayer(bullet.damage || 8);
+          bullets.splice(i, 1);
+        } else if (bullet.maskBoomerang) {
           if (!bullet.hitPlayer) {
             bullet.hitPlayer = true;
             bullet.returning = true;
@@ -858,11 +875,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const attacks = phase === 1
       ? ["fan", "boomerang"]
       : phase === 2
-        ? ["fan", "ring", "boomerang", ...(hasQuake ? ["quake"] : [])]
-        : ["fan", "ring", "boomerang", "laser", ...(hasQuake ? ["quake"] : [])];
-    const attack = attacks[robot.bossAttackIndex % attacks.length];
+        ? ["fan", "ring", "boomerang", "bats", ...(hasQuake ? ["quake"] : [])]
+        : ["fan", "ring", "boomerang", "bats", "laser", ...(hasQuake ? ["quake"] : [])];
+    let attack = attacks[robot.bossAttackIndex % attacks.length];
     robot.bossAttackIndex += 1;
     robot.bossAttackTimer = robot.bossAttackRate;
+    if (attack === "bats" && state.time - (robot.lastBatAttackAt ?? -99) < 14) attack = "fan";
 
     if (attack === "fan") {
       fireEndbossFan(robot, target, phase);
@@ -872,9 +890,66 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       throwMaskBoomerangs(robot, target, phase);
     } else if (attack === "laser") {
       startBossLaser(robot, target, getDifficultySettings(), phase + 3, "#d1d5db");
+    } else if (attack === "bats") {
+      launchBatSwarm(robot, target, phase);
     } else {
       startEndbossQuake(robot, phase);
     }
+  }
+
+  function launchBatSwarm(robot, target, phase) {
+    const columns = phase >= 3 ? 7 : 5;
+    const rows = 3;
+    const count = columns * rows;
+    const columnSpacing = phase >= 3 ? 34 : 36;
+    const rowSpacing = 29;
+    const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
+    const forwardX = Math.cos(angle);
+    const forwardY = Math.sin(angle);
+    const sideX = -Math.sin(angle);
+    const sideY = Math.cos(angle);
+    const speed = robot.bulletSpeed * (phase >= 3 ? 0.72 : 0.66);
+    const warning = phase >= 3 ? 0.78 : 0.92;
+    for (let index = 0; index < count; index += 1) {
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      const stagger = row % 2 ? columnSpacing * 0.5 : 0;
+      const sideOffset = (column - (columns - 1) / 2) * columnSpacing + stagger;
+      const forwardOffset = (row - 1) * rowSpacing;
+      state.enemyBullets.push({
+        id: nextEntityId("bat"),
+        x: robot.x + sideX * sideOffset + forwardX * forwardOffset,
+        y: robot.y + sideY * sideOffset + forwardY * forwardOffset,
+        vx: 0,
+        vy: 0,
+        batVx: forwardX * speed,
+        batVy: forwardY * speed,
+        batAngle: angle,
+        batVariant: index % 3,
+        batScale: 0.9 + (index % 4) * 0.06,
+        radius: 14,
+        life: 4.4,
+        age: 0,
+        batWarning: warning,
+        batWarningMax: warning,
+        batLaunched: false,
+        batSwarm: true,
+        damage: Math.round(robot.bulletDamage * 0.42),
+        color: index % 3 === 0 ? "#08090c" : index % 3 === 1 ? "#24272d" : "#4b5058"
+      });
+    }
+    robot.lastBatAttackAt = state.time;
+    robot.bossAttackTimer = Math.max(robot.bossAttackTimer, 3.4);
+    state.shake = Math.max(state.shake, 0.3);
+    pulse(robot.x, robot.y, "#6b7280", 54);
+  }
+
+  function applyBatBlindness(player, bullet) {
+    if (!player.hitBatIds) player.hitBatIds = new Set();
+    if (player.hitBatIds.has(bullet.id)) return;
+    player.hitBatIds.add(bullet.id);
+    if (player.hitBatIds.size > 100) player.hitBatIds.clear();
+    player.blindnessTimer = Math.max(Number(player.blindnessTimer) || 0, 10);
   }
 
   function throwMaskBoomerangs(robot, target, phase) {
@@ -930,6 +1005,28 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     boss.fireTimer = Math.max(boss.fireTimer || 0, 3);
     boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 3);
     throwMaskBoomerangs(boss, state.player, boss.endbossPhase || 1);
+    updateHud();
+    return true;
+  }
+
+  function triggerBatSwarmForPlaytest() {
+    if (!state.endbossMode) {
+      startGame({ endboss: true, skipPrep: true, playtest: true });
+    }
+    const boss = state.robots.find((robot) => robot.endboss);
+    if (!boss || !state.player) return false;
+    state.running = true;
+    state.over = false;
+    state.paused = false;
+    state.player.dead = false;
+    state.player.invincible = 3.2;
+    state.player.blindnessTimer = 0;
+    state.player.x = dom.canvas.width / 2;
+    state.player.y = dom.canvas.height * 0.62;
+    boss.stunTimer = Math.max(boss.stunTimer || 0, 4);
+    boss.fireTimer = Math.max(boss.fireTimer || 0, 4);
+    boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 4);
+    launchBatSwarm(boss, state.player, Math.max(2, boss.endbossPhase || 2));
     updateHud();
     return true;
   }
@@ -1227,7 +1324,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
       const bullet = state.enemyBullets[i];
       if (distance(bullet, player) < (bullet.radius || 5) + player.radius) {
-        if (bullet.maskBoomerang) {
+        if (bullet.batSwarm) {
+          applyBatBlindness(player, bullet);
+          hurtPlayer(bullet.damage || 8);
+          state.enemyBullets.splice(i, 1);
+        } else if (bullet.maskBoomerang) {
           if (!player.hitMaskIds) player.hitMaskIds = new Set();
           if (!player.hitMaskIds.has(bullet.id)) {
             player.hitMaskIds.add(bullet.id);
@@ -1553,6 +1654,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     handleMultiplayerAction,
     triggerEndbossQuakeForPlaytest,
     triggerMaskBoomerangForPlaytest,
+    triggerBatSwarmForPlaytest,
     advanceEndbossPhaseForPlaytest
   };
 }

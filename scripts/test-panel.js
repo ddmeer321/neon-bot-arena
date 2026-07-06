@@ -3,7 +3,7 @@ import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=settings6";
 
-export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask }) {
+export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask, triggerBossBats }) {
   if (!hasTestPanelAccess()) return;
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
@@ -75,6 +75,9 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
   });
   dom.testGameBossMaskBtn?.addEventListener("click", () => {
     if (hasTestPanelAccess()) triggerBossMask?.();
+  });
+  dom.testGameBossBatsBtn?.addEventListener("click", () => {
+    if (hasTestPanelAccess()) triggerBossBats?.();
   });
 }
 
