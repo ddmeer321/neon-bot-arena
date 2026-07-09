@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=testdevtools1" />
+    <link rel="stylesheet" href="style.css?v=testdevtools2" />
   </head>
   <body class="test-build test-locked">
     <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
@@ -399,6 +399,11 @@
         <button type="button" data-devtools-tab="env">Info</button>
       </nav>
       <pre id="testDevtoolsOutput" class="test-devtools-output" aria-live="polite"></pre>
+      <form id="testDevtoolsCommandForm" class="test-devtools-command" autocomplete="off">
+        <span aria-hidden="true">&gt;</span>
+        <input id="testDevtoolsCommandInput" type="text" inputmode="text" spellcheck="false" placeholder="help eingeben ..." aria-label="Devtools Befehl" />
+        <button type="submit">Run</button>
+      </form>
       <p id="testDevtoolsStatus" class="test-devtools-status" aria-live="polite">Bereit</p>
     </section>
 
@@ -406,6 +411,6 @@
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testdevtools1"></script>
+    <script type="module" src="game.js?v=testdevtools2"></script>
   </body>
 </html>

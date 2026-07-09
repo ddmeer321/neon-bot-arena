@@ -242,7 +242,7 @@ body:not(.test-locked) .test-lock-overlay {
   bottom: 0;
   z-index: 130;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   height: 30dvh;
   min-height: 210px;
   border-top: 1px solid rgba(56, 216, 255, 0.46);
@@ -338,6 +338,57 @@ body:not(.test-locked) .test-lock-overlay {
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
+}
+
+.test-devtools-command {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 12px;
+  border-top: 1px solid rgba(56, 216, 255, 0.14);
+  background: rgba(255, 255, 255, 0.025);
+  touch-action: manipulation;
+}
+
+.test-devtools-command span {
+  color: var(--cyan);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-weight: 900;
+}
+
+.test-devtools-command input {
+  min-height: 38px;
+  min-width: 0;
+  border: 1px solid rgba(56, 216, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(3, 7, 13, 0.88);
+  color: var(--text);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.82rem;
+  outline: none;
+  padding: 0 10px;
+  -webkit-user-select: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+
+.test-devtools-command input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(56, 216, 255, 0.12);
+}
+
+.test-devtools-command button {
+  min-height: 38px;
+  border: 1px solid rgba(56, 216, 255, 0.34);
+  border-radius: 8px;
+  background: rgba(56, 216, 255, 0.14);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  padding: 0 12px;
 }
 
 .test-devtools-status {

@@ -13,7 +13,7 @@ import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
-import { setupTestDevtools } from "./test-devtools.js?v=testdevtools1";
+import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
 
 
 
