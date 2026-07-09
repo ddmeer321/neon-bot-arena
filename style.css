@@ -1381,11 +1381,47 @@ h1 {
   font-weight: 800;
 }
 
+.test-admin-section {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 200, 87, 0.22);
+}
+
+.test-admin-section > strong {
+  color: #ffe5ad;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.test-admin-section .test-actions button {
+  border-color: rgba(255, 176, 32, 0.5);
+  background: rgba(255, 176, 32, 0.11);
+}
+
+.test-debug-status {
+  display: block;
+  min-height: 32px;
+  overflow: hidden;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .test-panel-game {
   position: absolute;
   top: 94px;
   right: 12px;
-  width: min(280px, calc(100% - 24px));
+  width: min(310px, calc(100% - 24px));
   z-index: 4;
   padding: 9px;
   background: rgba(13, 18, 28, 0.84);
@@ -1403,6 +1439,10 @@ h1 {
   min-height: 34px;
   font-size: 0.72rem;
   padding: 4px;
+}
+
+.test-admin-section-game {
+  padding-top: 7px;
 }
 
 .leaderboard {

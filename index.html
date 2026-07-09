@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=testlock1" />
+    <link rel="stylesheet" href="style.css?v=testadmin1" />
   </head>
   <body class="test-build test-locked">
     <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
@@ -252,6 +252,21 @@
             <button id="testEndbossBtn" type="button">Endboss starten</button>
             <button id="openTestLogsBtn" class="test-log-open" type="button">Logs anzeigen</button>
           </div>
+          <div class="test-admin-section">
+            <strong>Debug/Admin</strong>
+            <div class="test-actions">
+              <button id="testGodModeBtn" type="button">Godmode: AUS</button>
+              <button id="testClearThreatsBtn" type="button">Gefahren löschen</button>
+              <button id="testDefeatRobotsBtn" type="button">Gegner besiegen</button>
+              <button id="testScoreBtn" type="button">+100.000 Score</button>
+              <button id="testPickupHealBtn" type="button">Heal spawnen</button>
+              <button id="testPickupDamageBtn" type="button">Damage spawnen</button>
+              <button id="testPickupSpeedBtn" type="button">Speed spawnen</button>
+              <button id="testBlindnessBtn" type="button">Blindheit testen</button>
+              <button id="testCopyStateBtn" type="button">Status kopieren</button>
+            </div>
+            <code id="testDebugStatus" class="test-debug-status">Bereit</code>
+          </div>
           <p>Testversion: Dieses Panel ist automatisch aktiv. Ergebnisse werden nicht an die Online-Rangliste gesendet.</p>
         </section>
 
@@ -312,6 +327,19 @@
             <button id="testGameBossMaskBtn" type="button">Maskenwurf</button>
             <button id="testGameBossBatsBtn" type="button">Fledermausschwarm</button>
           </div>
+          <div class="test-admin-section test-admin-section-game">
+            <strong>Debug</strong>
+            <div class="test-actions">
+              <button id="testGameGodModeBtn" type="button">God: AUS</button>
+              <button id="testGameClearThreatsBtn" type="button">Clear</button>
+              <button id="testGameDefeatRobotsBtn" type="button">Kill</button>
+              <button id="testGameScoreBtn" type="button">+Score</button>
+              <button id="testGamePickupHealBtn" type="button">Heal+</button>
+              <button id="testGameBlindnessBtn" type="button">Blind</button>
+              <button id="testGameCopyStateBtn" type="button">Copy</button>
+            </div>
+            <code id="testGameDebugStatus" class="test-debug-status">Bereit</code>
+          </div>
         </div>
         <div id="touchControls" class="touch-controls hidden" aria-label="Handy Steuerung">
           <div id="touchStick" class="touch-stick">
@@ -352,6 +380,6 @@
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testlock1"></script>
+    <script type="module" src="game.js?v=testadmin1"></script>
   </body>
 </html>

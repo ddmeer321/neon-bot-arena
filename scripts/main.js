@@ -1,13 +1,13 @@
-import { getDom } from "./dom.js?v=testbats1";
-import { createState } from "./state.js?v=testsite1";
+import { getDom } from "./dom.js?v=testadmin1";
+import { createState } from "./state.js?v=testadmin1";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=testbats4";
+import { createGameplay } from "./gameplay.js?v=testadmin1";
 import { draw } from "./render.js?v=testbats4";
 import { createFPSCounter } from "./fps.js?v=testlogs1";
 import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
-import { setupTestPanel } from "./test-panel.js?v=testbats1";
+import { setupTestPanel } from "./test-panel.js?v=testadmin1";
 import { setupMultiplayerTest } from "./multiplayer-test.js?v=testlogs1";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
@@ -101,7 +101,13 @@ export function bootGame() {
     advanceBossPhase: gameplay.advanceEndbossPhaseForPlaytest,
     triggerBossQuake: gameplay.triggerEndbossQuakeForPlaytest,
     triggerBossMask: gameplay.triggerMaskBoomerangForPlaytest,
-    triggerBossBats: gameplay.triggerBatSwarmForPlaytest
+    triggerBossBats: gameplay.triggerBatSwarmForPlaytest,
+    toggleGodMode: gameplay.toggleGodModeForPlaytest,
+    clearThreats: gameplay.clearThreatsForPlaytest,
+    defeatRobots: gameplay.defeatRobotsForPlaytest,
+    addScore: gameplay.addScoreForPlaytest,
+    spawnPickup: gameplay.spawnPickupForPlaytest,
+    applyBlindness: gameplay.applyBlindnessForPlaytest
   });
   setupMultiplayerTest(dom, state, gameplay.startGame);
 

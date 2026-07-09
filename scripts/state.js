@@ -12,6 +12,7 @@ export function createState() {
     paused: false,
     over: false,
     testMode: testSiteBuild,
+    debugGodMode: false,
     wave: 1,
     score: 0,
     highScore,

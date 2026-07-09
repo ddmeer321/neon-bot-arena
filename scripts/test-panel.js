@@ -5,7 +5,21 @@ import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=se
 import { t } from "./settings.js?v=settings6";
 import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
-export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask, triggerBossBats }) {
+export function setupTestPanel({
+  dom,
+  state,
+  startGame,
+  advanceBossPhase,
+  triggerBossQuake,
+  triggerBossMask,
+  triggerBossBats,
+  toggleGodMode,
+  clearThreats,
+  defeatRobots,
+  addScore,
+  spawnPickup,
+  applyBlindness
+}) {
   renderStoredTestId(dom);
   updateTestPanelAccess(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
@@ -106,6 +120,69 @@ export function setupTestPanel({ dom, state, startGame, advanceBossPhase, trigge
     activateTestMode(state, "boss_bat_swarm");
     triggerBossBats?.();
   });
+
+  bindAll([dom.testGodModeBtn, dom.testGameGodModeBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_godmode_toggle");
+    const enabled = toggleGodMode?.();
+    updateDebugStatus(dom, state, `Godmode ${enabled ? "AN" : "AUS"}`);
+  });
+
+  bindAll([dom.testClearThreatsBtn, dom.testGameClearThreatsBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_clear_threats");
+    const removed = clearThreats?.() || {};
+    updateDebugStatus(dom, state, `Gefahren gelöscht: ${sumValues(removed)}`);
+  });
+
+  bindAll([dom.testDefeatRobotsBtn, dom.testGameDefeatRobotsBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_defeat_robots");
+    const count = defeatRobots?.() ?? 0;
+    updateDebugStatus(dom, state, `${count} Gegner markiert`);
+  });
+
+  bindAll([dom.testScoreBtn, dom.testGameScoreBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_score_100000");
+    const score = addScore?.(100000) ?? state.score;
+    updateDebugStatus(dom, state, `Score: ${score}`);
+  });
+
+  bindAll([dom.testPickupHealBtn, dom.testGamePickupHealBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_pickup_heal");
+    const ok = spawnPickup?.("heal");
+    updateDebugStatus(dom, state, ok ? "Heal gespawnt" : "Erst Runde starten");
+  });
+
+  dom.testPickupDamageBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_pickup_damage");
+    const ok = spawnPickup?.("damage");
+    updateDebugStatus(dom, state, ok ? "Damage gespawnt" : "Erst Runde starten");
+  });
+
+  dom.testPickupSpeedBtn?.addEventListener("click", () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_pickup_speed");
+    const ok = spawnPickup?.("speed");
+    updateDebugStatus(dom, state, ok ? "Speed gespawnt" : "Erst Runde starten");
+  });
+
+  bindAll([dom.testBlindnessBtn, dom.testGameBlindnessBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_blindness");
+    const ok = applyBlindness?.(10);
+    updateDebugStatus(dom, state, ok ? "Blindheit 10s" : "Erst Runde starten");
+  });
+
+  bindAll([dom.testCopyStateBtn, dom.testGameCopyStateBtn], async () => {
+    if (!hasTestPanelAccess()) return;
+    activateTestMode(state, "debug_copy_state");
+    const copied = await copyDebugState(state);
+    updateDebugStatus(dom, state, copied ? "Status kopiert" : "Kopieren fehlgeschlagen");
+  });
 }
 
 export function activateTestMode(state, action = "unknown") {
@@ -147,6 +224,86 @@ function updateTestPanelAccess(dom, state) {
   dom.testPanel?.classList.toggle("hidden", !active);
   dom.testPanelGame?.classList.toggle("hidden", !active || !state.running || state.over);
   if (active && dom.testPanelUser) dom.testPanelUser.textContent = cleanName(dom.playerNameInput?.value || state.playerName);
+  if (active) updateDebugStatus(dom, state);
+}
+
+function updateDebugStatus(dom, state, message = "") {
+  const summary = [
+    message || "Bereit",
+    `W${state.wave}`,
+    state.endbossMode ? `Boss ${state.endbossPhase}/3` : "Normal",
+    `Robots ${state.robots?.length || 0}`,
+    `Bullets ${(state.bullets?.length || 0) + (state.enemyBullets?.length || 0)}`,
+    state.debugGodMode ? "God AN" : "God AUS"
+  ].join(" · ");
+  if (dom.testDebugStatus) dom.testDebugStatus.textContent = summary;
+  if (dom.testGameDebugStatus) dom.testGameDebugStatus.textContent = summary;
+  updateGodModeButtons(dom, state);
+}
+
+function updateGodModeButtons(dom, state) {
+  const menuText = `Godmode: ${state.debugGodMode ? "AN" : "AUS"}`;
+  const gameText = `God: ${state.debugGodMode ? "AN" : "AUS"}`;
+  if (dom.testGodModeBtn) dom.testGodModeBtn.textContent = menuText;
+  if (dom.testGameGodModeBtn) dom.testGameGodModeBtn.textContent = gameText;
+}
+
+async function copyDebugState(state) {
+  const player = state.player;
+  const boss = state.robots?.find((robot) => robot.endboss);
+  const snapshot = {
+    time: new Date().toISOString(),
+    running: state.running,
+    paused: state.paused,
+    over: state.over,
+    mode: state.endbossMode ? "endboss" : "normal",
+    wave: state.wave,
+    score: state.score,
+    difficulty: state.difficulty,
+    selectedHero: state.selectedHero,
+    debugGodMode: Boolean(state.debugGodMode),
+    player: player ? {
+      hp: Math.round(player.hp),
+      maxHp: player.maxHp,
+      x: Math.round(player.x),
+      y: Math.round(player.y),
+      dead: Boolean(player.dead),
+      blindness: Number((player.blindnessTimer || 0).toFixed(1))
+    } : null,
+    boss: boss ? {
+      phase: boss.endbossPhase,
+      hp: Math.round(boss.hp),
+      maxHp: boss.maxHp,
+      x: Math.round(boss.x),
+      y: Math.round(boss.y)
+    } : null,
+    counts: {
+      robots: state.robots?.length || 0,
+      playerBullets: state.bullets?.length || 0,
+      enemyBullets: state.enemyBullets?.length || 0,
+      bossLasers: state.bossLasers?.length || 0,
+      pickups: state.pickups?.length || 0,
+      particles: state.particles?.length || 0
+    },
+    multiplayer: {
+      active: Boolean(state.multiplayer?.active),
+      role: state.multiplayer?.role || "solo",
+      playerCount: state.multiplayer?.playerCount || 1,
+      remotePlayers: state.remotePlayers?.length || 0
+    }
+  };
+
+  try {
+    if (!navigator.clipboard?.writeText) return false;
+    await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sumValues(values) {
+  return Object.values(values || {}).reduce((sum, value) => sum + (Number(value) || 0), 0);
 }
 
 function hasTestPanelAccess() {

@@ -846,6 +846,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function hurtPlayer(amount) {
     const player = state.player;
     if (player.dead) return;
+    if (state.debugGodMode) return;
     if (player.invincible > 0) return;
     const reduced = player.shield > 0 ? amount * 0.28 : amount;
     player.hp -= reduced;
@@ -1103,6 +1104,73 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     boss.bossAttackTimer = Math.max(boss.bossAttackTimer || 0, 2.2);
     startEndbossQuake(boss, boss.endbossPhase);
     updateHud();
+    return true;
+  }
+
+  function toggleGodModeForPlaytest() {
+    state.debugGodMode = !state.debugGodMode;
+    if (state.debugGodMode && state.player) {
+      state.player.hp = state.player.maxHp;
+      state.player.dead = false;
+      state.player.respawnTimer = 0;
+      state.player.invincible = Math.max(state.player.invincible || 0, 1);
+    }
+    appendTestLog("debug_godmode", { enabled: state.debugGodMode });
+    return state.debugGodMode;
+  }
+
+  function clearThreatsForPlaytest() {
+    const removed = {
+      enemyBullets: state.enemyBullets.length,
+      playerBullets: state.bullets.length,
+      bossLasers: state.bossLasers.length
+    };
+    state.enemyBullets = [];
+    state.bullets = [];
+    state.bossLasers = [];
+    for (const robot of state.robots) {
+      robot.quakeCharge = 0;
+      robot.quakeBlast = 0;
+      robot.quakeCooldown = Math.max(robot.quakeCooldown || 0, 1.4);
+    }
+    state.shake = 0;
+    appendTestLog("debug_clear_threats", removed);
+    return removed;
+  }
+
+  function defeatRobotsForPlaytest() {
+    const count = state.robots.length;
+    for (const robot of state.robots) {
+      robot.hp = 0;
+      robot.hit = Math.max(robot.hit || 0, 0.2);
+    }
+    appendTestLog("debug_defeat_robots", { count, endboss: state.endbossMode, phase: state.endbossPhase });
+    return count;
+  }
+
+  function addScoreForPlaytest(amount = 100000) {
+    state.score += Math.max(0, Math.round(Number(amount) || 0));
+    updateHud();
+    appendTestLog("debug_add_score", { amount, score: state.score });
+    return state.score;
+  }
+
+  function spawnPickupForPlaytest(type = "heal") {
+    if (!state.player) return false;
+    const safeType = ["heal", "damage", "speed"].includes(type) ? type : "heal";
+    state.pickups.push(makePickup(
+      clamp(state.player.x + 46, 50, dom.canvas.width - 50),
+      clamp(state.player.y, 92, dom.canvas.height - 58),
+      safeType
+    ));
+    appendTestLog("debug_spawn_pickup", { type: safeType });
+    return true;
+  }
+
+  function applyBlindnessForPlaytest(duration = 10) {
+    if (!state.player) return false;
+    state.player.blindnessTimer = Math.max(state.player.blindnessTimer || 0, Number(duration) || 10);
+    appendTestLog("debug_blindness", { duration: state.player.blindnessTimer });
     return true;
   }
 
@@ -1687,7 +1755,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     triggerEndbossQuakeForPlaytest,
     triggerMaskBoomerangForPlaytest,
     triggerBatSwarmForPlaytest,
-    advanceEndbossPhaseForPlaytest
+    advanceEndbossPhaseForPlaytest,
+    toggleGodModeForPlaytest,
+    clearThreatsForPlaytest,
+    defeatRobotsForPlaytest,
+    addScoreForPlaytest,
+    spawnPickupForPlaytest,
+    applyBlindnessForPlaytest
   };
 }
 
