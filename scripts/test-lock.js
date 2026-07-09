@@ -1,4 +1,3 @@
-const unlockStorageKey = "neon-bot-arena-testlabor-unlocked";
 const passwordHash = "daa08d2392d11438abde5c0e589cffbf828c8e76078b682be5867f260f6ecb81";
 
 export async function unlockTestLab() {
@@ -8,11 +7,6 @@ export async function unlockTestLab() {
   const status = document.querySelector("#testLockStatus");
 
   if (!overlay || !form || !input) {
-    document.body.classList.remove("test-locked");
-    return;
-  }
-
-  if (sessionStorage.getItem(unlockStorageKey) === "1") {
     document.body.classList.remove("test-locked");
     return;
   }
@@ -32,7 +26,6 @@ export async function unlockTestLab() {
         return;
       }
 
-      sessionStorage.setItem(unlockStorageKey, "1");
       document.body.classList.remove("test-locked");
       resolve();
     });
