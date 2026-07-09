@@ -13,6 +13,7 @@ import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
+import { setupTestDevtools } from "./test-devtools.js?v=testdevtools1";
 
 
 
@@ -22,6 +23,7 @@ export function bootGame() {
   setupTestLoggerUI();
   const dom = getDom();
   const state = createState();
+  setupTestDevtools(state);
   const playtestParams = new URLSearchParams(window.location.search);
   const isLocalPlaytest = ["localhost", "127.0.0.1"].includes(window.location.hostname) && playtestParams.has("playtest");
   if (isLocalPlaytest && playtestParams.get("hero") === "warden") state.selectedHero = "warden";

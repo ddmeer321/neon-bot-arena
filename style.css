@@ -230,6 +230,138 @@ body:not(.test-locked) .test-lock-overlay {
   color: #ffe5ad !important;
 }
 
+.test-devtools-open-button {
+  border-color: rgba(56, 216, 255, 0.7) !important;
+  color: #c7f4ff !important;
+}
+
+.test-devtools-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 130;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: 30dvh;
+  min-height: 210px;
+  border-top: 1px solid rgba(56, 216, 255, 0.46);
+  background: rgba(4, 8, 14, 0.98);
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.48);
+  color: var(--text);
+  touch-action: pan-y;
+}
+
+.test-devtools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(56, 216, 255, 0.18);
+}
+
+.test-devtools-header p,
+.test-devtools-header strong,
+.test-devtools-status {
+  margin: 0;
+}
+
+.test-devtools-header p {
+  color: var(--cyan);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.test-devtools-header strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.94rem;
+}
+
+.test-devtools-header-actions,
+.test-devtools-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.test-devtools-header-actions button,
+.test-devtools-tabs button {
+  min-height: 34px;
+  border: 1px solid rgba(56, 216, 255, 0.26);
+  border-radius: 7px;
+  background: rgba(56, 216, 255, 0.09);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 900;
+  padding: 6px 9px;
+}
+
+.test-devtools-header-actions button:hover,
+.test-devtools-header-actions button:focus-visible,
+.test-devtools-tabs button:hover,
+.test-devtools-tabs button:focus-visible,
+.test-devtools-tabs button.selected {
+  border-color: var(--cyan);
+  background: rgba(56, 216, 255, 0.18);
+  outline: none;
+}
+
+#testDevtoolsCloseBtn {
+  min-width: 36px;
+  padding: 0;
+  font-size: 1.3rem;
+}
+
+.test-devtools-tabs {
+  overflow-x: auto;
+  padding: 7px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  scrollbar-width: thin;
+}
+
+.test-devtools-output {
+  min-height: 0;
+  margin: 0;
+  overflow: auto;
+  padding: 10px 12px 12px;
+  color: #dbeafe;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.test-devtools-status {
+  min-height: 24px;
+  padding: 3px 12px 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+body.test-devtools-open:not(.playing) .shell,
+body.test-devtools-open:not(.playing) .site-footer {
+  padding-bottom: calc(30dvh + 24px);
+}
+
+body.test-devtools-open.playing .game-panel {
+  height: 70dvh;
+}
+
+body.test-devtools-open.playing .test-panel-game {
+  max-height: calc(70dvh - 116px);
+  overflow: auto;
+}
+
 .test-log-overlay {
   position: fixed;
   inset: 0;
@@ -792,6 +924,31 @@ body.playing .shell {
 
   .test-log-overlay {
     padding: 8px;
+  }
+
+  .test-devtools-dock {
+    height: 34dvh;
+    min-height: 230px;
+  }
+
+  .test-devtools-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .test-devtools-header-actions {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .test-devtools-header-actions button,
+  .test-devtools-tabs button {
+    white-space: nowrap;
+  }
+
+  body.test-devtools-open.playing .game-panel {
+    height: 66dvh;
   }
 
   .test-log-dialog {

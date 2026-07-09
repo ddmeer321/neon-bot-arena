@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=testlogscroll1" />
+    <link rel="stylesheet" href="style.css?v=testdevtools1" />
   </head>
   <body class="test-build test-locked">
     <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
@@ -251,6 +251,7 @@
             <button id="testSpecialBtn" type="button">Spezial bereit</button>
             <button id="testEndbossBtn" type="button">Endboss starten</button>
             <button id="openTestLogsBtn" class="test-log-open" type="button">Logs anzeigen</button>
+            <button id="openTestDevtoolsBtn" class="test-devtools-open-button" type="button">Devtools öffnen</button>
           </div>
           <div class="test-admin-section">
             <strong>Debug/Admin</strong>
@@ -337,6 +338,7 @@
               <button id="testGamePickupHealBtn" type="button">Heal+</button>
               <button id="testGameBlindnessBtn" type="button">Blind</button>
               <button id="testGameCopyStateBtn" type="button">Copy</button>
+              <button id="testGameDevtoolsBtn" type="button">Devtools</button>
             </div>
             <code id="testGameDebugStatus" class="test-debug-status">Bereit</code>
           </div>
@@ -376,10 +378,34 @@
       </section>
     </div>
 
+    <section id="testDevtoolsDock" class="test-devtools-dock hidden" aria-label="Testlabor Devtools">
+      <header class="test-devtools-header">
+        <div>
+          <p>TESTLABOR DEVTOOLS</p>
+          <strong id="testDevtoolsTitle">Console</strong>
+        </div>
+        <div class="test-devtools-header-actions">
+          <button id="testDevtoolsRefreshBtn" type="button">Aktualisieren</button>
+          <button id="testDevtoolsCopyBtn" type="button">Kopieren</button>
+          <button id="testDevtoolsClearBtn" type="button">Console leeren</button>
+          <button id="testDevtoolsCloseBtn" type="button" aria-label="Devtools schließen">×</button>
+        </div>
+      </header>
+      <nav class="test-devtools-tabs" aria-label="Devtools Bereiche">
+        <button class="selected" type="button" data-devtools-tab="console">Console</button>
+        <button type="button" data-devtools-tab="state">State</button>
+        <button type="button" data-devtools-tab="logs">Logs</button>
+        <button type="button" data-devtools-tab="storage">Storage</button>
+        <button type="button" data-devtools-tab="env">Info</button>
+      </nav>
+      <pre id="testDevtoolsOutput" class="test-devtools-output" aria-live="polite"></pre>
+      <p id="testDevtoolsStatus" class="test-devtools-status" aria-live="polite">Bereit</p>
+    </section>
+
     <footer class="site-footer">
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testadmin1"></script>
+    <script type="module" src="game.js?v=testdevtools1"></script>
   </body>
 </html>
