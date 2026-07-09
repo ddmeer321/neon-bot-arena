@@ -1,5 +1,5 @@
 const unlockStorageKey = "neon-bot-arena-testlabor-unlocked";
-const passwordHash = "fa9f06e004dc263c57b563cc58ed85b1e571d20fc2d5a3921048e02ab51a5abb";
+const passwordHash = "daa08d2392d11438abde5c0e589cffbf828c8e76078b682be5867f260f6ecb81";
 
 export async function unlockTestLab() {
   const overlay = document.querySelector("#testLockOverlay");
