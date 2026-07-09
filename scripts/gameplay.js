@@ -373,9 +373,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const settings = getDifficultySettings();
     const playerScaling = getPlayerScaling();
     const stages = {
-      1: { hp: 1200, speed: 78, damage: 28, bulletDamage: 17, bulletSpeed: 340, fireRate: 1.1, attackRate: 2.5 },
-      2: { hp: 2200, speed: 94, damage: 38, bulletDamage: 24, bulletSpeed: 395, fireRate: 0.92, attackRate: 2.05 },
-      3: { hp: 3600, speed: 112, damage: 50, bulletDamage: 32, bulletSpeed: 455, fireRate: 0.74, attackRate: 1.65 }
+      1: { hp: 2000, speed: 78, damage: 28, bulletDamage: 17, bulletSpeed: 340, fireRate: 1.1, attackRate: 2.5 },
+      2: { hp: 3000, speed: 94, damage: 38, bulletDamage: 24, bulletSpeed: 395, fireRate: 0.92, attackRate: 2.05 },
+      3: { hp: 5000, speed: 112, damage: 50, bulletDamage: 32, bulletSpeed: 455, fireRate: 0.74, attackRate: 1.65 }
     };
     const stage = stages[phase] || stages[3];
     const hp = Math.round(stage.hp * settings.enemyHp * playerScaling.bossHp);
