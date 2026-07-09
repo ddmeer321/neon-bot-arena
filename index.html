@@ -4,12 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=testsite1" />
+    <link rel="stylesheet" href="style.css?v=testlock1" />
   </head>
-  <body class="test-build">
+  <body class="test-build test-locked">
+    <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
+      <form id="testLockForm" class="test-lock-card" autocomplete="off">
+        <p class="eyebrow">Privates Testlabor</p>
+        <h1 id="testLockTitle">Zugang gesperrt</h1>
+        <p>Diese Netlify-Vorschau ist nur f&uuml;r interne Tests. Gib das Testlabor-Passwort ein, um weiterzumachen.</p>
+        <label>
+          <span>Passwort</span>
+          <input id="testLockPassword" type="password" autocomplete="current-password" autofocus />
+        </label>
+        <button type="submit">Testlabor &ouml;ffnen</button>
+        <p id="testLockStatus" class="test-lock-status" aria-live="polite"></p>
+      </form>
+    </div>
     <aside class="test-build-banner" aria-label="Hinweis zur Testversion">
       <strong>TESTLABOR</strong>
-      <span>Geschützte Vorschau · Testpanel aktiv · Online-Scores deaktiviert</span>
+      <span>Private Netlify-Vorschau &middot; Testpanel aktiv &middot; Online-Scores deaktiviert</span>
     </aside>
     <button id="settingsBtn" class="settings-button" type="button" aria-controls="settingsOverlay" data-i18n-aria-label="settings.open">
       <span aria-hidden="true">⚙</span>
@@ -162,7 +175,7 @@
 
         <div class="test-access-badge">
           <strong>Testzugang aktiv</strong>
-          <span>Geschützt durch Cloudflare Access</span>
+          <span>Passwortschutz aktiv</span>
         </div>
 
         <div class="multiplayer-test">
@@ -339,6 +352,6 @@
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testbats4"></script>
+    <script type="module" src="game.js?v=testlock1"></script>
   </body>
 </html>

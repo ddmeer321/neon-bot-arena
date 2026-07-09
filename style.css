@@ -58,6 +58,115 @@ body[data-background-theme="ice"] {
   background-attachment: fixed;
 }
 
+body.test-locked {
+  overflow: hidden;
+}
+
+body.test-locked .test-build-banner,
+body.test-locked .settings-button,
+body.test-locked .shell,
+body.test-locked .site-footer,
+body.test-locked .test-log-overlay {
+  display: none;
+}
+
+.test-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 26% 18%, rgba(255, 176, 32, 0.22), transparent 28%),
+    radial-gradient(circle at 80% 18%, rgba(56, 216, 255, 0.12), transparent 24%),
+    rgba(2, 4, 8, 0.94);
+  backdrop-filter: blur(14px);
+}
+
+body:not(.test-locked) .test-lock-overlay {
+  display: none;
+}
+
+.test-lock-card {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: clamp(20px, 5vw, 30px);
+  border: 1px solid rgba(255, 176, 32, 0.56);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(10, 15, 24, 0.98), rgba(24, 18, 10, 0.96));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.6);
+}
+
+.test-lock-card h1,
+.test-lock-card p {
+  margin: 0;
+}
+
+.test-lock-card h1 {
+  font-size: clamp(2rem, 8vw, 3.4rem);
+}
+
+.test-lock-card > p:not(.eyebrow):not(.test-lock-status) {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.test-lock-card label {
+  display: grid;
+  gap: 8px;
+}
+
+.test-lock-card label span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.test-lock-card input {
+  min-height: 50px;
+  border: 1px solid rgba(255, 176, 32, 0.45);
+  border-radius: 10px;
+  background: rgba(8, 12, 20, 0.86);
+  color: var(--text);
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 900;
+  outline: none;
+}
+
+.test-lock-card input:focus {
+  border-color: var(--test-accent, #ffb020);
+  box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.14);
+}
+
+.test-lock-card button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--test-accent, #ffb020);
+  color: #11160c;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+}
+
+.test-lock-card button:hover,
+.test-lock-card button:focus-visible {
+  filter: brightness(1.08);
+  outline: none;
+}
+
+.test-lock-status {
+  min-height: 1.3em;
+  color: #ff8ab5;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
 .test-build {
   --test-accent: #ffb020;
   border-top: 4px solid var(--test-accent);
