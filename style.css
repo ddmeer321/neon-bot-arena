@@ -239,17 +239,22 @@ body:not(.test-locked) .test-lock-overlay {
   padding: 18px;
   background: rgba(2, 4, 8, 0.82);
   backdrop-filter: blur(12px);
+  touch-action: pan-y;
 }
 
 .test-log-dialog {
   display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   width: min(920px, 100%);
+  height: min(820px, calc(100dvh - 36px));
   max-height: min(820px, calc(100dvh - 36px));
+  min-height: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 176, 32, 0.55);
   border-radius: 14px;
   background: rgba(8, 12, 20, 0.98);
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
+  touch-action: pan-y;
 }
 
 .test-log-heading,
@@ -321,10 +326,15 @@ body:not(.test-locked) .test-lock-overlay {
 
 .test-log-list {
   display: grid;
+  align-content: start;
   gap: 7px;
-  min-height: 180px;
+  min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 0 20px 18px;
+  scrollbar-color: rgba(255, 176, 32, 0.72) rgba(255, 255, 255, 0.08);
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .test-log-row {
