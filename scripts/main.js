@@ -6,7 +6,7 @@ import { setupInput } from "./input.js?v=musicvolume1";
 import { createGameplay } from "./gameplay.js?v=testadmin1";
 import { draw } from "./render.js?v=testbats4";
 import { createFPSCounter } from "./fps.js?v=testlogs1";
-import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
+import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
 import { setupTestPanel } from "./test-panel.js?v=testadmin1";
 import { setupMultiplayerTest } from "./multiplayer-test.js?v=testlogs1";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
@@ -14,6 +14,7 @@ import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
+import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad1";
 
 
 
@@ -35,6 +36,7 @@ export function bootGame() {
   if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
   if (dom.difficultyText) dom.difficultyText.textContent = t("menu.normal");
   updateCoinDisplay(state, dom);
+  setupRewardedAdTest({ awardCoins: (amount) => addCoins(state, amount, dom) });
 
   const renderLeaderboard = () => {
     if (!dom.leaderboardList) return;
