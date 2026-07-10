@@ -328,6 +328,7 @@ function sendSocket(socket, message) {
 }
 
 function sanitizeWorldSnapshot(snapshot = {}) {
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) snapshot = {};
   return {
     wave: clampNumber(snapshot.wave, 1, 999),
     score: clampNumber(snapshot.score, 0, 99999999),
@@ -348,6 +349,7 @@ function sanitizeWorldSnapshot(snapshot = {}) {
 }
 
 function sanitizePlayerAction(action = {}) {
+  if (!action || typeof action !== "object" || Array.isArray(action)) action = {};
   const kind = String(action.kind || "").slice(0, 24);
   return {
     kind,
