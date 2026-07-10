@@ -179,6 +179,7 @@ export function setupRewardedAdTest({ awardCoins }) {
     timer = 0;
     running = false;
     overlay.classList.add("hidden");
+    overlay.style.display = "none";
     status.textContent = text(messageKey);
     render();
     button.focus();
@@ -206,6 +207,7 @@ export function setupRewardedAdTest({ awardCoins }) {
     lastTick = performance.now();
     status.textContent = "";
     overlay.classList.remove("hidden");
+    overlay.style.removeProperty("display");
     countdown.textContent = text("countdown", { seconds: 30 });
     render();
     cancelButton.focus();
