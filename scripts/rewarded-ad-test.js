@@ -1,111 +1,111 @@
-const STORAGE_KEY = "neon-bot-arena-test-ad-rewards-v1";
-const DAILY_LIMIT = 2;
-const REWARD_COINS = 500;
+const STORAGE_KEY = "neon-bot-arena-test-ad-rewards-v2";
+const DAILY_REWARDS = [25, 50, 100, 125, 150, 200, 250, 300];
+const DAILY_LIMIT = DAILY_REWARDS.length;
 const DURATION_MS = 30_000;
 
 const translations = {
   de: {
     title: "Testwerbung",
-    hint: "Simuliert eine belohnte Werbung. Erst nach 30 sichtbaren Sekunden erhältst du 500 Münzen.",
-    button: "Testwerbung ansehen – 500 Münzen",
-    remaining: "{remaining} von 2 heute verfügbar",
+    hint: "Bis zu 8 Testwerbungen täglich. Die Belohnung steigt nach jeder Werbung.",
+    button: "Testwerbung ansehen – {reward} Münzen",
+    remaining: "{remaining} von 8 heute verfügbar",
     limit: "Tageslimit erreicht",
     dialogTitle: "Simulierte Testwerbung",
     dialogHint: "Keine echte Werbung · Countdown pausiert, wenn du den Tab verlässt.",
     countdown: "Belohnung in {seconds} Sekunden",
     cancel: "Abbrechen",
-    rewarded: "500 Münzen wurden gutgeschrieben.",
+    rewarded: "{reward} Münzen wurden gutgeschrieben.",
     canceled: "Testwerbung abgebrochen – keine Münzen erhalten."
   },
   en: {
     title: "Test ad",
-    hint: "Simulates a rewarded ad. You receive 500 coins only after 30 visible seconds.",
-    button: "Watch test ad – 500 coins",
-    remaining: "{remaining} of 2 available today",
+    hint: "Up to 8 test ads daily. The reward increases after every ad.",
+    button: "Watch test ad – {reward} coins",
+    remaining: "{remaining} of 8 available today",
     limit: "Daily limit reached",
     dialogTitle: "Simulated test ad",
     dialogHint: "Not a real ad · The countdown pauses when you leave the tab.",
     countdown: "Reward in {seconds} seconds",
     cancel: "Cancel",
-    rewarded: "500 coins have been added.",
+    rewarded: "{reward} coins have been added.",
     canceled: "Test ad canceled – no coins received."
   },
   fr: {
     title: "Publicité test",
-    hint: "Simule une publicité récompensée. Tu reçois 500 pièces après 30 secondes visibles.",
-    button: "Voir la publicité test – 500 pièces",
-    remaining: "{remaining} sur 2 disponibles aujourd’hui",
+    hint: "Jusqu’à 8 publicités test par jour. La récompense augmente après chaque publicité.",
+    button: "Voir la publicité test – {reward} pièces",
+    remaining: "{remaining} sur 8 disponibles aujourd’hui",
     limit: "Limite quotidienne atteinte",
     dialogTitle: "Publicité test simulée",
     dialogHint: "Aucune vraie publicité · Le compte à rebours se met en pause si tu quittes l’onglet.",
     countdown: "Récompense dans {seconds} secondes",
     cancel: "Annuler",
-    rewarded: "500 pièces ont été ajoutées.",
+    rewarded: "{reward} pièces ont été ajoutées.",
     canceled: "Publicité test annulée – aucune pièce reçue."
   },
   es: {
     title: "Anuncio de prueba",
-    hint: "Simula un anuncio recompensado. Recibes 500 monedas tras 30 segundos visibles.",
-    button: "Ver anuncio de prueba – 500 monedas",
-    remaining: "{remaining} de 2 disponibles hoy",
+    hint: "Hasta 8 anuncios de prueba al día. La recompensa aumenta con cada anuncio.",
+    button: "Ver anuncio de prueba – {reward} monedas",
+    remaining: "{remaining} de 8 disponibles hoy",
     limit: "Límite diario alcanzado",
     dialogTitle: "Anuncio de prueba simulado",
     dialogHint: "No es un anuncio real · La cuenta atrás se pausa si sales de la pestaña.",
     countdown: "Recompensa en {seconds} segundos",
     cancel: "Cancelar",
-    rewarded: "Se añadieron 500 monedas.",
+    rewarded: "Se añadieron {reward} monedas.",
     canceled: "Anuncio cancelado – no recibiste monedas."
   },
   it: {
     title: "Pubblicità di prova",
-    hint: "Simula una pubblicità con premio. Ricevi 500 monete dopo 30 secondi visibili.",
-    button: "Guarda la pubblicità di prova – 500 monete",
-    remaining: "{remaining} su 2 disponibili oggi",
+    hint: "Fino a 8 pubblicità di prova al giorno. Il premio aumenta dopo ogni pubblicità.",
+    button: "Guarda la pubblicità di prova – {reward} monete",
+    remaining: "{remaining} su 8 disponibili oggi",
     limit: "Limite giornaliero raggiunto",
     dialogTitle: "Pubblicità di prova simulata",
     dialogHint: "Non è una vera pubblicità · Il conto alla rovescia si ferma se lasci la scheda.",
     countdown: "Premio tra {seconds} secondi",
     cancel: "Annulla",
-    rewarded: "Sono state aggiunte 500 monete.",
+    rewarded: "Sono state aggiunte {reward} monete.",
     canceled: "Pubblicità annullata – nessuna moneta ricevuta."
   },
   pl: {
     title: "Reklama testowa",
-    hint: "Symuluje reklamę z nagrodą. 500 monet otrzymasz po 30 widocznych sekundach.",
-    button: "Obejrzyj reklamę testową – 500 monet",
-    remaining: "Dostępne dziś: {remaining} z 2",
+    hint: "Do 8 reklam testowych dziennie. Nagroda rośnie po każdej reklamie.",
+    button: "Obejrzyj reklamę testową – {reward} monet",
+    remaining: "Dostępne dziś: {remaining} z 8",
     limit: "Osiągnięto dzienny limit",
     dialogTitle: "Symulowana reklama testowa",
     dialogHint: "To nie jest prawdziwa reklama · Odliczanie zatrzymuje się po opuszczeniu karty.",
     countdown: "Nagroda za {seconds} sekund",
     cancel: "Anuluj",
-    rewarded: "Dodano 500 monet.",
+    rewarded: "Dodano {reward} monet.",
     canceled: "Reklama anulowana – nie przyznano monet."
   },
   nl: {
     title: "Testadvertentie",
-    hint: "Simuleert een advertentie met beloning. Na 30 zichtbare seconden krijg je 500 munten.",
-    button: "Bekijk testadvertentie – 500 munten",
-    remaining: "{remaining} van 2 vandaag beschikbaar",
+    hint: "Maximaal 8 testadvertenties per dag. De beloning stijgt na iedere advertentie.",
+    button: "Bekijk testadvertentie – {reward} munten",
+    remaining: "{remaining} van 8 vandaag beschikbaar",
     limit: "Daglimiet bereikt",
     dialogTitle: "Gesimuleerde testadvertentie",
     dialogHint: "Geen echte advertentie · De timer pauzeert wanneer je het tabblad verlaat.",
     countdown: "Beloning over {seconds} seconden",
     cancel: "Annuleren",
-    rewarded: "500 munten zijn toegevoegd.",
+    rewarded: "{reward} munten zijn toegevoegd.",
     canceled: "Testadvertentie geannuleerd – geen munten ontvangen."
   },
   "zh-CN": {
     title: "测试广告",
-    hint: "模拟激励广告。保持页面可见30秒后可获得500金币。",
-    button: "观看测试广告 – 500金币",
-    remaining: "今天还可观看 {remaining}/2 次",
+    hint: "每天最多观看8次测试广告，每次广告后的奖励都会增加。",
+    button: "观看测试广告 – {reward}金币",
+    remaining: "今天还可观看 {remaining}/8 次",
     limit: "已达到每日上限",
     dialogTitle: "模拟测试广告",
     dialogHint: "这不是真实广告 · 离开此标签页时倒计时会暂停。",
     countdown: "{seconds}秒后获得奖励",
     cancel: "取消",
-    rewarded: "已获得500金币。",
+    rewarded: "已获得{reward}金币。",
     canceled: "已取消测试广告，未获得金币。"
   }
 };
@@ -166,21 +166,22 @@ export function setupRewardedAdTest({ awardCoins }) {
   const render = () => {
     const rewardState = readRewardState();
     const remaining = Math.max(0, DAILY_LIMIT - rewardState.count);
+    const nextReward = DAILY_REWARDS[rewardState.count] || 0;
     document.querySelectorAll("[data-ad-text]").forEach((element) => {
       element.textContent = text(element.dataset.adText);
     });
     remainingText.textContent = remaining > 0 ? text("remaining", { remaining }) : text("limit");
     button.disabled = running || remaining === 0;
-    button.textContent = remaining === 0 ? text("limit") : text("button");
+    button.textContent = remaining === 0 ? text("limit") : text("button", { reward: nextReward });
   };
 
-  const closeAd = (messageKey) => {
+  const closeAd = (messageKey, values = {}) => {
     if (timer) window.clearInterval(timer);
     timer = 0;
     running = false;
     overlay.classList.add("hidden");
     overlay.style.display = "none";
-    status.textContent = text(messageKey);
+    status.textContent = text(messageKey, values);
     render();
     button.focus();
   };
@@ -191,9 +192,10 @@ export function setupRewardedAdTest({ awardCoins }) {
       closeAd("limit");
       return;
     }
+    const reward = DAILY_REWARDS[rewardState.count];
     saveState({ day: rewardState.day, count: rewardState.count + 1 });
-    awardCoins(REWARD_COINS);
-    closeAd("rewarded");
+    awardCoins(reward);
+    closeAd("rewarded", { reward });
   };
 
   const startAd = () => {

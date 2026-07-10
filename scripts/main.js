@@ -14,7 +14,7 @@ import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
-import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad2";
+import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad3";
 
 
 
