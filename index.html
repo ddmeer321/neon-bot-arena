@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=testdevtools2" />
+    <link rel="stylesheet" href="style.css?v=testrewardad1" />
   </head>
   <body class="test-build test-locked">
     <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
@@ -95,6 +95,16 @@
           <p id="ownedScoresStatus" class="settings-status" aria-live="polite"></p>
         </div>
 
+        <div class="settings-group test-ad-settings">
+          <strong data-ad-text="title">Testwerbung</strong>
+          <small data-ad-text="hint">Simuliert eine belohnte Werbung. Erst nach 30 sichtbaren Sekunden erhältst du 500 Münzen.</small>
+          <div class="settings-actions">
+            <button id="testRewardAdBtn" class="reward-ad-button" type="button">Testwerbung ansehen – 500 Münzen</button>
+          </div>
+          <small id="testRewardAdRemaining">2 von 2 heute verfügbar</small>
+          <p id="testRewardAdStatus" class="settings-status" aria-live="polite"></p>
+        </div>
+
         <div class="settings-group danger-zone">
           <strong data-i18n="settings.deleteTitle">Lokale Daten</strong>
           <small data-i18n="settings.deleteHint">Löscht Fortschritt, Coins, Einstellungen, Test-ID und lokale Rekorde auf diesem Gerät.</small>
@@ -107,6 +117,18 @@
             </div>
           </div>
         </div>
+      </section>
+    </div>
+
+    <div id="testAdOverlay" class="test-ad-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="testAdTitle">
+      <section class="test-ad-card">
+        <p class="eyebrow">TESTWERBUNG</p>
+        <h2 id="testAdTitle" data-ad-text="dialogTitle">Simulierte Testwerbung</h2>
+        <p data-ad-text="dialogHint">Keine echte Werbung · Countdown pausiert, wenn du den Tab verlässt.</p>
+        <div class="test-ad-visual" aria-hidden="true">
+          <strong id="testAdCountdown" class="test-ad-countdown">Belohnung in 30 Sekunden</strong>
+        </div>
+        <button id="testAdCancelBtn" class="secondary-btn" type="button" data-ad-text="cancel">Abbrechen</button>
       </section>
     </div>
 
@@ -411,6 +433,6 @@
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
     </footer>
 
-    <script type="module" src="game.js?v=testdevtools2"></script>
+    <script type="module" src="game.js?v=testrewardad1"></script>
   </body>
 </html>
