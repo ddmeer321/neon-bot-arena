@@ -36,7 +36,13 @@ export function bootGame() {
   if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
   if (dom.difficultyText) dom.difficultyText.textContent = t("menu.normal");
   updateCoinDisplay(state, dom);
-  setupRewardedAdTest({ awardCoins: (amount) => addCoins(state, amount, dom) });
+  setupRewardedAdTest({
+    awardCoins: (amount) => {
+      addCoins(state, amount, dom);
+      renderHeroMenu(state, dom);
+      renderShop(state, dom);
+    }
+  });
 
   const renderLeaderboard = () => {
     if (!dom.leaderboardList) return;
