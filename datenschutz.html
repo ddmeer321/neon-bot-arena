@@ -9,99 +9,153 @@
   <body class="privacy-page">
     <main class="privacy-card">
       <p class="eyebrow">Neon Bot Arena</p>
-      <h1>Datenschutz</h1>
-      <p class="privacy-intro">Hier erfährst du, welche Daten beim Spielen verarbeitet werden. Wähle ein Thema aus, um alle Informationen dazu zu lesen.</p>
+      <h1 data-privacy-key="heading">Datenschutz</h1>
+      <p class="privacy-intro" data-privacy-key="intro">Hier erfährst du in möglichst verständlicher Sprache, welche Daten beim Spielen verarbeitet werden, warum das geschieht und welche Rechte du hast.</p>
+
+      <label class="settings-group privacy-language" for="privacyLanguage">
+        <span data-privacy-key="language">Sprache</span>
+        <select id="privacyLanguage">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="it">Italiano</option>
+          <option value="pl">Polski</option>
+          <option value="nl">Nederlands</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+      </label>
 
       <div class="privacy-topics">
         <details class="privacy-topic" data-topic="contact">
           <summary>
-            <span class="privacy-topic-title">Kontakt</span>
-            <span class="privacy-topic-preview">Hier kannst du Fragen zum Datenschutz oder zur Löschung deiner Daten stellen.</span>
+            <span class="privacy-topic-title" data-privacy-key="contactTitle">Kontakt</span>
+            <span class="privacy-topic-preview" data-privacy-key="contactPreview">Hier kannst du Fragen zum Datenschutz stellen.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Verantwortliche Person: <strong>Lina Guo</strong></p>
-            <p>Kontakt für Datenschutzfragen: <strong><a href="mailto:neonbotarena@outlook.de">neonbotarena@outlook.de</a></strong></p>
+            <p data-privacy-html="contactP1">Kontakt für Datenschutzfragen: <strong><a href="mailto:neonbotarena@outlook.de">neonbotarena@outlook.de</a></strong></p>
+            <p data-privacy-key="contactP2">Wenn du uns per E-Mail kontaktierst, werden deine E-Mail-Adresse, der Inhalt deiner Nachricht und freiwillige Angaben verarbeitet, um deine Anfrage zu beantworten. Rechtsgrundlage ist Art. 6 Abs. 1 Buchstabe f DSGVO. Nachrichten werden gelöscht, wenn die Anfrage erledigt ist und keine gesetzlichen Pflichten mehr bestehen.</p>
           </div>
         </details>
 
         <details class="privacy-topic" data-topic="hosting">
           <summary>
-            <span class="privacy-topic-title">Hosting und technische Daten</span>
-            <span class="privacy-topic-preview">Beim Öffnen des Spiels entstehen technisch notwendige Verbindungsdaten.</span>
+            <span class="privacy-topic-title" data-privacy-key="hostingTitle">Hosting und technische Daten</span>
+            <span class="privacy-topic-preview" data-privacy-key="hostingPreview">Beim Öffnen des Spiels entstehen technisch notwendige Verbindungsdaten.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Die Website wird über GitHub Pages bereitgestellt. Beim Aufruf können technisch notwendige Verbindungsdaten wie IP-Adresse, Zeitpunkt, angeforderte Datei, Browsertyp und Betriebssystem verarbeitet werden. Für Mehrspieler-Verbindungen wird zusätzlich ein auf Render betriebener Server verwendet.</p>
+            <p data-privacy-key="hostingP1">Die öffentliche Website wird über GitHub Pages bereitgestellt. Testversionen können über Netlify bereitgestellt werden. Dabei können IP-Adresse, Zeitpunkt, angeforderte Datei, Datenmenge, Referrer, Browser und Betriebssystem verarbeitet werden.</p>
+            <p data-privacy-key="hostingP2">Die Verarbeitung dient der Auslieferung, Fehlererkennung und Sicherheit der Website. Rechtsgrundlage ist Art. 6 Abs. 1 Buchstabe f DSGVO.</p>
+            <p data-privacy-html="hostingP3">Empfänger können <a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement">GitHub</a> und bei Testversionen <a href="https://www.netlify.com/privacy/">Netlify</a> sein. Für technische Protokolldaten gelten deren Speicherregeln.</p>
+          </div>
+        </details>
+
+        <details class="privacy-topic" data-topic="multiplayer">
+          <summary>
+            <span class="privacy-topic-title" data-privacy-key="multiplayerTitle">Mehrspieler-Modus</span>
+            <span class="privacy-topic-preview" data-privacy-key="multiplayerPreview">Für gemeinsame Runden wird eine Verbindung zum Multiplayer-Server hergestellt.</span>
+            <span class="privacy-topic-toggle" aria-hidden="true">
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
+            </span>
+          </summary>
+          <div class="privacy-topic-content">
+            <p data-privacy-html="multiplayerP1">Der Mehrspieler-Server wird bei <a href="https://render.com/privacy">Render</a> betrieben. Dabei werden IP-Adresse, Verbindungsdaten, Spitzname, Lobby-Zuordnung und vorübergehende Spielzustände wie Position, Figur und Lebenspunkte verarbeitet.</p>
+            <p data-privacy-key="multiplayerP2">Neon Bot Arena speichert diese Spielzustände nicht dauerhaft in einer eigenen Multiplayer-Datenbank. Sie werden entfernt, wenn die Lobby leer ist oder der Server neu startet. Technische Anbieterprotokolle können länger bestehen.</p>
+            <p data-privacy-key="multiplayerP3">Rechtsgrundlage ist Art. 6 Abs. 1 Buchstabe f DSGVO. Das berechtigte Interesse besteht im sicheren und zuverlässigen Betrieb des ausgewählten Mehrspieler-Modus.</p>
           </div>
         </details>
 
         <details class="privacy-topic" data-topic="leaderboard">
           <summary>
-            <span class="privacy-topic-title">Online-Rangliste</span>
-            <span class="privacy-topic-preview">In der Rangliste werden dein Spitzname und Informationen über deine Runde gespeichert.</span>
+            <span class="privacy-topic-title" data-privacy-key="leaderboardTitle">Online-Rangliste</span>
+            <span class="privacy-topic-preview" data-privacy-key="leaderboardPreview">In der Rangliste werden dein Spitzname und Informationen über deine Runde gespeichert.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Für die Rangliste werden der frei gewählte Spitzname, Punktzahl, Welle, Schwierigkeit, besiegte Bosse, gewählte Figur, Spieleranzahl und Zeitpunkt gespeichert. Bitte verwende nicht deinen echten Namen.</p>
-            <p>Zum Schutz vor Missbrauch wird die IP-Adresse bei Score-Einsendungen serverseitig mit einem geheimen Schlüssel in einen nicht direkt lesbaren Prüfwert umgewandelt. Dieser Prüfwert dient nur dem Rate-Limit und wird nach einem Tag gelöscht.</p>
+            <p data-privacy-key="leaderboardP1">In der öffentlichen Version werden Spitzname, Punktzahl, Welle, Schwierigkeit, besiegte Bosse, Figur, Spieleranzahl und Zeitpunkt gespeichert. Bitte verwende nicht deinen echten Namen. Die Testversion übermittelt keine neuen Scores an die Produktionsrangliste.</p>
+            <p data-privacy-html="leaderboardP2">Die Ranglistendaten werden bei <a href="https://supabase.com/privacy">Supabase</a> gespeichert. Ein aus der IP-Adresse gebildeter, nicht direkt lesbarer Prüfwert schützt vor Missbrauch und wird nach einem Tag gelöscht.</p>
+            <p data-privacy-key="leaderboardP3">Rechtsgrundlage ist Art. 6 Abs. 1 Buchstabe f DSGVO. Die berechtigten Interessen bestehen im Betrieb einer fairen Rangliste und im Schutz vor manipulierten oder massenhaften Einsendungen.</p>
           </div>
         </details>
 
         <details class="privacy-topic" data-topic="score-deletion">
           <summary>
-            <span class="privacy-topic-title">Eigene Scores löschen</span>
-            <span class="privacy-topic-preview">Neue Ranglisteneinträge können über dieses Gerät wieder gelöscht werden.</span>
+            <span class="privacy-topic-title" data-privacy-key="deletionTitle">Eigene Scores löschen</span>
+            <span class="privacy-topic-preview" data-privacy-key="deletionPreview">Neue Ranglisteneinträge können über dieses Gerät wieder gelöscht werden.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Für neue Ranglisteneinträge erhält dieses Gerät einen zufälligen Löschschlüssel. Supabase speichert nur dessen Hash. Der Schlüssel bleibt auf diesem Gerät und ermöglicht die Löschung des zugehörigen Scores. Wird der lokale Speicher gelöscht, bevor der Online-Score gelöscht wurde, geht diese Möglichkeit verloren.</p>
+            <p data-privacy-key="deletionP1">Für neue Ranglisteneinträge erhält dieses Gerät einen zufälligen Löschschlüssel. Supabase speichert nur dessen Hash. Der lokale Schlüssel ermöglicht die Löschung des zugehörigen Scores.</p>
+            <p data-privacy-key="deletionP2">Eine Löschung per E-Mail ist technisch derzeit nicht eingerichtet. Wird der lokale Speicher gelöscht und geht der Schlüssel verloren, kann der Eintrag aktuell nicht mehr direkt über das Spiel gelöscht werden.</p>
           </div>
         </details>
 
         <details class="privacy-topic" data-topic="local-storage">
           <summary>
-            <span class="privacy-topic-title">Lokale Speicherung</span>
-            <span class="privacy-topic-preview">Fortschritt und Einstellungen bleiben im Speicher deines Browsers.</span>
+            <span class="privacy-topic-title" data-privacy-key="localTitle">Lokale Speicherung auf deinem Gerät</span>
+            <span class="privacy-topic-preview" data-privacy-key="localPreview">Fortschritt und Einstellungen bleiben im Speicher deines Browsers.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Fortschritt, Münzen, Einstellungen, lokale Rekorde, Hintergrundbilder und Löschschlüssel werden im lokalen Speicher des Browsers abgelegt. Ein selbst ausgewähltes Hintergrundbild wird nicht an den Spielserver übertragen.</p>
+            <p data-privacy-key="localP1">Fortschritt, Münzen, Einstellungen, lokale Rekorde, Hintergrundbilder und Löschschlüssel werden im Browser gespeichert, bis du sie löschst. Ein ausgewähltes Hintergrundbild wird nicht an den Spielserver übertragen.</p>
+            <p data-privacy-key="localP2">Der lokale Speicher wird nur für Spielfunktionen und gewählte Einstellungen verwendet. Es findet derzeit kein Werbe- oder Analysetracking statt. Grundlage ist § 25 Abs. 2 Nr. 2 TDDDG, soweit die Speicherung für ausdrücklich gewünschte Funktionen erforderlich ist.</p>
           </div>
         </details>
 
-        <details class="privacy-topic" data-topic="retention-rights">
+        <details class="privacy-topic" data-topic="providers">
           <summary>
-            <span class="privacy-topic-title">Speicherdauer und deine Rechte</span>
-            <span class="privacy-topic-preview">Hier steht, wie lange Online-Scores bleiben und welche Datenschutzrechte du hast.</span>
+            <span class="privacy-topic-title" data-privacy-key="providersTitle">Empfänger und Verarbeitung außerhalb der EU</span>
+            <span class="privacy-topic-preview" data-privacy-key="providersPreview">Für Hosting, Multiplayer und Rangliste werden externe Anbieter eingesetzt.</span>
             <span class="privacy-topic-toggle" aria-hidden="true">
-              <span class="privacy-topic-more">Mehr lesen</span>
-              <span class="privacy-topic-less">Weniger anzeigen</span>
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
             </span>
           </summary>
           <div class="privacy-topic-content">
-            <p>Ranglisteneinträge bleiben gespeichert, bis sie mit dem zugehörigen Löschschlüssel oder über den angegebenen Kontakt entfernt werden.</p>
-            <p>Du kannst über die angegebene Projekt-E-Mail Auskunft, Berichtigung oder Löschung deiner Daten anfragen. Außerdem kannst du dich bei einer Datenschutzaufsichtsbehörde beschweren.</p>
+            <p data-privacy-key="providersP1">Je nach Funktion können GitHub, Inc. für GitHub Pages, Netlify, Inc. für Testversionen, Render Services, Inc. für den Mehrspieler-Server und Supabase, Inc. für die Rangliste Empfänger personenbezogener Daten sein. Diese Anbieter sitzen in den USA oder können dort Daten verarbeiten.</p>
+            <p data-privacy-html="providersP2"><a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement">GitHub</a> und <a href="https://render.com/privacy">Render</a> geben für Übermittlungen in die USA das EU-US Data Privacy Framework und ergänzend EU-Standardvertragsklauseln an. <a href="https://www.netlify.com/privacy/">Netlify</a> und <a href="https://supabase.com/privacy">Supabase</a> geben EU-Standardvertragsklauseln als Schutzmechanismus an. Einzelheiten findest du in den verlinkten Datenschutzhinweisen.</p>
+          </div>
+        </details>
+
+        <details class="privacy-topic" data-topic="rights">
+          <summary>
+            <span class="privacy-topic-title" data-privacy-key="rightsTitle">Speicherdauer und deine Rechte</span>
+            <span class="privacy-topic-preview" data-privacy-key="rightsPreview">Hier steht, wie lange Daten bleiben und welche Datenschutzrechte du hast.</span>
+            <span class="privacy-topic-toggle" aria-hidden="true">
+              <span class="privacy-topic-more" data-privacy-key="more">Mehr lesen</span>
+              <span class="privacy-topic-less" data-privacy-key="less">Weniger anzeigen</span>
+            </span>
+          </summary>
+          <div class="privacy-topic-content">
+            <p data-privacy-key="rightsP1">Ranglisteneinträge bleiben gespeichert, bis sie mit dem zugehörigen Löschschlüssel entfernt werden. Der Löschschlüssel läuft nicht ab. Der Rate-Limit-Prüfwert wird nach einem Tag gelöscht. Lokale Daten bleiben bis zu deiner Löschung auf dem Gerät.</p>
+            <p data-privacy-key="rightsP2">Du hast im Rahmen der gesetzlichen Voraussetzungen Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch. Anfragen kannst du an die Projekt-E-Mail senden. Ranglisteneinträge können nur bearbeitet werden, soweit sie zuverlässig zugeordnet werden können.</p>
+            <p data-privacy-key="rightsP3">Es findet keine ausschließlich automatisierte Entscheidung mit rechtlicher oder ähnlich erheblicher Wirkung und kein Profiling statt.</p>
+            <p data-privacy-html="rightsP4">Du kannst dich bei einer Datenschutzaufsichtsbehörde beschweren. Für Nordrhein-Westfalen ist dies die <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen</a>.</p>
           </div>
         </details>
       </div>
 
-      <a class="privacy-back" href="index.html">Zurück zum Spiel</a>
+      <p class="privacy-updated" data-privacy-key="updated">Stand: 10. Juli 2026</p>
+      <a class="privacy-back" href="index.html" data-privacy-key="back">Zurück zum Spiel</a>
     </main>
+    <script type="module" src="scripts/privacy-language.js?v=privacy3"></script>
   </body>
 </html>
