@@ -2467,3 +2467,101 @@ body.playing .site-footer {
     font-size: 0.5rem;
   }
 }
+
+
+/* Simulated rewarded ad used only by the protected test build. */
+.test-ad-settings {
+  border-color: rgba(183, 255, 74, 0.42);
+  background: rgba(183, 255, 74, 0.045);
+}
+
+.reward-ad-button {
+  border: 1px solid rgba(183, 255, 74, 0.72);
+  background: linear-gradient(135deg, rgba(183, 255, 74, 0.2), rgba(56, 216, 255, 0.14));
+  color: var(--lime);
+}
+
+.reward-ad-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.test-ad-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 5, 10, 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.test-ad-card {
+  width: min(520px, 100%);
+  padding: clamp(22px, 5vw, 40px);
+  border: 1px solid rgba(183, 255, 74, 0.55);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(12, 20, 30, 0.98), rgba(17, 12, 30, 0.98));
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.62), 0 0 44px rgba(183, 255, 74, 0.1);
+  text-align: center;
+}
+
+.test-ad-card h2 {
+  margin: 6px 0 12px;
+}
+
+.test-ad-card p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.test-ad-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  margin: 22px 0;
+  overflow: hidden;
+  border: 1px solid rgba(56, 216, 255, 0.35);
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(56, 216, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 216, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(183, 255, 74, 0.2), transparent 58%);
+  background-size: 24px 24px, 24px 24px, auto;
+}
+
+.test-ad-visual::after {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 2px solid rgba(183, 255, 74, 0.34);
+  border-radius: 50%;
+  animation: test-ad-pulse 1.8s ease-in-out infinite;
+}
+
+.test-ad-countdown {
+  position: relative;
+  z-index: 1;
+  color: var(--lime);
+  font-size: clamp(1.05rem, 4vw, 1.35rem);
+  font-weight: 950;
+}
+
+.test-ad-card .secondary-btn {
+  min-height: 42px;
+  padding: 9px 18px;
+}
+
+@keyframes test-ad-pulse {
+  0%, 100% { transform: scale(0.72); opacity: 0.28; }
+  50% { transform: scale(1); opacity: 0.82; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .test-ad-visual::after {
+    animation: none;
+  }
+}
