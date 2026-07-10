@@ -2497,6 +2497,10 @@ body.playing .site-footer {
   backdrop-filter: blur(12px);
 }
 
+.test-ad-overlay.hidden {
+  display: none;
+}
+
 .test-ad-card {
   width: min(520px, 100%);
   padding: clamp(22px, 5vw, 40px);
