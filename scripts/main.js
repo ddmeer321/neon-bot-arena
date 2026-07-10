@@ -23,6 +23,8 @@ export function bootGame() {
   setupTestLoggerUI();
   const dom = getDom();
   const state = createState();
+  // Test builds must never submit scores to the production leaderboard.
+  state.testMode = true;
   setupTestDevtools(state);
   const playtestParams = new URLSearchParams(window.location.search);
   const isLocalPlaytest = ["localhost", "127.0.0.1"].includes(window.location.hostname) && playtestParams.has("playtest");
@@ -142,4 +144,3 @@ export function bootGame() {
 
   loop();
 }
-
