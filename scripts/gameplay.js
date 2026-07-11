@@ -143,7 +143,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       endbossMode,
       endbossPhase: endbossMode ? 1 : 0,
       endbossTransition: 0,
-      prepTimer: endbossMode || options.skipPrep ? 0 : 5,
+      prepTimer: endbossMode || options.skipPrep || state.testSkipWaits ? 0 : 5,
       waveDelay: 0,
       nextWavePulse: 0,
       time: 0,
@@ -286,7 +286,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
 
     if (state.prepTimer > 0) {
-      state.prepTimer = Math.max(0, state.prepTimer - dt);
+      state.prepTimer = state.testSkipWaits ? 0 : Math.max(0, state.prepTimer - dt);
       if (state.prepTimer <= 0) {
         spawnWave();
         pulse(dom.canvas.width / 2, dom.canvas.height / 2, "#38d8ff", 36);
@@ -296,7 +296,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
 
     if (state.waveDelay > 0) {
-      state.waveDelay = Math.max(0, state.waveDelay - dt);
+      state.waveDelay = state.testSkipWaits ? 0 : Math.max(0, state.waveDelay - dt);
       if (state.waveDelay <= 0) {
         state.wave += 1;
         state.score += 100;
@@ -376,7 +376,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateEndbossTransition(dt) {
     if (state.over || state.endbossTransition <= 0) return;
-    state.endbossTransition = Math.max(0, state.endbossTransition - dt);
+    state.endbossTransition = state.testSkipWaits ? 0 : Math.max(0, state.endbossTransition - dt);
     if (state.endbossTransition <= 0) spawnEndbossPhase(state.endbossPhase);
   }
 

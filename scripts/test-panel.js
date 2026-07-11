@@ -22,6 +22,7 @@ export function setupTestPanel({
 }) {
   renderStoredTestId(dom);
   updateTestPanelAccess(dom, state);
+  renderSkipWaitButtons(dom, state);
   window.setInterval(() => updateTestPanelAccess(dom, state), 500);
   window.addEventListener("languagechange", () => renderStoredTestId(dom));
 
@@ -98,6 +99,14 @@ export function setupTestPanel({
     activateTestMode(state, "start_endboss");
     startGame({ endboss: true, skipPrep: true, playtest: true });
     updateTestPanelAccess(dom, state);
+  });
+
+  bindAll([dom.testSkipWaitsBtn, dom.testGameSkipWaitsBtn], () => {
+    if (!hasTestPanelAccess()) return;
+    state.testSkipWaits = !state.testSkipWaits;
+    activateTestMode(state, state.testSkipWaits ? "skip_waits_on" : "skip_waits_off");
+    renderSkipWaitButtons(dom, state);
+    updateDebugStatus(dom, state, `Timer-Skip ${state.testSkipWaits ? "AN" : "AUS"}`);
   });
 
   dom.testGameBossPhaseBtn?.addEventListener("click", () => {
@@ -200,6 +209,18 @@ function bindAll(elements, handler) {
   elements.forEach((element) => element?.addEventListener("click", handler));
 }
 
+function renderSkipWaitButtons(dom, state) {
+  const enabled = Boolean(state.testSkipWaits);
+  for (const button of [dom.testSkipWaitsBtn, dom.testGameSkipWaitsBtn]) {
+    if (!button) continue;
+    button.textContent = `Timer-Skip: ${enabled ? "AN" : "AUS"}`;
+    button.setAttribute("aria-pressed", String(enabled));
+    button.title = enabled
+      ? "Vorbereitung und Boss-Wartezeiten werden übersprungen"
+      : "Vorbereitung und Boss-Wartezeiten laufen normal";
+  }
+}
+
 function updateEconomyViews(state, dom) {
   updateCoinDisplay(state, dom);
   renderHeroMenu(state, dom);
@@ -234,7 +255,8 @@ function updateDebugStatus(dom, state, message = "") {
     state.endbossMode ? `Boss ${state.endbossPhase}/3` : "Normal",
     `Robots ${state.robots?.length || 0}`,
     `Bullets ${(state.bullets?.length || 0) + (state.enemyBullets?.length || 0)}`,
-    state.debugGodMode ? "God AN" : "God AUS"
+    state.debugGodMode ? "God AN" : "God AUS",
+    state.testSkipWaits ? "Skip AN" : "Skip AUS"
   ].join(" · ");
   if (dom.testDebugStatus) dom.testDebugStatus.textContent = summary;
   if (dom.testGameDebugStatus) dom.testGameDebugStatus.textContent = summary;

@@ -1,13 +1,13 @@
-import { getDom } from "./dom.js?v=testadmin1";
-import { createState } from "./state.js?v=testadmin1";
+import { getDom } from "./dom.js?v=waitskip1";
+import { createState } from "./state.js?v=waitskip1";
 import { escapeHtml } from "./utils.js";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=testadmin1";
+import { createGameplay } from "./gameplay.js?v=waitskip1";
 import { draw } from "./render.js?v=testbats4";
 import { createFPSCounter } from "./fps.js?v=testlogs1";
 import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
-import { setupTestPanel } from "./test-panel.js?v=testadmin1";
+import { setupTestPanel } from "./test-panel.js?v=waitskip1";
 import { setupMultiplayerTest } from "./multiplayer-test.js?v=testlogs1";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
