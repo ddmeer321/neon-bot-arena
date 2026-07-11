@@ -1461,6 +1461,9 @@ canvas {
 }
 
 .site-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
   width: min(1120px, calc(100% - 48px));
   margin: -8px auto 24px;
   color: var(--muted);
@@ -1505,6 +1508,50 @@ body.playing .site-footer {
   margin: 0 0 10px;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.privacy-responsible-note {
+  margin: 18px 0 !important;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.privacy-responsible-note a {
+  color: var(--cyan);
+}
+
+.legal-card {
+  max-width: 680px;
+}
+
+.legal-section {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid rgba(56, 216, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(5, 11, 18, 0.58);
+}
+
+.legal-section h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.legal-section p,
+.legal-section address {
+  margin: 0;
+}
+
+.legal-section address {
+  color: var(--text);
+  font-style: normal;
+  line-height: 1.7;
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .privacy-intro {
