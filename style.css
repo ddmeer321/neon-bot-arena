@@ -2255,6 +2255,16 @@ body.playing .site-footer {
   color: var(--text);
 }
 
+.privacy-responsible-note {
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.privacy-responsible-note a {
+  color: var(--cyan);
+}
+
 .privacy-back {
   display: inline-flex;
   margin-top: 22px;
@@ -2532,6 +2542,29 @@ body.playing .site-footer {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.menu-imprint-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  min-height: 42px;
+  margin-top: 4px;
+  padding: 9px 18px;
+  border: 1px solid rgba(56, 216, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(56, 216, 255, 0.06);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.menu-imprint-button:hover,
+.menu-imprint-button:focus-visible {
+  border-color: var(--cyan);
+  color: var(--cyan);
 }
 
 .test-ad-overlay.hidden {
