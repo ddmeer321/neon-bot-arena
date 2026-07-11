@@ -2106,6 +2106,9 @@ canvas {
   color: var(--muted);
   font-size: 0.82rem;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .site-footer a {
@@ -2495,6 +2498,40 @@ body.playing .site-footer {
   padding: 20px;
   background: rgba(2, 5, 10, 0.92);
   backdrop-filter: blur(12px);
+}
+
+.legal-card {
+  max-width: 680px;
+}
+
+.legal-section {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid rgba(56, 216, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(5, 11, 18, 0.58);
+}
+
+.legal-section h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.legal-section p,
+.legal-section address {
+  margin: 0;
+}
+
+.legal-section address {
+  color: var(--text);
+  font-style: normal;
+  line-height: 1.7;
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .test-ad-overlay.hidden {

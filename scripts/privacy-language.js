@@ -46,7 +46,7 @@ const translations = {
     rightsP2: "Subject to the legal requirements, you have rights of access, correction, deletion, restriction, portability, and objection. Requests can be sent to the project email. Leaderboard entries can only be handled if they can be reliably identified.",
     rightsP3: "There is no solely automated decision-making with legal or similarly significant effects and no profiling.",
     rightsP4: `You may complain to a data protection authority. In North Rhine-Westphalia, this is the <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">State Commissioner for Data Protection and Freedom of Information North Rhine-Westphalia</a>.`,
-    updated: "Draft version: 10 July 2026",
+    updated: "Draft version: 11 July 2026",
     back: "Back to the game"
   },
   fr: {
@@ -93,7 +93,7 @@ const translations = {
     rightsP2: "Sous réserve des conditions légales, tu disposes de droits d’accès, de rectification, d’effacement, de limitation, de portabilité et d’opposition. Les demandes peuvent être envoyées à l’e-mail du projet. Une entrée ne peut être traitée que si elle peut être identifiée de manière fiable.",
     rightsP3: "Il n’existe aucune décision exclusivement automatisée produisant des effets juridiques ou similaires et aucun profilage.",
     rightsP4: `Tu peux déposer une plainte auprès d’une autorité de protection des données. En Rhénanie-du-Nord-Westphalie, il s’agit de la <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">Commissaire régionale à la protection des données et à la liberté de l’information</a>.`,
-    updated: "Version provisoire : 10 juillet 2026",
+    updated: "Version provisoire : 11 juillet 2026",
     back: "Retour au jeu"
   },
   es: {
@@ -140,7 +140,7 @@ const translations = {
     rightsP2: "Cuando se cumplan los requisitos legales, tienes derechos de acceso, rectificación, eliminación, limitación, portabilidad y oposición. Puedes escribir al correo del proyecto. Las entradas solo pueden tramitarse si se identifican de forma fiable.",
     rightsP3: "No existen decisiones exclusivamente automatizadas con efectos jurídicos o similares ni elaboración de perfiles.",
     rightsP4: `Puedes reclamar ante una autoridad de protección de datos. En Renania del Norte-Westfalia es la <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">Comisionada Estatal de Protección de Datos y Libertad de Información</a>.`,
-    updated: "Versión preliminar: 10 de julio de 2026",
+    updated: "Versión preliminar: 11 de julio de 2026",
     back: "Volver al juego"
   },
   it: {
@@ -187,7 +187,7 @@ const translations = {
     rightsP2: "Se ricorrono i requisiti legali, hai diritto ad accesso, rettifica, cancellazione, limitazione, portabilità e opposizione. Puoi scrivere all’e-mail del progetto. Le voci possono essere gestite solo se identificabili in modo affidabile.",
     rightsP3: "Non esistono decisioni esclusivamente automatizzate con effetti giuridici o analoghi né profilazione.",
     rightsP4: `Puoi presentare reclamo a un’autorità di controllo. Per la Renania Settentrionale-Vestfalia è la <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">Commissaria statale per la protezione dei dati e la libertà d’informazione</a>.`,
-    updated: "Versione preliminare: 10 luglio 2026",
+    updated: "Versione preliminare: 11 luglio 2026",
     back: "Torna al gioco"
   },
   pl: {
@@ -234,7 +234,7 @@ const translations = {
     rightsP2: "Po spełnieniu warunków prawnych masz prawo dostępu, sprostowania, usunięcia, ograniczenia, przenoszenia i sprzeciwu. Wnioski można wysyłać na e-mail projektu. Wpis może być obsłużony tylko wtedy, gdy da się go wiarygodnie zidentyfikować.",
     rightsP3: "Nie stosuje się wyłącznie zautomatyzowanych decyzji wywołujących skutki prawne lub podobnie istotne ani profilowania.",
     rightsP4: `Możesz złożyć skargę do organu ochrony danych. W Nadrenii Północnej-Westfalii jest nim <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">Krajowy Pełnomocnik ds. Ochrony Danych i Wolności Informacji</a>.`,
-    updated: "Wersja robocza: 10 lipca 2026",
+    updated: "Wersja robocza: 11 lipca 2026",
     back: "Powrót do gry"
   },
   nl: {
@@ -281,7 +281,7 @@ const translations = {
     rightsP2: "Als aan de wettelijke voorwaarden is voldaan, heb je recht op inzage, correctie, verwijdering, beperking, overdraagbaarheid en bezwaar. Verzoeken kunnen naar het projectadres worden gestuurd. Een inzending kan alleen worden behandeld als die betrouwbaar kan worden geïdentificeerd.",
     rightsP3: "Er is geen uitsluitend geautomatiseerde besluitvorming met juridische of vergelijkbare belangrijke gevolgen en geen profilering.",
     rightsP4: `Je kunt een klacht indienen bij een privacytoezichthouder. In Noordrijn-Westfalen is dit de <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">deelstaatfunctionaris voor gegevensbescherming en vrijheid van informatie</a>.`,
-    updated: "Conceptversie: 10 juli 2026",
+    updated: "Conceptversie: 11 juli 2026",
     back: "Terug naar het spel"
   },
   "zh-CN": {
@@ -328,7 +328,7 @@ const translations = {
     rightsP2: "在符合法律条件时，你享有访问、更正、删除、限制处理、数据可携带和反对处理的权利。你可以向项目邮箱提出请求。只有能够可靠确认的排行榜记录才能被处理。",
     rightsP3: "本项目不进行具有法律或类似重大影响的完全自动化决策，也不进行用户画像。",
     rightsP4: `你可以向数据保护监管机构投诉。在北莱茵-威斯特法伦州，主管机构是<a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">州数据保护与信息自由专员</a>。`,
-    updated: "草案版本：2026年7月10日",
+    updated: "草案版本：2026年7月11日",
     back: "返回游戏"
   }
 };
