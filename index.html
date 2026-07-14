@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena</title>
-    <link rel="stylesheet" href="style.css?v=settings6" />
+    <link rel="stylesheet" href="style.css?v=gamemodes1" />
   </head>
   <body>
     <button id="settingsBtn" class="settings-button" type="button" aria-controls="settingsOverlay" data-i18n-aria-label="settings.open">
@@ -232,7 +232,20 @@
           <p>Nur lokal mit <code>?playtest=1</code>.</p>
         </section>
 
-        <button id="startBtn" class="start-btn" data-i18n="menu.start">Spiel starten</button>
+        <div class="start-actions">
+          <button id="startBtn" class="start-btn" data-i18n="menu.start">Spiel starten</button>
+          <button
+            id="gameModeBtn"
+            class="game-mode-button"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="gameModeOverlay"
+            aria-expanded="false"
+          >
+            <span data-i18n="mode.change">Modus wechseln</span>
+            <strong id="gameModeButtonLabel">Normal</strong>
+          </button>
+        </div>
       </section>
 
       <section id="gamePanel" class="game-panel hidden">
@@ -303,11 +316,24 @@
       </section>
     </main>
 
+    <div id="gameModeOverlay" class="game-mode-overlay hidden">
+      <section class="game-mode-dialog" role="dialog" aria-modal="true" aria-labelledby="gameModeTitle">
+        <header class="game-mode-heading">
+          <div>
+            <p class="eyebrow" data-i18n="mode.change">Modus wechseln</p>
+            <h2 id="gameModeTitle" data-i18n="mode.title">Spielmodus wählen</h2>
+          </div>
+          <button id="gameModeCloseBtn" class="game-mode-close" type="button" data-i18n-aria-label="mode.close">×</button>
+        </header>
+        <div id="gameModeList" class="game-mode-list"></div>
+      </section>
+    </div>
+
     <footer class="site-footer">
       <a href="datenschutz.html" data-i18n="privacy.footer">Datenschutz</a>
       <a href="impressum.html">Impressum</a>
     </footer>
 
-    <script type="module" src="game.js?v=bats2"></script>
+    <script type="module" src="game.js?v=gamemodes1"></script>
   </body>
 </html>

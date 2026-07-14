@@ -12,6 +12,7 @@ import { setupMultiplayerTest } from "./multiplayer-test.js?v=settings6";
 import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
 import { setupSettings, t } from "./settings.js?v=settings6";
 import { setupScoreManagement } from "./score-management.js?v=deletion1";
+import { setupGameModePicker } from "./game-modes.js?v=gamemodes1";
 
 
 
@@ -20,6 +21,7 @@ export function bootGame() {
   setupScoreManagement();
   const dom = getDom();
   const state = createState();
+  setupGameModePicker(state);
   const playtestParams = new URLSearchParams(window.location.search);
   const isLocalPlaytest = ["localhost", "127.0.0.1"].includes(window.location.hostname) && playtestParams.has("playtest");
   if (isLocalPlaytest && playtestParams.get("hero") === "warden") state.selectedHero = "warden";

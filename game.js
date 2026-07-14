@@ -1,3 +1,3 @@
-import { bootGame } from "./scripts/main.js?v=bats2";
+import { bootGame } from "./scripts/main.js?v=gamemodes1";
 
 bootGame();
