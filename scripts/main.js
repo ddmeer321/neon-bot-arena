@@ -15,6 +15,7 @@ import { setupScoreManagement } from "./score-management.js?v=deletion1";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
 import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad3";
+import { setupGameModePicker } from "./game-modes.js?v=gamemodes1";
 
 
 
@@ -24,6 +25,7 @@ export function bootGame() {
   setupTestLoggerUI();
   const dom = getDom();
   const state = createState();
+  setupGameModePicker(state);
   // Test builds must never submit scores to the production leaderboard.
   state.testMode = true;
   setupTestDevtools(state);

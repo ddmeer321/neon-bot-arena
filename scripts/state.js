@@ -7,6 +7,7 @@ export function createState() {
   return {
     device: "pc",
     difficulty: "normal",
+    gameMode: "normal",
     selectedHero: "volt",
     running: false,
     paused: false,
@@ -60,4 +61,3 @@ export function createState() {
     pickups: []
   };
 }
-
