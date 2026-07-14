@@ -28,6 +28,9 @@
     scoreText: document.querySelector("#score"),
     highScoreText: document.querySelector("#highScore"),
     difficultyText: document.querySelector("#difficultyHud"),
+    chaosEventHud: document.querySelector("#chaosEventHud"),
+    chaosEventText: document.querySelector("#chaosEventText"),
+    chaosEventTimer: document.querySelector("#chaosEventTimer"),
     menuHighScoreText: document.querySelector("#menuHighScore"),
     coinCount: document.querySelector("#coinCount"),
     testIdBtn: document.querySelector("#testIdBtn"),
@@ -100,6 +103,8 @@
     specialBar: document.querySelector("#specialBar"),
     leaderboardMode: document.querySelector("#leaderboardMode"),
     leaderboardFilter: document.querySelector("#leaderboardFilter"),
-    leaderboardList: document.querySelector("#leaderboardList")
+    leaderboardList: document.querySelector("#leaderboardList"),
+    chaosLeaderboardList: document.querySelector("#chaosLeaderboardList"),
+    oneHeartLeaderboardList: document.querySelector("#oneHeartLeaderboardList")
   };
 }

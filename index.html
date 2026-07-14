@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neon Bot Arena – Testlabor</title>
-    <link rel="stylesheet" href="style.css?v=gamemodes1" />
+    <link rel="stylesheet" href="style.css?v=gamemodes2" />
   </head>
   <body class="test-build test-locked">
     <div id="testLockOverlay" class="test-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="testLockTitle">
@@ -240,7 +240,20 @@
               </select>
             </label>
           </div>
-          <ol id="leaderboardList"></ol>
+          <div class="leaderboard-columns">
+            <section class="leaderboard-column">
+              <h3 data-i18n="menu.normal">Normal</h3>
+              <ol id="leaderboardList"></ol>
+            </section>
+            <section class="leaderboard-column chaos-column">
+              <h3 data-i18n="mode.chaos">Chaos</h3>
+              <ol id="chaosLeaderboardList"></ol>
+            </section>
+            <section class="leaderboard-column one-heart-column">
+              <h3 data-i18n="mode.oneHeart">One Heart</h3>
+              <ol id="oneHeartLeaderboardList"></ol>
+            </section>
+          </div>
         </div>
 
         <div class="menu-actions">
@@ -328,6 +341,11 @@
           <div>
             <span class="label" data-i18n="hud.difficulty">Schwierigkeit</span>
             <strong id="difficultyHud">Normal</strong>
+          </div>
+          <div id="chaosEventHud" class="chaos-event-hud hidden">
+            <span class="label" data-i18n="chaos.eventLabel">Chaos-Event</span>
+            <strong id="chaosEventText">–</strong>
+            <small id="chaosEventTimer">1:00</small>
           </div>
         </div>
         <div class="hud bars">
@@ -462,6 +480,6 @@
       <a href="impressum.html">Impressum</a>
     </footer>
 
-    <script type="module" src="game.js?v=gamemodes1"></script>
+    <script type="module" src="game.js?v=gamemodes2"></script>
   </body>
 </html>

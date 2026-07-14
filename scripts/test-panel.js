@@ -1,8 +1,8 @@
 import { heroes, maxUpgradeLevel, testIdKey, testPanelAccess, testSiteBuild } from "./config.js?v=testsite1";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=settings6";
-import { t } from "./settings.js?v=settings6";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=gamemodes2";
+import { t } from "./settings.js?v=settings7";
 import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
 export function setupTestPanel({

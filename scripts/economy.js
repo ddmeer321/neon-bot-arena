@@ -1,7 +1,7 @@
 import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=musicvolume1";
 import { escapeHtml } from "./utils.js";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
-import { t } from "./settings.js?v=settings6";
+import { t } from "./settings.js?v=settings7";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);
@@ -252,4 +252,3 @@ function companionAbilitySummary(companion) {
   const percent = Math.round(Math.abs(multiplier - 1) * 100);
   return `${Number(companion.ability?.duration) || 5} s · ${percent}%`;
 }
-

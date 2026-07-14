@@ -1670,11 +1670,37 @@ h1 {
 }
 
 .leaderboard {
-  width: min(430px, 100%);
+  width: min(1120px, 100%);
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(13, 18, 28, 0.72);
   overflow: hidden;
+}
+
+.leaderboard-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.leaderboard-column + .leaderboard-column {
+  border-left: 1px solid var(--line);
+}
+
+.leaderboard-column h3 {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--cyan);
+  font-size: 0.84rem;
+  text-transform: uppercase;
+}
+
+.chaos-column h3 {
+  color: var(--rose);
+}
+
+.one-heart-column h3 {
+  color: var(--lime);
 }
 
 .leaderboard-title {
@@ -1742,6 +1768,25 @@ h1 {
 
 .leaderboard b {
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chaos-event-hud {
+  border-color: rgba(255, 79, 146, 0.62) !important;
+  background: rgba(38, 8, 25, 0.86) !important;
+}
+
+.chaos-event-hud strong {
+  color: var(--rose);
+}
+
+.chaos-event-hud small {
+  display: block;
+  color: var(--lime);
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 .leaderboard em {
@@ -2459,6 +2504,22 @@ body.playing .site-footer {
   .start-btn,
   .game-mode-button {
     width: 100%;
+  }
+
+  .leaderboard-columns {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(250px, 84vw);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .leaderboard-column {
+    scroll-snap-align: start;
+  }
+
+  .leaderboard-column + .leaderboard-column {
+    border-left: 1px solid var(--line);
   }
 
   .game-mode-button {

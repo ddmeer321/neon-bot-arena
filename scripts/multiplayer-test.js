@@ -1,6 +1,6 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
-import { t } from "./settings.js?v=settings6";
+import { t } from "./settings.js?v=settings7";
 import { appendTestLog } from "./test-logger.js?v=testlogs1";
 
 let socket = null;
@@ -64,7 +64,7 @@ export function setupMultiplayerTest(dom, state, startGame) {
       setStatus(dom, t("multiplayer.needsTwo"), "error");
       return;
     }
-    sendWhenConnected(dom, { type: "start-room" });
+    sendWhenConnected(dom, { type: "start-room", gameMode: state.gameMode });
   });
 
   dom.endbossBtn?.addEventListener("click", () => {
@@ -373,12 +373,15 @@ function setupStartHandler(dom, state, startGame) {
     activeRoundId = Math.max(0, Number(payload.roundId) || 0);
     state.multiplayer.roundId = activeRoundId;
     const endboss = payload.mode === "endboss";
+    state.gameMode = ["normal", "chaos", "one-heart"].includes(payload.gameMode) ? payload.gameMode : "normal";
+    window.dispatchEvent(new CustomEvent("gamemodechange", { detail: { mode: state.gameMode } }));
     startGame({
       startWave: Number(payload.wave) || 1,
       coop: true,
       playerCount: state.multiplayer.playerCount,
       endboss,
-      skipPrep: endboss
+      skipPrep: endboss,
+      chaosSeed: payload.seed
     });
   };
 

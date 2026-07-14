@@ -102,7 +102,7 @@ export async function submitOnlineScore(state) {
 }
 
 export function isOnlineScoreEligible(state) {
-  return state?.testMode !== true;
+  return state?.testMode !== true && (!state?.gameMode || state.gameMode === "normal");
 }
 
 export function getOwnedOnlineScores() {

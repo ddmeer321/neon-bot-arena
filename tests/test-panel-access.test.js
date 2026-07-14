@@ -21,3 +21,9 @@ test("using the test panel blocks online scores for the session", () => {
   assert.equal(state.testMode, true);
   assert.equal(isOnlineScoreEligible(state), false);
 });
+
+test("special game modes stay out of the normal online leaderboard", () => {
+  assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "normal" }), true);
+  assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "chaos" }), false);
+  assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "one-heart" }), false);
+});

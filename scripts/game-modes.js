@@ -1,4 +1,4 @@
-import { t } from "./settings.js?v=settings6";
+import { t } from "./settings.js?v=settings7";
 
 export const DEFAULT_GAME_MODE = "normal";
 
@@ -8,6 +8,16 @@ export const GAME_MODES = Object.freeze([
     id: "normal",
     labelKey: "menu.normal",
     descriptionKey: "mode.normalDescription"
+  }),
+  Object.freeze({
+    id: "chaos",
+    labelKey: "mode.chaos",
+    descriptionKey: "mode.chaosDescription"
+  }),
+  Object.freeze({
+    id: "one-heart",
+    labelKey: "mode.oneHeart",
+    descriptionKey: "mode.oneHeartDescription"
   })
 ]);
 
@@ -15,6 +25,12 @@ export function getGameMode(modeId) {
   return GAME_MODES.find((mode) => mode.id === modeId)
     || GAME_MODES.find((mode) => mode.id === DEFAULT_GAME_MODE)
     || GAME_MODES[0];
+}
+
+export function calculatePlayerDamage({ mode, currentHp, amount, shielded = false, enemyDamageMultiplier = 1 }) {
+  if (mode === "one-heart") return Math.max(1, Number(currentHp) || 1);
+  const incoming = Math.max(0, Number(amount) || 0) * Math.max(0, Number(enemyDamageMultiplier) || 0);
+  return shielded ? incoming * 0.28 : incoming;
 }
 
 export function setupGameModePicker(state) {
@@ -40,11 +56,10 @@ export function setupGameModePicker(state) {
   const selectMode = (modeId) => {
     const nextMode = getGameMode(modeId);
     state.gameMode = nextMode.id;
-    renderModes();
-    closePicker();
     window.dispatchEvent(new CustomEvent("gamemodechange", {
       detail: { mode: nextMode.id }
     }));
+    closePicker();
   };
 
   const renderModes = () => {
@@ -88,6 +103,7 @@ export function setupGameModePicker(state) {
     if (event.key === "Escape" && !overlay.classList.contains("hidden")) closePicker();
   });
   window.addEventListener("languagechange", renderModes);
+  window.addEventListener("gamemodechange", renderModes);
 
   renderModes();
 }

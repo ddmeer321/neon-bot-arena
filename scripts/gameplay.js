@@ -1,11 +1,13 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=musicvolume1";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=settings6";
+import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=gamemodes2";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=gamemodes2";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=testids1";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=testlogs1";
-import { t, tf } from "./settings.js?v=settings6";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=gamemodes2";
+import { t, tf } from "./settings.js?v=settings7";
 import { appendTestLog } from "./test-logger.js?v=testlogs1";
+import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=gamemodes2";
+import { createSeededRandom, formatChaosTime, getChaosEvent, getChaosModifiers, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=gamemodes2";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -19,6 +21,7 @@ export function getMultiplayerScaling(value = 1) {
 }
 
 export function createGameplay({ dom, state, renderLeaderboard }) {
+  let chaosRandom = Math.random;
   const difficultySettings = {
     easy: {
       labelKey: "menu.easy",
@@ -146,6 +149,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       prepTimer: endbossMode || options.skipPrep || state.testSkipWaits ? 0 : 5,
       waveDelay: 0,
       nextWavePulse: 0,
+      chaosEventId: null,
+      chaosEventTimer: 0,
       time: 0,
       networkEntitySequence: 0,
       bullets: [],
@@ -180,8 +185,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       pickupFlash: null,
       hero
     };
+    chaosRandom = options.chaosSeed == null ? Math.random : createSeededRandom(options.chaosSeed);
+    const startingChaosEvent = startChaosRun(state, chaosRandom);
     appendTestLog("game_start", {
-      mode: endbossMode ? "endboss" : "normal",
+      mode: endbossMode ? "endboss" : state.gameMode,
+      chaosEvent: startingChaosEvent?.id || null,
       hero: state.selectedHero,
       difficulty: state.difficulty,
       wave: state.wave,
@@ -189,7 +197,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       coop: Boolean(options.coop)
     });
     dom.heroName.textContent = hero.name;
-    if (dom.difficultyText) dom.difficultyText.textContent = t(getDifficultySettings().labelKey);
+    if (dom.difficultyText) dom.difficultyText.textContent = getDifficultyHudText();
     applyDeviceMode();
     document.body.classList.add("playing");
     window.scrollTo(0, 0);
@@ -264,6 +272,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function update(dt) {
     state.time += dt;
+    updateChaosMode(dt);
     state.shake = Math.max(0, state.shake - dt * 14);
     state.nextWavePulse = Math.max(0, state.nextWavePulse - dt);
     updateMultiplayerInterpolation(state, dt);
@@ -486,7 +495,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       dy += state.touch.moveY;
     }
     const len = Math.hypot(dx, dy) || 1;
-    const speedMultiplier = player.speedBoostTimer > 0 ? 1.35 : 1;
+    const speedMultiplier = (player.speedBoostTimer > 0 ? 1.35 : 1) * getChaosModifiers(state).playerSpeed;
     player.x = clamp(player.x + (dx / len) * hero.speed * speedMultiplier * dt, 26, dom.canvas.width - 26);
     player.y = clamp(player.y + (dy / len) * hero.speed * speedMultiplier * dt, 72, dom.canvas.height - 40);
     player.fireTimer = Math.max(0, player.fireTimer - dt);
@@ -507,7 +516,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function shoot() {
     const player = state.player;
     const hero = player.hero;
-    player.fireTimer = hero.fireRate;
+    player.fireTimer = hero.fireRate * getChaosModifiers(state).fireRate;
     playShoot();
     const angle = getAimAngle();
     const damage = Math.round(hero.bulletDamage * (player.damageBoostTimer > 0 ? 1.5 : 1));
@@ -762,8 +771,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       }
 
       if (!close) {
-        robot.x += Math.cos(angle) * robot.speed * dt;
-        robot.y += Math.sin(angle) * robot.speed * dt;
+        const enemySpeed = getChaosModifiers(state).enemySpeed;
+        robot.x += Math.cos(angle) * robot.speed * enemySpeed * dt;
+        robot.y += Math.sin(angle) * robot.speed * enemySpeed * dt;
       } else if (target.local) {
         hurtPlayer(robot.damage * dt);
       }
@@ -848,7 +858,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (player.dead) return;
     if (state.debugGodMode) return;
     if (player.invincible > 0) return;
-    const reduced = player.shield > 0 ? amount * 0.28 : amount;
+    const reduced = calculatePlayerDamage({
+      mode: state.gameMode,
+      currentHp: player.hp,
+      amount,
+      shielded: player.shield > 0,
+      enemyDamageMultiplier: getChaosModifiers(state).enemyDamage
+    });
     player.hp -= reduced;
     appendTestLog("player_damage", {
       amount: reduced,
@@ -858,7 +874,10 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     });
     state.shake = Math.max(state.shake, 0.28);
     if (player.hp <= 0) {
-      if (isCoopMode() && getActivePlayerCount() > 1) {
+      if (state.gameMode === "one-heart") {
+        if (isCoopMode() && getActivePlayerCount() > 1) knockOutPlayer({ permanent: true });
+        else endGame();
+      } else if (isCoopMode() && getActivePlayerCount() > 1) {
         knockOutPlayer();
       } else {
         endGame();
@@ -1318,11 +1337,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     return side < (laser.width || 18) + (point.radius || 0);
   }
 
-  function knockOutPlayer() {
+  function knockOutPlayer({ permanent = false } = {}) {
     const player = state.player;
     player.hp = 0;
     player.dead = true;
-    player.respawnTimer = 20;
+    player.respawnTimer = permanent ? Number.MAX_SAFE_INTEGER : 20;
     player.shield = 0;
     player.invincible = 0;
     player.fireTimer = 0;
@@ -1368,7 +1387,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function damageRobot(robot, amount, color) {
-    robot.hp -= amount;
+    robot.hp -= amount * getChaosModifiers(state).playerDamage;
     robot.hit = 0.12;
     for (let i = 0; i < 8; i++) addParticle(robot.x, robot.y, color, 3);
   }
@@ -1485,7 +1504,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       score: state.score,
       bosses: state.bossesDefeated,
       difficulty: state.difficulty,
-      playerCount: getActivePlayerCount()
+      playerCount: getActivePlayerCount(),
+      gameMode: state.gameMode
     });
     if (broadcast && isCoopMode()) sendMultiplayerGameOver();
     state.touch.fire = false;
@@ -1506,7 +1526,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         renderLeaderboard();
       });
     renderLeaderboard();
-    showMessage(`<strong>${isRecord ? t("game.newHighScore") : t("game.over")}</strong>${tf("game.summary", { name: state.playerName, wave: state.wave, score: state.score })}<br>${t("game.defeatedBosses")}: ${state.bossesDefeated}<br>${t("game.bossBonus")}: +${state.bossCoinBonus} ${t("shop.coins")}<br>${t("game.difficulty")}: ${t(getDifficultySettings().labelKey)}<br>${t("game.reward")}: +${reward} ${t("shop.coins")}<br>${t("game.highScore")}: ${state.highScore}<div class="message-actions"><button id="againBtn">${t("game.again")}</button><button id="gameOverMenuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
+    showMessage(`<strong>${isRecord ? t("game.newHighScore") : t("game.over")}</strong>${tf("game.summary", { name: state.playerName, wave: state.wave, score: state.score })}<br>${t("game.defeatedBosses")}: ${state.bossesDefeated}<br>${t("game.bossBonus")}: +${state.bossCoinBonus} ${t("shop.coins")}<br>${t("mode.label")}: ${t(getGameMode(state.gameMode).labelKey)}<br>${t("game.difficulty")}: ${t(getDifficultySettings().labelKey)}<br>${t("game.reward")}: +${reward} ${t("shop.coins")}<br>${t("game.highScore")}: ${state.highScore}<div class="message-actions"><button id="againBtn">${t("game.again")}</button><button id="gameOverMenuBtn" class="secondary-btn">${t("game.mainMenu")}</button></div>`);
     bindOverlayButton("#againBtn", startGame);
     bindOverlayButton("#gameOverMenuBtn", returnToMenu);
   }
@@ -1545,12 +1565,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, endbossMode: false, endbossPhase: 0, endbossTransition: 0, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, endbossMode: false, endbossPhase: 0, endbossTransition: 0, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, chaosEventId: null, chaosEventTimer: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
     dom.gamePanel.classList.add("hidden");
     dom.touchControls?.classList.add("hidden");
+    dom.chaosEventHud?.classList.add("hidden");
     document.body.classList.remove("playing");
     dom.menu.classList.remove("hidden");
     dom.companionReward?.classList.toggle("hidden", !state.pendingCompanionReward);
@@ -1564,11 +1585,40 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     dom.scoreText.textContent = state.score;
     if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
     if (dom.difficultyText) {
-      const mode = state.endbossMode ? "Endboss" : t(getDifficultySettings().labelKey);
+      const mode = getDifficultyHudText();
       dom.difficultyText.textContent = getActivePlayerCount() > 1 ? `${mode} · ${getActivePlayerCount()} ${t("multiplayer.players")}` : mode;
     }
+    renderChaosHud();
     dom.healthBar.style.width = `${clamp((state.player.hp / state.player.maxHp) * 100, 0, 100)}%`;
     dom.specialBar.style.width = `${clamp(100 - (state.player.specialTimer / state.player.hero.specialCooldown) * 100, 0, 100)}%`;
+  }
+
+  function getDifficultyHudText() {
+    const difficulty = state.endbossMode ? "Endboss" : t(getDifficultySettings().labelKey);
+    if (state.gameMode === "normal") return difficulty;
+    return `${difficulty} · ${t(getGameMode(state.gameMode).labelKey)}`;
+  }
+
+  function updateChaosMode(dt) {
+    const { event, changed } = updateChaosRun(state, dt, chaosRandom);
+    if (state.gameMode !== "chaos") return;
+    const modifiers = getChaosModifiers(state);
+    if (modifiers.healingPerSecond > 0 && state.player && !state.player.dead) {
+      state.player.hp = Math.min(state.player.maxHp, state.player.hp + modifiers.healingPerSecond * dt);
+    }
+    if (changed && event) {
+      appendTestLog("chaos_event", { event: event.id, wave: state.wave, score: state.score });
+      if (state.player) pulse(state.player.x, state.player.y, "#ff4f92", 34);
+    }
+  }
+
+  function renderChaosHud() {
+    const active = state.gameMode === "chaos" && state.running;
+    dom.chaosEventHud?.classList.toggle("hidden", !active);
+    if (!active) return;
+    const event = getChaosEvent(state.chaosEventId);
+    if (dom.chaosEventText) dom.chaosEventText.textContent = event ? t(event.labelKey) : "–";
+    if (dom.chaosEventTimer) dom.chaosEventTimer.textContent = formatChaosTime(state.chaosEventTimer);
   }
 
   function addParticle(x, y, color, power) {
@@ -1764,4 +1814,3 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     applyBlindnessForPlaytest
   };
 }
-

@@ -1,21 +1,22 @@
-import { getDom } from "./dom.js?v=waitskip1";
-import { createState } from "./state.js?v=waitskip1";
+import { getDom } from "./dom.js?v=gamemodes2";
+import { createState } from "./state.js?v=gamemodes2";
 import { escapeHtml } from "./utils.js";
+import { filterLeaderboard } from "./storage.js?v=gamemodes2";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=waitskip1";
-import { draw } from "./render.js?v=testbats4";
+import { createGameplay } from "./gameplay.js?v=gamemodes2";
+import { draw } from "./render.js?v=gamemodes2";
 import { createFPSCounter } from "./fps.js?v=testlogs1";
-import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=settings6";
-import { setupTestPanel } from "./test-panel.js?v=waitskip1";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=testlogs1";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=settings6";
-import { setupSettings, t } from "./settings.js?v=settings6";
-import { setupScoreManagement } from "./score-management.js?v=deletion1";
+import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=gamemodes2";
+import { setupTestPanel } from "./test-panel.js?v=gamemodes2";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=gamemodes2";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=gamemodes2";
+import { setupSettings, t } from "./settings.js?v=settings7";
+import { setupScoreManagement } from "./score-management.js?v=gamemodes2";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
 import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad3";
-import { setupGameModePicker } from "./game-modes.js?v=gamemodes1";
+import { setupGameModePicker } from "./game-modes.js?v=gamemodes2";
 
 
 
@@ -49,12 +50,19 @@ export function bootGame() {
   const renderLeaderboard = () => {
     if (!dom.leaderboardList) return;
     const hasOnlineScores = Array.isArray(state.onlineLeaderboard);
-    const topScores = (hasOnlineScores ? state.onlineLeaderboard : state.leaderboard).slice(0, 10);
+    const normalScores = hasOnlineScores
+      ? state.onlineLeaderboard.slice(0, 10)
+      : filterLeaderboard(state.leaderboard, "normal", state.leaderboardFilter);
+    const chaosScores = filterLeaderboard(state.leaderboard, "chaos", state.leaderboardFilter);
+    const oneHeartScores = filterLeaderboard(state.leaderboard, "one-heart", state.leaderboardFilter);
     if (dom.leaderboardMode) {
-      const mode = hasOnlineScores ? t("leaderboard.online") : t("leaderboard.local");
-      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${mode} · ${t("menu.twoPlayers")}` : mode;
+      const title = t("leaderboard.byMode");
+      dom.leaderboardMode.textContent = state.leaderboardFilter === "players-2" ? `${title} · ${t("menu.twoPlayers")}` : title;
     }
-    renderScoreList(dom.leaderboardList, topScores, state.leaderboardFilter === "players-2");
+    const showDuoBadge = state.leaderboardFilter === "players-2";
+    renderScoreList(dom.leaderboardList, normalScores, showDuoBadge);
+    renderScoreList(dom.chaosLeaderboardList, chaosScores, showDuoBadge);
+    renderScoreList(dom.oneHeartLeaderboardList, oneHeartScores, showDuoBadge);
   };
 
   async function refreshOnlineLeaderboard() {

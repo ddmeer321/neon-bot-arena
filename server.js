@@ -82,6 +82,7 @@ wss.on("connection", (socket) => {
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
       const mode = message.mode === "endboss" ? "endboss" : "waves";
+      const gameMode = ["normal", "chaos", "one-heart"].includes(message.gameMode) ? message.gameMode : "normal";
       if (mode === "waves" && room.clients.size !== 2) {
         socket.send(JSON.stringify({ type: "room-error", message: "Normaler Koop braucht genau 2 Spieler" }));
         return;
@@ -93,6 +94,7 @@ wss.on("connection", (socket) => {
         seed,
         wave: 1,
         mode,
+        gameMode,
         roomCode: room.code,
         roundId: room.roundId,
         playerCount: room.clients.size,

@@ -1,5 +1,5 @@
 import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
-import { drawArenaBackground, t } from "./settings.js?v=settings6";
+import { drawArenaBackground, t } from "./settings.js?v=settings7";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
@@ -815,4 +815,3 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
 }
-
