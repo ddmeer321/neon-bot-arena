@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=musicvolume1";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=gamemodes2";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -7,6 +7,8 @@ export function createState() {
     device: "pc",
     difficulty: "normal",
     gameMode: "normal",
+    chaosEventId: null,
+    chaosEventTimer: 0,
     selectedHero: "volt",
     running: false,
     paused: false,

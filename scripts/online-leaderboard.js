@@ -53,6 +53,9 @@ export async function loadOnlineScores(limit = 10, filter = "all") {
 }
 
 export async function submitOnlineScore(state) {
+  if (!isOnlineScoreEligible(state)) {
+    return { ok: false, reason: "ineligible-mode" };
+  }
   const name = cleanName(state.playerName);
   if (BLOCKED_SCORE_NAMES.has(name.toLowerCase())) {
     return { ok: false, reason: "blocked-name" };
@@ -96,6 +99,10 @@ export async function submitOnlineScore(state) {
       details: error instanceof Error ? error.message : String(error)
     };
   }
+}
+
+export function isOnlineScoreEligible(state) {
+  return state?.testMode !== true && (!state?.gameMode || state.gameMode === "normal");
 }
 
 export function getOwnedOnlineScores() {

@@ -1,6 +1,10 @@
 import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 
+const GAME_MODES = new Set(["normal", "chaos", "one-heart"]);
+const DIFFICULTIES = new Set(["easy", "normal", "hard"]);
+const LEADERBOARD_LIMIT_PER_MODE = 10;
+
 export function loadHighScore() {
   return Number(localStorage.getItem(highScoreKey)) || 0;
 }
@@ -55,23 +59,34 @@ export function saveHighScore(state, dom) {
 export function loadLeaderboard() {
   try {
     const parsed = JSON.parse(localStorage.getItem(leaderboardKey) || "[]");
-    return Array.isArray(parsed) ? normalizeLeaderboard(parsed).slice(0, 10) : [];
+    return Array.isArray(parsed) ? limitLeaderboardByMode(normalizeLeaderboard(parsed)) : [];
   } catch {
     return [];
   }
 }
 
 export function saveLeaderboardEntry(state) {
-  const existing = state.leaderboard.find((entry) => entry.name.toLowerCase() === state.playerName.toLowerCase());
+  const mode = GAME_MODES.has(state.gameMode) ? state.gameMode : "normal";
+  const existing = state.leaderboard.find((entry) => entry.mode === mode && entry.name.toLowerCase() === state.playerName.toLowerCase());
   if (!existing) {
-    state.leaderboard.push({ name: state.playerName, score: state.score, wave: state.wave, date: new Date().toISOString() });
+    state.leaderboard.push({
+      name: state.playerName,
+      score: state.score,
+      wave: state.wave,
+      mode,
+      difficulty: state.difficulty,
+      playerCount: Math.max(1, Math.min(3, Math.round(Number(state.multiplayer?.playerCount) || 1))),
+      date: new Date().toISOString()
+    });
   } else if (state.score > existing.score || (state.score === existing.score && state.wave > existing.wave)) {
     existing.name = state.playerName;
     existing.score = state.score;
     existing.wave = state.wave;
+    existing.difficulty = state.difficulty;
+    existing.playerCount = Math.max(1, Math.min(3, Math.round(Number(state.multiplayer?.playerCount) || 1)));
     existing.date = new Date().toISOString();
   }
-  state.leaderboard = normalizeLeaderboard(state.leaderboard).slice(0, 10);
+  state.leaderboard = limitLeaderboardByMode(normalizeLeaderboard(state.leaderboard));
   localStorage.setItem(leaderboardKey, JSON.stringify(state.leaderboard));
 }
 
@@ -84,17 +99,37 @@ export function normalizeLeaderboard(entries) {
     if (!Number.isFinite(score)) continue;
 
     const name = cleanName(entry.name);
+    const mode = GAME_MODES.has(entry.mode) ? entry.mode : "normal";
     const normalized = {
       name,
       score,
       wave: Number.isFinite(wave) ? wave : 1,
+      mode,
+      difficulty: DIFFICULTIES.has(entry.difficulty) ? entry.difficulty : "normal",
+      playerCount: Math.max(1, Math.min(3, Math.round(Number(entry.playerCount) || 1))),
       date: entry.date || new Date().toISOString()
     };
-    const current = bestByName.get(name.toLowerCase());
+    const key = `${mode}:${name.toLowerCase()}`;
+    const current = bestByName.get(key);
     if (!current || normalized.score > current.score || (normalized.score === current.score && normalized.wave > current.wave)) {
-      bestByName.set(name.toLowerCase(), normalized);
+      bestByName.set(key, normalized);
     }
   }
   return [...bestByName.values()].sort((a, b) => b.score - a.score || b.wave - a.wave);
 }
 
+export function limitLeaderboardByMode(entries, limit = LEADERBOARD_LIMIT_PER_MODE) {
+  const safeLimit = Math.max(1, Math.round(Number(limit) || LEADERBOARD_LIMIT_PER_MODE));
+  return ["normal", "chaos", "one-heart"].flatMap((mode) => entries.filter((entry) => entry.mode === mode).slice(0, safeLimit));
+}
+
+export function filterLeaderboard(entries, mode, filter = "all") {
+  return entries
+    .filter((entry) => entry.mode === mode)
+    .filter((entry) => {
+      if (filter === "players-2") return entry.playerCount === 2;
+      if (filter === "all") return entry.playerCount === 1;
+      return entry.playerCount === 1 && entry.difficulty === filter;
+    })
+    .slice(0, LEADERBOARD_LIMIT_PER_MODE);
+}
