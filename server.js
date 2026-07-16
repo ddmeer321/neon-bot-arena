@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 const port = Number(process.env.PORT) || 3000;
 const socketOpen = 1;
 const maxRoomPlayers = 3;
+const chaosEventIds = new Set(["broken-map", "blindness", "meteor", "mirror", "respawn"]);
 const rooms = new Map();
 
 const server = http.createServer((req, res) => {
@@ -82,7 +83,8 @@ wss.on("connection", (socket) => {
       const delayMs = 1200;
       const seed = Math.floor(Math.random() * 1000000000);
       const mode = message.mode === "endboss" ? "endboss" : "waves";
-      const gameMode = ["normal", "chaos", "one-heart"].includes(message.gameMode) ? message.gameMode : "normal";
+      const requestedGameMode = message.gameMode === "one-heart" ? "hardcore" : message.gameMode;
+      const gameMode = ["normal", "chaos", "hardcore"].includes(requestedGameMode) ? requestedGameMode : "normal";
       if (mode === "waves" && room.clients.size !== 2) {
         socket.send(JSON.stringify({ type: "room-error", message: "Normaler Koop braucht genau 2 Spieler" }));
         return;
@@ -341,6 +343,10 @@ function sanitizeWorldSnapshot(snapshot = {}) {
     endbossTransition: clampNumber(snapshot.endbossTransition, 0, 5),
     bossesDefeated: clampNumber(snapshot.bossesDefeated, 0, 999),
     bossCoinBonus: clampNumber(snapshot.bossCoinBonus, 0, 999999),
+    chaosEventId: chaosEventIds.has(snapshot.chaosEventId) ? snapshot.chaosEventId : "",
+    chaosEventTimer: clampNumber(snapshot.chaosEventTimer, 0, 60),
+    chaosBrokenTiles: sanitizeEntities(snapshot.chaosBrokenTiles, 10),
+    chaosMeteors: sanitizeEntities(snapshot.chaosMeteors, 24),
     robots: sanitizeEntities(snapshot.robots, 50),
     bullets: sanitizeEntities(snapshot.bullets, 60),
     enemyBullets: sanitizeEntities(snapshot.enemyBullets, 60),

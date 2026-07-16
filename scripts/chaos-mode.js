@@ -1,24 +1,16 @@
 export const CHAOS_EVENT_DURATION = 60;
+export const CHAOS_BLINDNESS_RADIUS = 235;
+export const CHAOS_METEOR_DAMAGE = 24;
+export const CHAOS_METEOR_GROUND_TIME = 2;
+export const CHAOS_RESPAWN_PROTECTION = 1;
 
-const DEFAULT_MODIFIERS = Object.freeze({
-  playerSpeed: 1,
-  fireRate: 1,
-  playerDamage: 1,
-  enemySpeed: 1,
-  enemyDamage: 1,
-  healingPerSecond: 0
-});
-
-const makeModifiers = (modifiers) => Object.freeze({ ...DEFAULT_MODIFIERS, ...modifiers });
-
-// Add future chaos events here. Gameplay reads these modifiers automatically.
+// Add future chaos events here. The HUD and random selection use this registry automatically.
 export const CHAOS_EVENTS = Object.freeze([
-  Object.freeze({ id: "turbo", labelKey: "chaos.event.turbo", modifiers: makeModifiers({ playerSpeed: 1.55 }) }),
-  Object.freeze({ id: "rapid-fire", labelKey: "chaos.event.rapidFire", modifiers: makeModifiers({ fireRate: 0.52 }) }),
-  Object.freeze({ id: "overdrive", labelKey: "chaos.event.overdrive", modifiers: makeModifiers({ playerDamage: 1.8 }) }),
-  Object.freeze({ id: "robot-rage", labelKey: "chaos.event.robotRage", modifiers: makeModifiers({ enemySpeed: 1.4, enemyDamage: 1.45 }) }),
-  Object.freeze({ id: "healing-rain", labelKey: "chaos.event.healingRain", modifiers: makeModifiers({ healingPerSecond: 6 }) }),
-  Object.freeze({ id: "glass-cannon", labelKey: "chaos.event.glassCannon", modifiers: makeModifiers({ playerDamage: 2.25, enemyDamage: 2 }) })
+  Object.freeze({ id: "broken-map", labelKey: "chaos.event.brokenMap" }),
+  Object.freeze({ id: "blindness", labelKey: "chaos.event.blindness" }),
+  Object.freeze({ id: "meteor", labelKey: "chaos.event.meteor" }),
+  Object.freeze({ id: "mirror", labelKey: "chaos.event.mirror" }),
+  Object.freeze({ id: "respawn", labelKey: "chaos.event.respawn" })
 ]);
 
 export function getChaosEvent(eventId) {
@@ -55,10 +47,18 @@ export function updateChaosRun(state, dt, random = Math.random) {
   return { event, changed: true };
 }
 
-export function getChaosModifiers(state) {
-  if (state?.gameMode !== "chaos") return DEFAULT_MODIFIERS;
-  const event = getChaosEvent(state.chaosEventId);
-  return event?.modifiers || DEFAULT_MODIFIERS;
+export function isChaosEventActive(state, eventId) {
+  return state?.gameMode === "chaos" && state?.chaosEventId === eventId;
+}
+
+export function getChaosRespawnHealth(maxHp) {
+  return Math.max(1, Math.round(Math.max(1, Number(maxHp) || 1) * 0.25));
+}
+
+export function isPointOnActiveBrokenTile(point, tile) {
+  if (!point || !tile || (Number(tile.activationDelay) || 0) > 0) return false;
+  return point.x > tile.x && point.x < tile.x + tile.width
+    && point.y > tile.y && point.y < tile.y + tile.height;
 }
 
 export function formatChaosTime(seconds) {

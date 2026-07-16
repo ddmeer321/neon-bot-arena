@@ -1,5 +1,5 @@
 import { deleteOwnedOnlineScore, getOwnedOnlineScores } from "./online-leaderboard.js?v=testids1";
-import { t } from "./settings.js?v=settings7";
+import { t } from "./settings.js?v=settings8";
 import { escapeHtml } from "./utils.js";
 
 export function setupScoreManagement() {

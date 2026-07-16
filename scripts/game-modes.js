@@ -1,4 +1,4 @@
-import { t } from "./settings.js?v=settings7";
+import { t } from "./settings.js?v=settings8";
 
 export const DEFAULT_GAME_MODE = "normal";
 
@@ -15,20 +15,21 @@ export const GAME_MODES = Object.freeze([
     descriptionKey: "mode.chaosDescription"
   }),
   Object.freeze({
-    id: "one-heart",
-    labelKey: "mode.oneHeart",
-    descriptionKey: "mode.oneHeartDescription"
+    id: "hardcore",
+    labelKey: "mode.hardcore",
+    descriptionKey: "mode.hardcoreDescription"
   })
 ]);
 
 export function getGameMode(modeId) {
-  return GAME_MODES.find((mode) => mode.id === modeId)
+  const normalizedModeId = modeId === "one-heart" ? "hardcore" : modeId;
+  return GAME_MODES.find((mode) => mode.id === normalizedModeId)
     || GAME_MODES.find((mode) => mode.id === DEFAULT_GAME_MODE)
     || GAME_MODES[0];
 }
 
 export function calculatePlayerDamage({ mode, currentHp, amount, shielded = false, enemyDamageMultiplier = 1 }) {
-  if (mode === "one-heart") return Math.max(1, Number(currentHp) || 1);
+  if (mode === "hardcore" || mode === "one-heart") return Math.max(1, Number(currentHp) || 1);
   const incoming = Math.max(0, Number(amount) || 0) * Math.max(0, Number(enemyDamageMultiplier) || 0);
   return shielded ? incoming * 0.28 : incoming;
 }
