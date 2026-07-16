@@ -3,10 +3,14 @@ import test from "node:test";
 import {
   CHAOS_EVENT_DURATION,
   CHAOS_EVENTS,
+  CHAOS_METEOR_DAMAGE,
+  CHAOS_RESPAWN_PROTECTION,
   chooseChaosEvent,
   createSeededRandom,
   formatChaosTime,
-  getChaosModifiers,
+  getChaosRespawnHealth,
+  isChaosEventActive,
+  isPointOnActiveBrokenTile,
   startChaosRun,
   updateChaosRun
 } from "../scripts/chaos-mode.js";
@@ -27,10 +31,10 @@ test("chaos changes event after a minute and avoids an immediate repeat", () => 
   assert.equal(state.chaosEventTimer, CHAOS_EVENT_DURATION);
 });
 
-test("chaos modifiers only apply in chaos mode", () => {
-  const turbo = chooseChaosEvent(null, () => 0);
-  assert.equal(getChaosModifiers({ gameMode: "normal", chaosEventId: turbo.id }).playerSpeed, 1);
-  assert.equal(getChaosModifiers({ gameMode: "chaos", chaosEventId: turbo.id }).playerSpeed, 1.55);
+test("chaos contains exactly the five hazard events", () => {
+  assert.deepEqual(CHAOS_EVENTS.map((event) => event.id), ["broken-map", "blindness", "meteor", "mirror", "respawn"]);
+  assert.equal(isChaosEventActive({ gameMode: "chaos", chaosEventId: "meteor" }, "meteor"), true);
+  assert.equal(isChaosEventActive({ gameMode: "normal", chaosEventId: "meteor" }, "meteor"), false);
   assert.equal(formatChaosTime(59.2), "1:00");
   assert.equal(formatChaosTime(59), "0:59");
 });
@@ -42,4 +46,13 @@ test("the same multiplayer seed creates the same event sequence", () => {
     Array.from({ length: 8 }, () => first()),
     Array.from({ length: 8 }, () => second())
   );
+});
+
+test("hazard values match the chaos rules", () => {
+  assert.equal(CHAOS_METEOR_DAMAGE, 24);
+  assert.equal(CHAOS_RESPAWN_PROTECTION, 1);
+  assert.equal(getChaosRespawnHealth(101), 25);
+  const tile = { x: 100, y: 100, width: 80, height: 60, activationDelay: 0 };
+  assert.equal(isPointOnActiveBrokenTile({ x: 120, y: 120 }, tile), true);
+  assert.equal(isPointOnActiveBrokenTile({ x: 120, y: 120 }, { ...tile, activationDelay: 0.2 }), false);
 });

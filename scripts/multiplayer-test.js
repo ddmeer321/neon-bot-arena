@@ -1,6 +1,6 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
-import { t } from "./settings.js?v=settings7";
+import { t } from "./settings.js?v=settings8";
 
 let socket = null;
 let connecting = false;
@@ -357,7 +357,8 @@ function setupStartHandler(dom, state, startGame) {
     activeRoundId = Math.max(0, Number(payload.roundId) || 0);
     state.multiplayer.roundId = activeRoundId;
     const endboss = payload.mode === "endboss";
-    state.gameMode = ["normal", "chaos", "one-heart"].includes(payload.gameMode) ? payload.gameMode : "normal";
+    const gameMode = payload.gameMode === "one-heart" ? "hardcore" : payload.gameMode;
+    state.gameMode = ["normal", "chaos", "hardcore"].includes(gameMode) ? gameMode : "normal";
     window.dispatchEvent(new CustomEvent("gamemodechange", { detail: { mode: state.gameMode } }));
     startGame({
       startWave: Number(payload.wave) || 1,
@@ -446,6 +447,10 @@ function createWorldSnapshot(state) {
     endbossTransition: state.endbossTransition,
     bossesDefeated: state.bossesDefeated,
     bossCoinBonus: state.bossCoinBonus,
+    chaosEventId: state.chaosEventId,
+    chaosEventTimer: state.chaosEventTimer,
+    chaosBrokenTiles: cloneEntities(state.chaosBrokenTiles, 10),
+    chaosMeteors: cloneEntities(state.chaosMeteors, 24),
     robots: cloneEntities(state.robots, 50),
     bullets: cloneEntities(state.bullets, 60),
     enemyBullets: cloneEntities(state.enemyBullets, 60),
@@ -478,6 +483,10 @@ function applyWorldSnapshot(snapshot, state) {
   state.endbossTransition = Number(snapshot.endbossTransition) || 0;
   state.bossesDefeated = Number(snapshot.bossesDefeated) || 0;
   state.bossCoinBonus = Number(snapshot.bossCoinBonus) || 0;
+  state.chaosEventId = typeof snapshot.chaosEventId === "string" ? snapshot.chaosEventId : state.chaosEventId;
+  state.chaosEventTimer = Math.max(0, Number(snapshot.chaosEventTimer) || 0);
+  state.chaosBrokenTiles = reconcileNetworkEntities(state.chaosBrokenTiles, snapshot.chaosBrokenTiles, "broken-tile", snapshotAt, previousAt, 10);
+  state.chaosMeteors = reconcileNetworkEntities(state.chaosMeteors, snapshot.chaosMeteors, "meteor", snapshotAt, previousAt, 24);
   state.robots = reconcileNetworkEntities(state.robots, snapshot.robots, "robot", snapshotAt, previousAt, 50);
   state.bullets = reconcileNetworkEntities(state.bullets, snapshot.bullets, "bullet", snapshotAt, previousAt, 60);
   state.enemyBullets = reconcileNetworkEntities(state.enemyBullets, snapshot.enemyBullets, "enemy-bullet", snapshotAt, previousAt, 60);
@@ -541,6 +550,7 @@ export function updateMultiplayerInterpolation(state, dt) {
   smoothNetworkEntities(state.enemyBullets, dt, now, 9, 0.2);
   smoothNetworkEntities(state.bossLasers, dt, now, 14, 0.08);
   smoothNetworkEntities(state.pickups, dt, now, 14, 0);
+  smoothNetworkEntities(state.chaosMeteors, dt, now, 14, 0.06);
 }
 
 function smoothNetworkEntities(items, dt, now, strength, maxExtrapolation) {

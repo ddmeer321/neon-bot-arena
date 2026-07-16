@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=gamemodes2";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=chaos3";
 
 export function createState() {
   const highScore = loadHighScore();
@@ -9,6 +9,9 @@ export function createState() {
     gameMode: "normal",
     chaosEventId: null,
     chaosEventTimer: 0,
+    chaosBrokenTiles: [],
+    chaosMeteors: [],
+    chaosMeteorTimer: 0,
     selectedHero: "volt",
     running: false,
     paused: false,

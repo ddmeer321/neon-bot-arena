@@ -1,25 +1,33 @@
 import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
-import { drawArenaBackground, t } from "./settings.js?v=settings7";
+import { drawArenaBackground, t } from "./settings.js?v=settings8";
+import { CHAOS_BLINDNESS_RADIUS, isChaosEventActive } from "./chaos-mode.js?v=chaos3";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   const jitter = state.shake > 0 ? state.shake * 8 : 0;
   ctx.translate((Math.random() - 0.5) * jitter, (Math.random() - 0.5) * jitter);
+  if (isChaosEventActive(state, "mirror")) {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
   drawArena(ctx, canvas);
+  drawBrokenMap(ctx, state);
   if (state.player) {
     drawPickups(ctx, state);
     drawBullets(ctx, state);
     drawBossLasers(ctx, state);
     drawRobots(ctx, state);
-    drawPlayer(ctx, state);
+    drawPlayer(ctx, state, canvas.width);
     drawRemotePlayers(ctx, state);
     drawParticles(ctx, state);
     drawSpecialEffects(ctx, state);
+    drawMeteors(ctx, state);
     drawBossHud(ctx, dom.canvas, state);
   }
-  ctx.restore();
   drawBlindness(ctx, canvas, state);
+  ctx.restore();
 }
 
 function drawRemotePlayers(ctx, state) {
@@ -66,7 +74,6 @@ function drawRemotePlayers(ctx, state) {
 }
 
 function drawArena(ctx, canvas) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const theme = drawArenaBackground(ctx, canvas);
   ctx.strokeStyle = theme.grid;
   ctx.lineWidth = 1;
@@ -77,7 +84,37 @@ function drawArena(ctx, canvas) {
   ctx.strokeRect(22, 64, canvas.width - 44, canvas.height - 90);
 }
 
-function drawPlayer(ctx, state) {
+function drawBrokenMap(ctx, state) {
+  if (!isChaosEventActive(state, "broken-map")) return;
+  for (const tile of state.chaosBrokenTiles || []) {
+    const warning = Math.max(0, Number(tile.activationDelay) || 0);
+    const active = warning <= 0;
+    const pulseAlpha = 0.48 + Math.sin(state.time * 16 + tile.x * 0.02) * 0.18;
+    ctx.save();
+    ctx.fillStyle = active ? "#010103" : `rgba(31, 20, 24, ${pulseAlpha})`;
+    ctx.shadowColor = active ? "#000" : "#ff7a3d";
+    ctx.shadowBlur = active ? 24 : 10;
+    ctx.fillRect(tile.x, tile.y, tile.width, tile.height);
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = active ? "rgba(255, 45, 85, 0.34)" : `rgba(255, 122, 61, ${pulseAlpha + 0.2})`;
+    ctx.lineWidth = active ? 3 : 5;
+    ctx.strokeRect(tile.x, tile.y, tile.width, tile.height);
+    ctx.strokeStyle = active ? "rgba(90, 20, 42, 0.45)" : "rgba(255, 200, 87, 0.72)";
+    ctx.lineWidth = 2;
+    const centerX = tile.x + tile.width / 2;
+    const centerY = tile.y + tile.height / 2;
+    for (let i = 0; i < 5; i++) {
+      const angle = i * 1.31 + tile.x * 0.013;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX + Math.cos(angle) * tile.width * 0.48, centerY + Math.sin(angle) * tile.height * 0.48);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawPlayer(ctx, state, canvasWidth) {
   const player = state.player;
   if (player.dead) {
     ctx.save();
@@ -86,7 +123,7 @@ function drawPlayer(ctx, state) {
     ctx.restore();
     return;
   }
-  const angle = getPlayerAngle(state);
+  const angle = getPlayerAngle(state, canvasWidth);
   drawCompanion(ctx, state);
   ctx.save();
   ctx.translate(player.x, player.y);
@@ -299,6 +336,20 @@ function drawRobots(ctx, state) {
       ctx.fill();
       ctx.globalAlpha = 1;
     }
+    if (robot.respawnProtection > 0) {
+      const shieldPulse = 0.62 + Math.sin(state.time * 18) * 0.2;
+      ctx.globalAlpha = shieldPulse;
+      ctx.strokeStyle = "#c084fc";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(0, 0, robot.radius + 13, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#e9d5ff";
+      ctx.font = "900 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`${Math.max(0.1, robot.respawnProtection).toFixed(1)}s`, 0, -robot.radius - 18);
+    }
     ctx.restore();
   }
 }
@@ -423,9 +474,12 @@ function drawBat(ctx, bullet, time) {
 
 function drawBlindness(ctx, canvas, state) {
   const player = state.player;
-  const remaining = Number(player?.blindnessTimer) || 0;
+  const chaosBlindness = isChaosEventActive(state, "blindness");
+  const remaining = chaosBlindness
+    ? Math.max(Number(state.chaosEventTimer) || 0, Number(player?.blindnessTimer) || 0)
+    : Number(player?.blindnessTimer) || 0;
   if (!player || player.dead || remaining <= 0 || state.over) return;
-  const radius = 140;
+  const radius = chaosBlindness ? CHAOS_BLINDNESS_RADIUS : 140;
   ctx.save();
   ctx.fillStyle = "rgba(3, 3, 9, 0.92)";
   ctx.beginPath();
@@ -442,8 +496,57 @@ function drawBlindness(ctx, canvas, state) {
   ctx.fillStyle = "#7dd3fc";
   ctx.font = "900 15px Inter, system-ui, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(`BLINDHEIT ${Math.ceil(remaining)}s`, canvas.width / 2, 132);
+  ctx.fillText(`${chaosBlindness ? t("chaos.event.blindness") : "BLINDHEIT"} ${Math.ceil(remaining)}s`, canvas.width / 2, 132);
   ctx.restore();
+}
+
+function drawMeteors(ctx, state) {
+  if (!isChaosEventActive(state, "meteor")) return;
+  for (const meteor of state.chaosMeteors || []) {
+    const radius = Math.max(8, Number(meteor.radius) || 12);
+    const targetY = Number(meteor.targetY) || meteor.y;
+    if (!meteor.landed) {
+      const fallProgress = 1 - Math.max(0, meteor.fallTimer) / Math.max(0.01, meteor.fallDuration || 1);
+      ctx.save();
+      ctx.globalAlpha = 0.32 + fallProgress * 0.5;
+      ctx.strokeStyle = fallProgress > 0.65 ? "#ff2d55" : "#ffc857";
+      ctx.lineWidth = 3 + fallProgress * 3;
+      ctx.beginPath();
+      ctx.arc(meteor.x, targetY, radius + 15 - fallProgress * 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255, 79, 41, 0.18)";
+      ctx.beginPath();
+      ctx.arc(meteor.x, targetY, radius + 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.48;
+      ctx.strokeStyle = "#ff7a3d";
+      ctx.lineWidth = radius * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(meteor.x, meteor.y - 54);
+      ctx.lineTo(meteor.x, meteor.y + radius);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.save();
+    const groundFade = meteor.landed ? Math.min(1, Math.max(0, meteor.groundTimer || 0)) : 1;
+    ctx.globalAlpha = groundFade;
+    glowCircle(ctx, meteor.x, meteor.y, radius + 20, meteor.landed ? "#ff7a3d" : "#ffc857", meteor.landed ? 0.28 : 0.52);
+    ctx.globalAlpha = groundFade;
+    ctx.fillStyle = meteor.landed ? "#3b1d16" : "#71351f";
+    ctx.strokeStyle = "#ff9f43";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(meteor.x - radius, meteor.y + radius * 0.5);
+    ctx.lineTo(meteor.x - radius * 0.55, meteor.y - radius * 0.75);
+    ctx.lineTo(meteor.x + radius * 0.2, meteor.y - radius);
+    ctx.lineTo(meteor.x + radius, meteor.y - radius * 0.15);
+    ctx.lineTo(meteor.x + radius * 0.55, meteor.y + radius * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 function drawMaskBoomerang(ctx, bullet) {
@@ -560,14 +663,15 @@ function drawPickups(ctx, state) {
   });
 }
 
-function getPlayerAngle(state) {
+function getPlayerAngle(state, canvasWidth = 1280) {
   const player = state.player;
   if (state.device === "mobile") {
     const nearest = state.robots.reduce((closest, robot) => (!closest || Math.hypot(player.x - robot.x, player.y - robot.y) < Math.hypot(player.x - closest.x, player.y - closest.y) ? robot : closest), null);
     if (nearest) return Math.atan2(nearest.y - player.y, nearest.x - player.x);
     if (Math.hypot(state.touch.moveX, state.touch.moveY) > 0.2) return Math.atan2(state.touch.moveY, state.touch.moveX);
   }
-  return Math.atan2(state.mouse.y - player.y, state.mouse.x - player.x);
+  const pointerX = isChaosEventActive(state, "mirror") ? canvasWidth - state.mouse.x : state.mouse.x;
+  return Math.atan2(state.mouse.y - player.y, pointerX - player.x);
 }
 
 function glowCircle(ctx, x, y, radius, color, alpha) {

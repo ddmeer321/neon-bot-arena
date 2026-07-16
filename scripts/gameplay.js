@@ -1,12 +1,12 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=gamemodes2";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=gamemodes2";
+import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos3";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos3";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard6";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=gamemodes2";
-import { t, tf } from "./settings.js?v=settings7";
-import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=gamemodes2";
-import { createSeededRandom, formatChaosTime, getChaosEvent, getChaosModifiers, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=gamemodes2";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos3";
+import { t, tf } from "./settings.js?v=settings8";
+import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=chaos3";
+import { CHAOS_METEOR_DAMAGE, CHAOS_METEOR_GROUND_TIME, CHAOS_RESPAWN_PROTECTION, createSeededRandom, formatChaosTime, getChaosEvent, getChaosRespawnHealth, isChaosEventActive, isPointOnActiveBrokenTile, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=chaos3";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -150,6 +150,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       nextWavePulse: 0,
       chaosEventId: null,
       chaosEventTimer: 0,
+      chaosBrokenTiles: [],
+      chaosMeteors: [],
+      chaosMeteorTimer: 0,
       time: 0,
       networkEntitySequence: 0,
       bullets: [],
@@ -181,11 +184,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       lastBossQuakeHit: 0,
       hitMaskIds: new Set(),
       hitBatIds: new Set(),
+      hitMeteorIds: new Set(),
       pickupFlash: null,
       hero
     };
     chaosRandom = options.chaosSeed == null ? Math.random : createSeededRandom(options.chaosSeed);
     const startingChaosEvent = startChaosRun(state, chaosRandom);
+    enterChaosEvent(startingChaosEvent);
     dom.heroName.textContent = hero.name;
     if (dom.difficultyText) dom.difficultyText.textContent = getDifficultyHudText();
     applyDeviceMode();
@@ -262,7 +267,6 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function update(dt) {
     state.time += dt;
-    updateChaosMode(dt);
     state.shake = Math.max(0, state.shake - dt * 14);
     state.nextWavePulse = Math.max(0, state.nextWavePulse - dt);
     updateMultiplayerInterpolation(state, dt);
@@ -271,6 +275,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       return;
     }
     updatePlayer(dt);
+    updateChaosMode(dt);
+    if (state.over) {
+      updateHud();
+      return;
+    }
     updateBullets(dt, state.bullets, true);
     updateBullets(dt, state.enemyBullets, false);
     updateBossLasers(dt);
@@ -317,6 +326,11 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateGuestFrame(dt) {
     updatePlayer(dt);
+    updateChaosMode(dt);
+    if (state.over) {
+      updateHud();
+      return;
+    }
     advanceGuestProjectiles(dt);
     updateGuestDamage(dt);
     updateGuestPickups();
@@ -421,7 +435,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       hit: 0,
       stunTimer: 0,
       frozenTimer: 0,
-      burnTimer: 0
+      burnTimer: 0,
+      chaosRespawned: false,
+      respawnProtection: 0
     };
     return robot;
   }
@@ -461,7 +477,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       hit: 0,
       stunTimer: 0,
       frozenTimer: 0,
-      burnTimer: 0
+      burnTimer: 0,
+      chaosRespawned: false,
+      respawnProtection: 0
     };
   }
 
@@ -483,7 +501,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       dy += state.touch.moveY;
     }
     const len = Math.hypot(dx, dy) || 1;
-    const speedMultiplier = (player.speedBoostTimer > 0 ? 1.35 : 1) * getChaosModifiers(state).playerSpeed;
+    const speedMultiplier = player.speedBoostTimer > 0 ? 1.35 : 1;
     player.x = clamp(player.x + (dx / len) * hero.speed * speedMultiplier * dt, 26, dom.canvas.width - 26);
     player.y = clamp(player.y + (dy / len) * hero.speed * speedMultiplier * dt, 72, dom.canvas.height - 40);
     player.fireTimer = Math.max(0, player.fireTimer - dt);
@@ -504,7 +522,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function shoot() {
     const player = state.player;
     const hero = player.hero;
-    player.fireTimer = hero.fireRate * getChaosModifiers(state).fireRate;
+    player.fireTimer = hero.fireRate;
     playShoot();
     const angle = getAimAngle();
     const damage = Math.round(hero.bulletDamage * (player.damageBoostTimer > 0 ? 1.5 : 1));
@@ -528,6 +546,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const arc = 1.28;
     state.meleeSwings.push({ x: player.x, y: player.y, angle, timer: 0.2, range, color: player.hero.color });
     for (const robot of state.robots) {
+      if (!canDamageRobot(robot)) continue;
       const dx = robot.x - player.x;
       const dy = robot.y - player.y;
       const dist = Math.hypot(dx, dy);
@@ -573,6 +592,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
     if (state.selectedHero === "volt") {
       const targets = state.robots
+        .filter(canDamageRobot)
         .slice()
         .sort((a, b) => distance(player, a) - distance(player, b))
         .slice(0, 5);
@@ -595,13 +615,13 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       state.novaGhost = { x: player.x, y: player.y, timer: 0.45, color: player.hero.color };
       player.x = clamp(player.x + Math.cos(angle) * 190, 28, dom.canvas.width - 28);
       player.y = clamp(player.y + Math.sin(angle) * 190, 78, dom.canvas.height - 42);
-      state.robots.filter((robot) => distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 84, "#ff4f92"));
+      state.robots.filter((robot) => canDamageRobot(robot) && distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 84, "#ff4f92"));
       player.invincible = 1.2;
       pulse(player.x, player.y, "#ff4f92", 90);
     }
 
     if (state.selectedHero === "ember") {
-      state.robots.filter((robot) => distance(player, robot) < 210).forEach((robot) => {
+      state.robots.filter((robot) => canDamageRobot(robot) && distance(player, robot) < 210).forEach((robot) => {
         robot.burnTimer = 3.0;
         robot.burnFlash = 0.55;
         robot.burnSparkTimer = 0;
@@ -614,7 +634,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     }
 
     if (state.selectedHero === "frost") {
-      state.robots.filter((robot) => distance(player, robot) < 230).forEach((robot) => {
+      state.robots.filter((robot) => canDamageRobot(robot) && distance(player, robot) < 230).forEach((robot) => {
         robot.speed = robot.baseSpeed * 0.3;
         robot.frozenTimer = 3.0;
         damageRobot(robot, 55, "#8ee7ff");
@@ -628,7 +648,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       player.hp += healed;
       player.healFlash = 1.0;
       player.invincible = Math.max(player.invincible, 0.35);
-      state.robots.filter((robot) => distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
+      state.robots.filter((robot) => canDamageRobot(robot) && distance(player, robot) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
       state.pulseRing = { x: player.x, y: player.y, timer: 0.62 };
       state.healWave = { x: player.x, y: player.y, timer: 0.9, amount: healed };
       pulse(player.x, player.y, "#b7ff4a", 96);
@@ -637,7 +657,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     if (state.selectedHero === "warden") {
       player.shield = Math.max(player.shield, 1.8);
       player.invincible = Math.max(player.invincible, 0.75);
-      state.robots.filter((robot) => distance(player, robot) < 175).forEach((robot) => {
+      state.robots.filter((robot) => canDamageRobot(robot) && distance(player, robot) < 175).forEach((robot) => {
         damageRobot(robot, 118, "#d8dde8");
         const angle = Math.atan2(robot.y - player.y, robot.x - player.x);
         const push = robot.boss ? 18 : 38;
@@ -662,7 +682,8 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       if (nearest) return Math.atan2(nearest.y - player.y, nearest.x - player.x);
       if (Math.hypot(state.touch.moveX, state.touch.moveY) > 0.2) return Math.atan2(state.touch.moveY, state.touch.moveX);
     }
-    return Math.atan2(state.mouse.y - player.y, state.mouse.x - player.x);
+    const pointerX = isChaosEventActive(state, "mirror") ? dom.canvas.width - state.mouse.x : state.mouse.x;
+    return Math.atan2(state.mouse.y - player.y, pointerX - player.x);
   }
 
   function updateBullets(dt, bullets, playerOwned) {
@@ -726,12 +747,23 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const settings = getDifficultySettings();
     for (let i = state.robots.length - 1; i >= 0; i--) {
       const robot = state.robots[i];
+      robot.hit = Math.max(0, robot.hit - dt);
+
+      if (robot.hp <= 0) {
+        handleRobotDefeat(robot, i);
+        continue;
+      }
+
+      if (robot.respawnProtection > 0) {
+        robot.respawnProtection = Math.max(0, robot.respawnProtection - dt);
+        continue;
+      }
+
       if (robot.endboss && !robot.wardenQuakeEnabled && hasIronWardenPlayer()) robot.wardenQuakeEnabled = true;
       if (robot.endboss) updateEndbossQuake(robot, dt);
       const target = getRobotTarget(robot);
       const angle = Math.atan2(target.y - robot.y, target.x - robot.x);
       const close = distance(robot, target) < robot.radius + (target.radius || 19) + 5;
-      robot.hit = Math.max(0, robot.hit - dt);
 
       // Stun (Volt)
       if (robot.stunTimer > 0) {
@@ -758,10 +790,14 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         }
       }
 
+      if (robot.hp <= 0) {
+        handleRobotDefeat(robot, i);
+        continue;
+      }
+
       if (!close) {
-        const enemySpeed = getChaosModifiers(state).enemySpeed;
-        robot.x += Math.cos(angle) * robot.speed * enemySpeed * dt;
-        robot.y += Math.sin(angle) * robot.speed * enemySpeed * dt;
+        robot.x += Math.cos(angle) * robot.speed * dt;
+        robot.y += Math.sin(angle) * robot.speed * dt;
       } else if (target.local) {
         hurtPlayer(robot.damage * dt);
       }
@@ -787,20 +823,39 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
         }
       }
       if (robot.hp <= 0) {
-        state.robots.splice(i, 1);
-        state.score += robot.endboss ? robot.endbossPhase * 1000 : robot.boss ? 700 : robot.bruiser ? 90 : 45;
-        pulse(robot.x, robot.y, robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#38d8ff", robot.boss ? 80 : 24);
-        if (robot.endboss) {
-          finishEndbossPhase(robot);
-        } else if (robot.boss) {
-          state.bossesDefeated += 1;
-          state.waveDelay = 3;
-          state.nextWavePulse = 3;
-          spawnBossReward(robot.x, robot.y);
-        } else if (Math.random() < getDifficultySettings().pickupDrop) {
-          state.pickups.push(makePickup(robot.x, robot.y));
-        }
+        handleRobotDefeat(robot, i);
       }
+    }
+  }
+
+  function handleRobotDefeat(robot, index) {
+    if (isChaosEventActive(state, "respawn") && !robot.chaosRespawned) {
+      robot.hp = getChaosRespawnHealth(robot.maxHp);
+      robot.chaosRespawned = true;
+      robot.respawnProtection = CHAOS_RESPAWN_PROTECTION;
+      robot.fireTimer = Math.max(1, Number(robot.fireTimer) || 0);
+      robot.bossAttackTimer = Math.max(1, Number(robot.bossAttackTimer) || 0);
+      robot.stunTimer = 0;
+      robot.frozenTimer = 0;
+      robot.burnTimer = 0;
+      robot.quakeWarning = 0;
+      robot.quakeBlast = 0;
+      pulse(robot.x, robot.y, "#a855f7", robot.boss ? 70 : 30);
+      return;
+    }
+
+    state.robots.splice(index, 1);
+    state.score += robot.endboss ? robot.endbossPhase * 1000 : robot.boss ? 700 : robot.bruiser ? 90 : 45;
+    pulse(robot.x, robot.y, robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#38d8ff", robot.boss ? 80 : 24);
+    if (robot.endboss) {
+      finishEndbossPhase(robot);
+    } else if (robot.boss) {
+      state.bossesDefeated += 1;
+      state.waveDelay = 3;
+      state.nextWavePulse = 3;
+      spawnBossReward(robot.x, robot.y);
+    } else if (Math.random() < getDifficultySettings().pickupDrop) {
+      state.pickups.push(makePickup(robot.x, robot.y));
     }
   }
 
@@ -850,12 +905,12 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       currentHp: player.hp,
       amount,
       shielded: player.shield > 0,
-      enemyDamageMultiplier: getChaosModifiers(state).enemyDamage
+      enemyDamageMultiplier: 1
     });
     player.hp -= reduced;
     state.shake = Math.max(state.shake, 0.28);
     if (player.hp <= 0) {
-      if (state.gameMode === "one-heart") {
+      if (state.gameMode === "hardcore" || state.gameMode === "one-heart") {
         if (isCoopMode() && getActivePlayerCount() > 1) knockOutPlayer({ permanent: true });
         else endGame();
       } else if (isCoopMode() && getActivePlayerCount() > 1) {
@@ -1299,9 +1354,15 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function damageRobot(robot, amount, color) {
-    robot.hp -= amount * getChaosModifiers(state).playerDamage;
+    if (!canDamageRobot(robot)) return false;
+    robot.hp -= amount;
     robot.hit = 0.12;
     for (let i = 0; i < 8; i++) addParticle(robot.x, robot.y, color, 3);
+    return true;
+  }
+
+  function canDamageRobot(robot) {
+    return Boolean(robot) && (Number(robot.respawnProtection) || 0) <= 0;
   }
 
   function updateParticles(dt) {
@@ -1463,7 +1524,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   }
 
   function returnToMenu() {
-    Object.assign(state, { running: false, paused: false, over: false, player: null, endbossMode: false, endbossPhase: 0, endbossTransition: 0, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, chaosEventId: null, chaosEventTimer: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
+    Object.assign(state, { running: false, paused: false, over: false, player: null, endbossMode: false, endbossPhase: 0, endbossTransition: 0, prepTimer: 0, waveDelay: 0, nextWavePulse: 0, chaosEventId: null, chaosEventTimer: 0, chaosBrokenTiles: [], chaosMeteors: [], chaosMeteorTimer: 0, bullets: [], enemyBullets: [], robots: [], bossLasers: [], particles: [], pickups: [], meleeSwings: [], wardenRing: null });
     stopMusic();
     dom.pauseBtn.textContent = "II";
     dom.message.classList.add("hidden");
@@ -1499,14 +1560,151 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function updateChaosMode(dt) {
     const { event, changed } = updateChaosRun(state, dt, chaosRandom);
-    if (state.gameMode !== "chaos") return;
-    const modifiers = getChaosModifiers(state);
-    if (modifiers.healingPerSecond > 0 && state.player && !state.player.dead) {
-      state.player.hp = Math.min(state.player.maxHp, state.player.hp + modifiers.healingPerSecond * dt);
+    if (state.gameMode !== "chaos") {
+      clearChaosHazards();
+      return;
     }
     if (changed && event) {
+      enterChaosEvent(event);
       if (state.player) pulse(state.player.x, state.player.y, "#ff4f92", 34);
     }
+
+    if (isChaosEventActive(state, "broken-map")) {
+      updateBrokenMap(dt);
+    } else if (isChaosEventActive(state, "meteor")) {
+      updateMeteorEvent(dt);
+    }
+  }
+
+  function enterChaosEvent(event) {
+    clearChaosHazards();
+    if (!event) return;
+    if (event.id === "broken-map" && !isCoopGuest()) {
+      state.chaosBrokenTiles = createBrokenMapTiles(7);
+    }
+    if (event.id === "meteor") state.chaosMeteorTimer = 0.2;
+  }
+
+  function clearChaosHazards() {
+    if (!isChaosEventActive(state, "broken-map")) state.chaosBrokenTiles = [];
+    if (!isChaosEventActive(state, "meteor")) {
+      state.chaosMeteors = [];
+      state.chaosMeteorTimer = 0;
+    }
+  }
+
+  function createBrokenMapTiles(count) {
+    const tiles = [];
+    const avoid = [state.player, ...(state.remotePlayers || [])].filter(Boolean);
+    for (let attempt = 0; attempt < 120 && tiles.length < count; attempt++) {
+      const width = Math.round(92 + Math.random() * 92);
+      const height = Math.round(66 + Math.random() * 68);
+      const x = Math.round(30 + Math.random() * (dom.canvas.width - width - 60));
+      const y = Math.round(72 + Math.random() * (dom.canvas.height - height - 106));
+      const candidate = { x, y, width, height };
+      const nearPlayer = avoid.some((point) => (
+        point.x > x - 80 && point.x < x + width + 80
+        && point.y > y - 80 && point.y < y + height + 80
+      ));
+      const overlaps = tiles.some((tile) => (
+        x < tile.x + tile.width + 24 && x + width + 24 > tile.x
+        && y < tile.y + tile.height + 24 && y + height + 24 > tile.y
+      ));
+      if (nearPlayer || overlaps) continue;
+      tiles.push({
+        id: nextEntityId("hole"),
+        ...candidate,
+        activationDelay: 0.65 + tiles.length * 0.16
+      });
+    }
+    return tiles;
+  }
+
+  function updateBrokenMap(dt) {
+    if (!isCoopGuest()) {
+      for (const tile of state.chaosBrokenTiles || []) {
+        tile.activationDelay = Math.max(0, (Number(tile.activationDelay) || 0) - dt);
+      }
+    }
+    const player = state.player;
+    if (!player || player.dead) return;
+    const onBrokenTile = (state.chaosBrokenTiles || []).some((tile) => isPointOnActiveBrokenTile(player, tile));
+    if (onBrokenTile) defeatPlayerByChaos("broken-map");
+  }
+
+  function updateMeteorEvent(dt) {
+    if (!isCoopGuest()) {
+      state.chaosMeteorTimer = Math.max(0, (Number(state.chaosMeteorTimer) || 0) - dt);
+      if (state.chaosMeteorTimer <= 0) {
+        spawnChaosMeteor();
+        state.chaosMeteorTimer = 0.62 + Math.random() * 0.32;
+      }
+      for (let i = state.chaosMeteors.length - 1; i >= 0; i--) {
+        const meteor = state.chaosMeteors[i];
+        if (!meteor.landed) {
+          meteor.fallTimer = Math.max(0, meteor.fallTimer - dt);
+          const progress = 1 - meteor.fallTimer / meteor.fallDuration;
+          meteor.y = meteor.startY + (meteor.targetY - meteor.startY) * Math.max(0, Math.min(1, progress));
+          if (meteor.fallTimer <= 0) {
+            meteor.landed = true;
+            meteor.y = meteor.targetY;
+            meteor.groundTimer = CHAOS_METEOR_GROUND_TIME;
+            state.shake = Math.max(state.shake, 0.32);
+            pulse(meteor.x, meteor.y, "#ff7a3d", 22);
+          }
+        } else {
+          meteor.groundTimer = Math.max(0, meteor.groundTimer - dt);
+          if (meteor.groundTimer <= 0) state.chaosMeteors.splice(i, 1);
+        }
+      }
+    }
+    damagePlayerFromMeteors();
+  }
+
+  function spawnChaosMeteor() {
+    const targets = [state.player, ...(state.remotePlayers || [])].filter((player) => player && !player.dead);
+    if (targets.length === 0) return;
+    const target = targets[Math.floor(Math.random() * targets.length)] || targets[0];
+    const angle = Math.random() * Math.PI * 2;
+    const targetDistance = 30 + Math.random() * 270;
+    const targetX = clamp(target.x + Math.cos(angle) * targetDistance, 48, dom.canvas.width - 48);
+    const targetY = clamp(target.y + Math.sin(angle) * targetDistance, 86, dom.canvas.height - 48);
+    const fallDuration = 0.78 + Math.random() * 0.34;
+    state.chaosMeteors.push({
+      id: nextEntityId("meteor"),
+      x: targetX,
+      y: targetY - 290,
+      startY: targetY - 290,
+      targetY,
+      radius: Math.round(10 + Math.random() * 6),
+      damage: CHAOS_METEOR_DAMAGE,
+      fallDuration,
+      fallTimer: fallDuration,
+      groundTimer: 0,
+      landed: false
+    });
+  }
+
+  function damagePlayerFromMeteors() {
+    const player = state.player;
+    if (!player || player.dead) return;
+    if (!(player.hitMeteorIds instanceof Set)) player.hitMeteorIds = new Set();
+    for (const meteor of state.chaosMeteors || []) {
+      if (!meteor.landed || meteor.groundTimer < 1.55 || player.hitMeteorIds.has(meteor.id)) continue;
+      if (Math.hypot(player.x - meteor.x, player.y - meteor.y) > player.radius + meteor.radius + 8) continue;
+      player.hitMeteorIds.add(meteor.id);
+      hurtPlayer(meteor.damage || CHAOS_METEOR_DAMAGE);
+      if (player.hitMeteorIds.size > 80) player.hitMeteorIds.clear();
+      if (player.dead || state.over) return;
+    }
+  }
+
+  function defeatPlayerByChaos(source) {
+    const player = state.player;
+    if (!player || player.dead || state.debugGodMode) return;
+    player.hp = 0;
+    if (isCoopMode() && getActivePlayerCount() > 1) knockOutPlayer();
+    else endGame();
   }
 
   function renderChaosHud() {
@@ -1631,6 +1829,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   function applyRemoteMelee(x, y, angle, damage, color) {
     state.meleeSwings.push({ x, y, angle, timer: 0.2, range: 92, color });
     for (const robot of state.robots) {
+      if (!canDamageRobot(robot)) continue;
       const dx = robot.x - x;
       const dy = robot.y - y;
       const dist = Math.hypot(dx, dy);
@@ -1643,20 +1842,21 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function applyRemoteSpecial(hero, x, y, angle, color) {
     if (hero === "volt") {
-      state.robots
+      const targets = state.robots
+        .filter(canDamageRobot)
         .slice()
         .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
-        .slice(0, 5)
-        .forEach((robot) => {
-          damageRobot(robot, 70, "#38d8ff");
-          robot.stunTimer = 0.45;
-        });
-      state.lightningChain = { targets: state.robots.slice(0, 5).map((robot) => ({ x: robot.x, y: robot.y })), timer: 0.4 };
+        .slice(0, 5);
+      targets.forEach((robot) => {
+        damageRobot(robot, 70, "#38d8ff");
+        robot.stunTimer = 0.45;
+      });
+      state.lightningChain = { targets: targets.map((robot) => ({ x: robot.x, y: robot.y })), timer: 0.4 };
       pulse(x, y, "#38d8ff", 42);
       return;
     }
     if (hero === "ember") {
-      state.robots.filter((robot) => Math.hypot(robot.x - x, robot.y - y) < 210).forEach((robot) => {
+      state.robots.filter((robot) => canDamageRobot(robot) && Math.hypot(robot.x - x, robot.y - y) < 210).forEach((robot) => {
         robot.burnTimer = 3.0;
         robot.burnFlash = 0.55;
         damageRobot(robot, 95, "#ff7a3d");
@@ -1666,7 +1866,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       return;
     }
     if (hero === "frost") {
-      state.robots.filter((robot) => Math.hypot(robot.x - x, robot.y - y) < 230).forEach((robot) => {
+      state.robots.filter((robot) => canDamageRobot(robot) && Math.hypot(robot.x - x, robot.y - y) < 230).forEach((robot) => {
         robot.speed = robot.baseSpeed * 0.3;
         robot.frozenTimer = 3.0;
         damageRobot(robot, 55, "#8ee7ff");
@@ -1676,18 +1876,18 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       return;
     }
     if (hero === "pulse") {
-      state.robots.filter((robot) => Math.hypot(robot.x - x, robot.y - y) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
+      state.robots.filter((robot) => canDamageRobot(robot) && Math.hypot(robot.x - x, robot.y - y) < 150).forEach((robot) => damageRobot(robot, 48, "#b7ff4a"));
       state.pulseRing = { x, y, timer: 0.62 };
       pulse(x, y, "#b7ff4a", 58);
       return;
     }
     if (hero === "warden") {
-      state.robots.filter((robot) => Math.hypot(robot.x - x, robot.y - y) < 175).forEach((robot) => damageRobot(robot, 118, "#d8dde8"));
+      state.robots.filter((robot) => canDamageRobot(robot) && Math.hypot(robot.x - x, robot.y - y) < 175).forEach((robot) => damageRobot(robot, 118, "#d8dde8"));
       state.wardenRing = { x, y, timer: 0.56 };
       pulse(x, y, "#d8dde8", 52);
       return;
     }
-    state.robots.filter((robot) => Math.hypot(robot.x - x, robot.y - y) < 150).forEach((robot) => damageRobot(robot, 84, color || "#ff4f92"));
+    state.robots.filter((robot) => canDamageRobot(robot) && Math.hypot(robot.x - x, robot.y - y) < 150).forEach((robot) => damageRobot(robot, 84, color || "#ff4f92"));
     pulse(x + Math.cos(angle) * 90, y + Math.sin(angle) * 90, color || "#ff4f92", 52);
   }
 

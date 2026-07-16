@@ -1,7 +1,7 @@
 import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 
-const GAME_MODES = new Set(["normal", "chaos", "one-heart"]);
+const GAME_MODES = new Set(["normal", "chaos", "hardcore"]);
 const DIFFICULTIES = new Set(["easy", "normal", "hard"]);
 const LEADERBOARD_LIMIT_PER_MODE = 10;
 
@@ -99,7 +99,8 @@ export function normalizeLeaderboard(entries) {
     if (!Number.isFinite(score)) continue;
 
     const name = cleanName(entry.name);
-    const mode = GAME_MODES.has(entry.mode) ? entry.mode : "normal";
+    const legacyMode = entry.mode === "one-heart" ? "hardcore" : entry.mode;
+    const mode = GAME_MODES.has(legacyMode) ? legacyMode : "normal";
     const normalized = {
       name,
       score,
@@ -120,7 +121,7 @@ export function normalizeLeaderboard(entries) {
 
 export function limitLeaderboardByMode(entries, limit = LEADERBOARD_LIMIT_PER_MODE) {
   const safeLimit = Math.max(1, Math.round(Number(limit) || LEADERBOARD_LIMIT_PER_MODE));
-  return ["normal", "chaos", "one-heart"].flatMap((mode) => entries.filter((entry) => entry.mode === mode).slice(0, safeLimit));
+  return ["normal", "chaos", "hardcore"].flatMap((mode) => entries.filter((entry) => entry.mode === mode).slice(0, safeLimit));
 }
 
 export function filterLeaderboard(entries, mode, filter = "all") {

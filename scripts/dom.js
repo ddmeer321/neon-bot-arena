@@ -83,6 +83,6 @@
     leaderboardFilter: document.querySelector("#leaderboardFilter"),
     leaderboardList: document.querySelector("#leaderboardList"),
     chaosLeaderboardList: document.querySelector("#chaosLeaderboardList"),
-    oneHeartLeaderboardList: document.querySelector("#oneHeartLeaderboardList")
+    hardcoreLeaderboardList: document.querySelector("#hardcoreLeaderboardList")
   };
 }
