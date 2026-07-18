@@ -1,6 +1,6 @@
 ﻿const multiplayerUrl = "wss://neon-bot-arena.onrender.com";
 
-import { t } from "./settings.js?v=settings8";
+import { t } from "./settings.js?v=settings9";
 
 let socket = null;
 let connecting = false;

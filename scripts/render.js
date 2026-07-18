@@ -1,6 +1,6 @@
 import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
-import { drawArenaBackground, t } from "./settings.js?v=settings8";
-import { CHAOS_BLINDNESS_RADIUS, isChaosEventActive } from "./chaos-mode.js?v=chaos3";
+import { drawArenaBackground, t } from "./settings.js?v=settings9";
+import { CHAOS_BLINDNESS_RADIUS, isChaosEventActive } from "./chaos-mode.js?v=chaos4";
 
 export function draw(dom, state) {
   const { canvas, ctx } = dom;

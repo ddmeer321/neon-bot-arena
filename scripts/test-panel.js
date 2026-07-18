@@ -1,7 +1,7 @@
 import { heroes, maxUpgradeLevel } from "./config.js?v=musicvolume1";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
-import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=chaos3";
+import { renderHeroMenu, renderShop, updateCoinDisplay } from "./economy.js?v=chaos4";
 
 export function setupTestPanel({ dom, state, startGame, advanceBossPhase, triggerBossQuake, triggerBossMask, triggerBossBats }) {
   if (!hasTestPanelAccess()) return;
