@@ -2,7 +2,7 @@ import { getDom } from "./dom.js?v=chaos4";
 import { createState } from "./state.js?v=chaos4";
 import { escapeHtml } from "./utils.js";
 import { filterLeaderboard } from "./storage.js?v=chaos4";
-import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard6";
+import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard7";
 import { setupInput } from "./input.js?v=musicvolume1";
 import { createGameplay } from "./gameplay.js?v=chaos4";
 import { draw } from "./render.js?v=chaos4";

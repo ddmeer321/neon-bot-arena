@@ -1,7 +1,7 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos4";
 import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos4";
-import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard6";
+import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard7";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
 import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos4";
 import { t, tf } from "./settings.js?v=settings9";
