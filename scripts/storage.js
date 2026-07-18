@@ -1,4 +1,4 @@
-import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=musicvolume1";
+import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes, testSiteBuild } from "./config.js?v=musicvolume1";
 import { cleanName } from "./utils.js";
 
 const GAME_MODES = new Set(["normal", "chaos", "hardcore"]);
@@ -6,6 +6,7 @@ const DIFFICULTIES = new Set(["easy", "normal", "hard"]);
 const LEADERBOARD_LIMIT_PER_MODE = 10;
 
 export function loadHighScore() {
+  if (testSiteBuild) return 0;
   return Number(localStorage.getItem(highScoreKey)) || 0;
 }
 
@@ -48,6 +49,7 @@ export function saveProgression(state) {
 }
 
 export function saveHighScore(state, dom) {
+  if (!isScorePersistenceAllowed(state)) return false;
   if (state.score <= state.highScore) return false;
   state.highScore = state.score;
   localStorage.setItem(highScoreKey, String(state.highScore));
@@ -57,6 +59,7 @@ export function saveHighScore(state, dom) {
 }
 
 export function loadLeaderboard() {
+  if (testSiteBuild) return [];
   try {
     const parsed = JSON.parse(localStorage.getItem(leaderboardKey) || "[]");
     return Array.isArray(parsed) ? limitLeaderboardByMode(normalizeLeaderboard(parsed)) : [];
@@ -66,6 +69,7 @@ export function loadLeaderboard() {
 }
 
 export function saveLeaderboardEntry(state) {
+  if (!isScorePersistenceAllowed(state)) return false;
   const mode = GAME_MODES.has(state.gameMode) ? state.gameMode : "normal";
   const existing = state.leaderboard.find((entry) => entry.mode === mode && entry.name.toLowerCase() === state.playerName.toLowerCase());
   if (!existing) {
@@ -88,6 +92,11 @@ export function saveLeaderboardEntry(state) {
   }
   state.leaderboard = limitLeaderboardByMode(normalizeLeaderboard(state.leaderboard));
   localStorage.setItem(leaderboardKey, JSON.stringify(state.leaderboard));
+  return true;
+}
+
+export function isScorePersistenceAllowed(state) {
+  return testSiteBuild !== true && state?.testMode !== true;
 }
 
 export function normalizeLeaderboard(entries) {

@@ -1,5 +1,7 @@
 ﻿import { cleanName } from "./utils.js";
 
+import { testSiteBuild } from "./config.js?v=testsite1";
+
 import {
   addOwnedScoreReceipt,
   normalizeDeletionReceipt,
@@ -102,7 +104,7 @@ export async function submitOnlineScore(state) {
 }
 
 export function isOnlineScoreEligible(state) {
-  return state?.testMode !== true && (!state?.gameMode || state.gameMode === "normal");
+  return testSiteBuild !== true && state?.testMode !== true && (!state?.gameMode || state.gameMode === "normal");
 }
 
 export function getOwnedOnlineScores() {

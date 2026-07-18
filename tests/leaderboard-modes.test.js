@@ -2,9 +2,35 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   filterLeaderboard,
+  isScorePersistenceAllowed,
   limitLeaderboardByMode,
-  normalizeLeaderboard
+  loadHighScore,
+  loadLeaderboard,
+  normalizeLeaderboard,
+  saveHighScore,
+  saveLeaderboardEntry
 } from "../scripts/storage.js";
+
+test("test builds never persist high scores or leaderboard entries", () => {
+  const state = {
+    testMode: false,
+    score: 500,
+    highScore: 100,
+    wave: 4,
+    gameMode: "chaos",
+    difficulty: "hard",
+    playerName: "Tester",
+    leaderboard: []
+  };
+
+  assert.equal(isScorePersistenceAllowed(state), false);
+  assert.equal(loadHighScore(), 0);
+  assert.deepEqual(loadLeaderboard(), []);
+  assert.equal(saveHighScore(state, {}), false);
+  assert.equal(saveLeaderboardEntry(state), false);
+  assert.equal(state.highScore, 100);
+  assert.deepEqual(state.leaderboard, []);
+});
 
 test("legacy scores stay in normal while mode scores remain separate", () => {
   const scores = normalizeLeaderboard([

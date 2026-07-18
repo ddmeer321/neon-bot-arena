@@ -14,16 +14,16 @@ test("allows the test panel locally or with a configured test id", () => {
   assert.equal(isTestPanelAllowed("test.neon-bot-arena-test.pages.dev", "", "", allowedIds, true), true);
 });
 
-test("using the test panel blocks online scores for the session", () => {
+test("the test build blocks online scores for every session", () => {
   const state = { testMode: false };
-  assert.equal(isOnlineScoreEligible(state), true);
+  assert.equal(isOnlineScoreEligible(state), false);
   activateTestMode(state);
   assert.equal(state.testMode, true);
   assert.equal(isOnlineScoreEligible(state), false);
 });
 
-test("special game modes stay out of the normal online leaderboard", () => {
-  assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "normal" }), true);
+test("all game modes stay out of the online leaderboard in test builds", () => {
+  assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "normal" }), false);
   assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "chaos" }), false);
   assert.equal(isOnlineScoreEligible({ testMode: false, gameMode: "hardcore" }), false);
 });
