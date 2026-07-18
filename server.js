@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 const port = Number(process.env.PORT) || 3000;
 const socketOpen = 1;
 const maxRoomPlayers = 3;
-const chaosEventIds = new Set(["broken-map", "blindness", "meteor", "mirror", "respawn"]);
+const chaosEventIds = new Set(["broken-map", "blindness", "meteor", "enemy-rush", "bullet-storm", "mirror", "respawn"]);
 const rooms = new Map();
 
 const server = http.createServer((req, res) => {

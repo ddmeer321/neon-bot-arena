@@ -2,13 +2,20 @@ export const CHAOS_EVENT_DURATION = 60;
 export const CHAOS_BLINDNESS_RADIUS = 235;
 export const CHAOS_METEOR_DAMAGE = 24;
 export const CHAOS_METEOR_GROUND_TIME = 2;
+export const CHAOS_METEOR_MIN_RADIUS = 24;
+export const CHAOS_METEOR_MAX_RADIUS = 34;
 export const CHAOS_RESPAWN_PROTECTION = 1;
+export const CHAOS_ENEMY_RUSH_SPEED_MULTIPLIER = 1.65;
+export const CHAOS_BULLET_STORM_FIRE_MULTIPLIER = 0.58;
+export const CHAOS_BULLET_STORM_SPREAD = 0.18;
 
 // Add future chaos events here. The HUD and random selection use this registry automatically.
 export const CHAOS_EVENTS = Object.freeze([
   Object.freeze({ id: "broken-map", labelKey: "chaos.event.brokenMap" }),
   Object.freeze({ id: "blindness", labelKey: "chaos.event.blindness" }),
   Object.freeze({ id: "meteor", labelKey: "chaos.event.meteor" }),
+  Object.freeze({ id: "enemy-rush", labelKey: "chaos.event.enemyRush" }),
+  Object.freeze({ id: "bullet-storm", labelKey: "chaos.event.bulletStorm" }),
   Object.freeze({ id: "mirror", labelKey: "chaos.event.mirror" }),
   Object.freeze({ id: "respawn", labelKey: "chaos.event.respawn" })
 ]);
@@ -53,6 +60,23 @@ export function isChaosEventActive(state, eventId) {
 
 export function getChaosRespawnHealth(maxHp) {
   return Math.max(1, Math.round(Math.max(1, Number(maxHp) || 1) * 0.25));
+}
+
+export function getChaosEnemySpeed(speed, state) {
+  const safeSpeed = Math.max(0, Number(speed) || 0);
+  return isChaosEventActive(state, "enemy-rush") ? safeSpeed * CHAOS_ENEMY_RUSH_SPEED_MULTIPLIER : safeSpeed;
+}
+
+export function getChaosEnemyFireInterval(interval, state) {
+  const safeInterval = Math.max(0.1, Number(interval) || 0.1);
+  return isChaosEventActive(state, "bullet-storm") ? safeInterval * CHAOS_BULLET_STORM_FIRE_MULTIPLIER : safeInterval;
+}
+
+export function getChaosEnemyShotAngles(angle, state) {
+  const safeAngle = Number(angle) || 0;
+  return isChaosEventActive(state, "bullet-storm")
+    ? [safeAngle - CHAOS_BULLET_STORM_SPREAD, safeAngle + CHAOS_BULLET_STORM_SPREAD]
+    : [safeAngle];
 }
 
 export function isPointOnActiveBrokenTile(point, tile) {

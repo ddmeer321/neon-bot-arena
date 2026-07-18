@@ -1,13 +1,13 @@
 import { clamp, cleanName, distance } from "./utils.js";
-import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos3";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos3";
+import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos4";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos4";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=testids1";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos3";
-import { t, tf } from "./settings.js?v=settings8";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos4";
+import { t, tf } from "./settings.js?v=settings9";
 import { appendTestLog } from "./test-logger.js?v=testlogs1";
-import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=chaos3";
-import { CHAOS_METEOR_DAMAGE, CHAOS_METEOR_GROUND_TIME, CHAOS_RESPAWN_PROTECTION, createSeededRandom, formatChaosTime, getChaosEvent, getChaosRespawnHealth, isChaosEventActive, isPointOnActiveBrokenTile, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=chaos3";
+import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=chaos4";
+import { CHAOS_METEOR_DAMAGE, CHAOS_METEOR_GROUND_TIME, CHAOS_METEOR_MAX_RADIUS, CHAOS_METEOR_MIN_RADIUS, CHAOS_RESPAWN_PROTECTION, createSeededRandom, formatChaosTime, getChaosEnemyFireInterval, getChaosEnemyShotAngles, getChaosEnemySpeed, getChaosEvent, getChaosRespawnHealth, isChaosEventActive, isPointOnActiveBrokenTile, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=chaos4";
 
 export function getMultiplayerScaling(value = 1) {
   const playerCount = Math.max(1, Math.min(3, Math.round(Number(value) || 1)));
@@ -808,30 +808,35 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       }
 
       if (!close) {
-        robot.x += Math.cos(angle) * robot.speed * dt;
-        robot.y += Math.sin(angle) * robot.speed * dt;
+        const movementSpeed = getChaosEnemySpeed(robot.speed, state);
+        robot.x += Math.cos(angle) * movementSpeed * dt;
+        robot.y += Math.sin(angle) * movementSpeed * dt;
       } else if (target.local) {
         hurtPlayer(robot.damage * dt);
       }
       robot.x = clamp(robot.x, robot.radius + 24, dom.canvas.width - robot.radius - 24);
       robot.y = clamp(robot.y, robot.radius + 70, dom.canvas.height - robot.radius - 28);
       if (robot.boss && !target.dead) updateBossAttack(robot, target, dt);
-      if (robot.shooter || robot.boss) {
+      const bulletStormActive = isChaosEventActive(state, "bullet-storm");
+      if (robot.shooter || robot.boss || bulletStormActive) {
         robot.fireTimer -= dt;
         if (robot.fireTimer <= 0 && !target.dead && distance(robot, target) < 620) {
           const shotSpeed = robot.endboss ? robot.bulletSpeed : robot.boss ? settings.bossBulletSpeed : 360;
-          robot.fireTimer = robot.endboss ? robot.fireRate : robot.boss ? settings.bossFireRate : 1.5;
-          state.enemyBullets.push({
-            id: nextEntityId("e"),
-            x: robot.x,
-            y: robot.y,
-            vx: Math.cos(angle) * shotSpeed,
-            vy: Math.sin(angle) * shotSpeed,
-            radius: robot.boss ? 7 : 5,
-            life: 2,
-            damage: robot.bulletDamage,
-            color: robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#ff4f92"
-          });
+          const baseFireInterval = robot.endboss ? robot.fireRate : robot.boss ? settings.bossFireRate : 1.5;
+          robot.fireTimer = getChaosEnemyFireInterval(baseFireInterval, state);
+          for (const shotAngle of getChaosEnemyShotAngles(angle, state)) {
+            state.enemyBullets.push({
+              id: nextEntityId("e"),
+              x: robot.x,
+              y: robot.y,
+              vx: Math.cos(shotAngle) * shotSpeed,
+              vy: Math.sin(shotAngle) * shotSpeed,
+              radius: robot.boss ? 7 : 5,
+              life: 2,
+              damage: robot.bulletDamage,
+              color: bulletStormActive ? "#ff2d55" : robot.endboss ? "#d1d5db" : robot.boss ? "#b11226" : "#ff4f92"
+            });
+          }
         }
       }
       if (robot.hp <= 0) {
@@ -1770,8 +1775,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     const target = targets[Math.floor(Math.random() * targets.length)] || targets[0];
     const angle = Math.random() * Math.PI * 2;
     const targetDistance = 30 + Math.random() * 270;
-    const targetX = clamp(target.x + Math.cos(angle) * targetDistance, 48, dom.canvas.width - 48);
-    const targetY = clamp(target.y + Math.sin(angle) * targetDistance, 86, dom.canvas.height - 48);
+    const meteorMargin = CHAOS_METEOR_MAX_RADIUS + 16;
+    const targetX = clamp(target.x + Math.cos(angle) * targetDistance, meteorMargin, dom.canvas.width - meteorMargin);
+    const targetY = clamp(target.y + Math.sin(angle) * targetDistance, 70 + meteorMargin, dom.canvas.height - meteorMargin);
     const fallDuration = 0.78 + Math.random() * 0.34;
     state.chaosMeteors.push({
       id: nextEntityId("meteor"),
@@ -1779,7 +1785,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       y: targetY - 290,
       startY: targetY - 290,
       targetY,
-      radius: Math.round(10 + Math.random() * 6),
+      radius: Math.round(CHAOS_METEOR_MIN_RADIUS + Math.random() * (CHAOS_METEOR_MAX_RADIUS - CHAOS_METEOR_MIN_RADIUS)),
       damage: CHAOS_METEOR_DAMAGE,
       fallDuration,
       fallTimer: fallDuration,

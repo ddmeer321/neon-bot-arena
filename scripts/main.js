@@ -1,22 +1,22 @@
-import { getDom } from "./dom.js?v=chaos3";
-import { createState } from "./state.js?v=chaos3";
+import { getDom } from "./dom.js?v=chaos4";
+import { createState } from "./state.js?v=chaos4";
 import { escapeHtml } from "./utils.js";
-import { filterLeaderboard } from "./storage.js?v=chaos3";
+import { filterLeaderboard } from "./storage.js?v=chaos4";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=chaos3";
-import { draw } from "./render.js?v=chaos3";
+import { createGameplay } from "./gameplay.js?v=chaos4";
+import { draw } from "./render.js?v=chaos4";
 import { createFPSCounter } from "./fps.js?v=testlogs1";
-import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=chaos3";
-import { setupTestPanel } from "./test-panel.js?v=chaos3";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=chaos3";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=chaos3";
-import { setupSettings, t } from "./settings.js?v=settings8";
-import { setupScoreManagement } from "./score-management.js?v=chaos3";
+import { addCoins, equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=chaos4";
+import { setupTestPanel } from "./test-panel.js?v=chaos4";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=chaos4";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=chaos4";
+import { setupSettings, t } from "./settings.js?v=settings9";
+import { setupScoreManagement } from "./score-management.js?v=chaos4";
 import { setupTestLoggerUI } from "./test-logger.js?v=testlogs1";
 import { setupTestDevtools } from "./test-devtools.js?v=testdevtools2";
 import { setupRewardedAdTest } from "./rewarded-ad-test.js?v=rewardad3";
-import { setupGameModePicker } from "./game-modes.js?v=chaos3";
+import { setupGameModePicker } from "./game-modes.js?v=chaos4";
 
 
 

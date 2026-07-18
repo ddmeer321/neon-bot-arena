@@ -1,5 +1,5 @@
-import { getEquippedCosmetic } from "./economy.js?v=chaos3";
-import { t } from "./settings.js?v=settings8";
+import { getEquippedCosmetic } from "./economy.js?v=chaos4";
+import { t } from "./settings.js?v=settings9";
 
 export const companionAbilities = {
   solar: { name: "Turbofeuer", description: "5 Sek. 25 % schneller schiessen", stat: "fireRate", multiplier: 1 / 1.25 },

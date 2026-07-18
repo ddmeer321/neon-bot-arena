@@ -1,4 +1,4 @@
-import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=chaos3";
+import { loadCoins, loadHighScore, loadLeaderboard, loadProgression } from "./storage.js?v=chaos4";
 import { testSiteBuild } from "./config.js?v=testsite1";
 
 export function createState() {
