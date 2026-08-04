@@ -1,6 +1,6 @@
 #auth-status {
   position: fixed;
-  top: calc(max(14px, env(safe-area-inset-top)) + 54px);
+  top: max(14px, env(safe-area-inset-top));
   right: max(14px, env(safe-area-inset-right));
   z-index: 80;
   display: flex;
