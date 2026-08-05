@@ -1,7 +1,7 @@
 import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=musicvolume1";
 import { escapeHtml } from "./utils.js";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
-import { t } from "./settings.js?v=settings9";
+import { t } from "./settings.js?v=settings10";
 
 export function isHeroUnlocked(state, heroId) {
   return state.unlockedHeroes.includes(heroId);

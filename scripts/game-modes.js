@@ -1,4 +1,4 @@
-import { t } from "./settings.js?v=settings9";
+import { t } from "./settings.js?v=settings10";
 
 export const DEFAULT_GAME_MODE = "normal";
 

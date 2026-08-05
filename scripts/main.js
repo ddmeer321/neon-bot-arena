@@ -4,16 +4,16 @@ import { escapeHtml } from "./utils.js";
 import { filterLeaderboard } from "./storage.js?v=chaos4";
 import { loadOnlineScores } from "./online-leaderboard.js?v=leaderboard7";
 import { setupInput } from "./input.js?v=musicvolume1";
-import { createGameplay } from "./gameplay.js?v=chaos4";
-import { draw } from "./render.js?v=chaos4";
+import { createGameplay } from "./gameplay.js?v=chaos5";
+import { draw } from "./render.js?v=chaos5";
 import { createFPSCounter } from "./fps.js";
-import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=chaos4";
-import { setupTestPanel } from "./test-panel.js?v=chaos4";
-import { setupMultiplayerTest } from "./multiplayer-test.js?v=chaos4";
-import { setupCompanionAbilities } from "./companion-abilities.js?v=chaos4";
-import { setupSettings, t } from "./settings.js?v=settings9";
-import { setupScoreManagement } from "./score-management.js?v=chaos4";
-import { setupGameModePicker } from "./game-modes.js?v=chaos4";
+import { equipCompanion, renderHeroMenu, renderShop, setupEconomyInput, showHeroPanel, showShopPanel, updateCoinDisplay } from "./economy.js?v=chaos5";
+import { setupTestPanel } from "./test-panel.js?v=chaos5";
+import { setupMultiplayerTest } from "./multiplayer-test.js?v=chaos5";
+import { setupCompanionAbilities } from "./companion-abilities.js?v=chaos5";
+import { setupSettings, t } from "./settings.js?v=settings10";
+import { setupScoreManagement } from "./score-management.js?v=chaos5";
+import { setupGameModePicker } from "./game-modes.js?v=chaos5";
 
 
 

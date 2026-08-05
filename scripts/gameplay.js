@@ -1,11 +1,11 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos4";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos4";
+import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos5";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard7";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
-import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos4";
-import { t, tf } from "./settings.js?v=settings9";
-import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=chaos4";
+import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos5";
+import { t, tf } from "./settings.js?v=settings10";
+import { calculatePlayerDamage, getGameMode } from "./game-modes.js?v=chaos5";
 import { CHAOS_METEOR_DAMAGE, CHAOS_METEOR_GROUND_TIME, CHAOS_METEOR_MAX_RADIUS, CHAOS_METEOR_MIN_RADIUS, CHAOS_RESPAWN_PROTECTION, createSeededRandom, formatChaosTime, getChaosEnemyFireInterval, getChaosEnemyShotAngles, getChaosEnemySpeed, getChaosEvent, getChaosRespawnHealth, isChaosEventActive, isPointOnActiveBrokenTile, startChaosRun, updateChaosRun } from "./chaos-mode.js?v=chaos4";
 
 export function getMultiplayerScaling(value = 1) {
