@@ -11,6 +11,7 @@ let currentLanguage = "de";
 
 const translations = {
   de: {
+    "library.back": "Spielebibliothek",
     "settings.open": "Einstellungen",
     "settings.title": "Einstellungen",
     "settings.close": "Schließen",
@@ -82,6 +83,7 @@ const translations = {
     "hud.special": "Spezial"
   },
   en: {
+    "library.back": "Game Library",
     "settings.open": "Settings",
     "settings.title": "Settings",
     "settings.close": "Close",
@@ -153,6 +155,7 @@ const translations = {
     "hud.special": "Special"
   },
   fr: {
+    "library.back": "Bibliothèque de jeux",
     "settings.open": "Paramètres",
     "settings.title": "Paramètres",
     "settings.close": "Fermer",
@@ -224,6 +227,7 @@ const translations = {
     "hud.special": "Spécial"
   },
   es: {
+    "library.back": "Biblioteca de juegos",
     "settings.open": "Ajustes",
     "settings.title": "Ajustes",
     "settings.close": "Cerrar",
@@ -295,6 +299,7 @@ const translations = {
     "hud.special": "Especial"
   },
   it: {
+    "library.back": "Libreria di giochi",
     "settings.open": "Impostazioni",
     "settings.title": "Impostazioni",
     "settings.close": "Chiudi",
@@ -366,6 +371,7 @@ const translations = {
     "hud.special": "Speciale"
   },
   pl: {
+    "library.back": "Biblioteka gier",
     "settings.open": "Ustawienia",
     "settings.title": "Ustawienia",
     "settings.close": "Zamknij",
@@ -437,6 +443,7 @@ const translations = {
     "hud.special": "Specjalna"
   },
   nl: {
+    "library.back": "Spellenbibliotheek",
     "settings.open": "Instellingen",
     "settings.title": "Instellingen",
     "settings.close": "Sluiten",
@@ -508,6 +515,7 @@ const translations = {
     "hud.special": "Speciaal"
   },
   "zh-CN": {
+    "library.back": "游戏库",
     "settings.open": "设置",
     "settings.title": "设置",
     "settings.close": "关闭",

@@ -91,6 +91,40 @@ body.playing .settings-button {
   display: none;
 }
 
+.library-back-button {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 80;
+  min-height: 42px;
+  border: 1px solid rgba(56, 216, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(8, 12, 20, 0.88);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.library-back-button:hover,
+.library-back-button:focus-visible {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.library-back-button > span {
+  color: var(--cyan);
+  font-size: 1.2rem;
+}
+
+body.playing .library-back-button {
+  display: none;
+}
+
 #fpsCounter {
   top: 64px !important;
   right: 14px !important;
@@ -373,6 +407,16 @@ body.playing #fpsCounter {
   }
 
   .settings-button {
+    width: 44px;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .library-back-button strong {
+    display: none;
+  }
+
+  .library-back-button {
     width: 44px;
     justify-content: center;
     padding: 8px;
