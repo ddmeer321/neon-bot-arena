@@ -1,5 +1,8 @@
+/* absolute statt fixed: gehoert an den Seitenanfang und wandert beim Scrollen
+   mit nach oben weg, wie der Zurueck- und der Einstellungen-Knopf in
+   style.css. Fixed liess den Knopf im langen Menue ueber dem Inhalt mitfahren. */
 #auth-status {
-  position: fixed;
+  position: absolute;
   top: max(14px, env(safe-area-inset-top));
   right: max(14px, env(safe-area-inset-right));
   z-index: 80;

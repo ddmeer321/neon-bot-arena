@@ -58,8 +58,12 @@ body[data-background-theme="ice"] {
   background-attachment: fixed;
 }
 
+/* Die drei Knoepfe der Kopfzeile (Zurueck, Einstellungen, Anmeldung in
+   auth-status.css) liegen absolut statt fixed: sie gehoeren an den
+   Seitenanfang und sollen beim Scrollen mit nach oben wegwandern. Fixed
+   liessen sie mitfahren und deckten im langen Menue den Inhalt darunter zu. */
 .settings-button {
-  position: fixed;
+  position: absolute;
   top: max(14px, env(safe-area-inset-top));
   right: max(14px, env(safe-area-inset-right));
   z-index: 80;
@@ -92,7 +96,7 @@ body.playing .settings-button {
 }
 
 .library-back-button {
-  position: fixed;
+  position: absolute; /* siehe Kommentar bei .settings-button */
   top: max(14px, env(safe-area-inset-top));
   left: max(14px, env(safe-area-inset-left));
   z-index: 80;
