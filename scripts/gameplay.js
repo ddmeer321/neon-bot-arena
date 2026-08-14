@@ -1,7 +1,7 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos4";
 import { addCoins, calculateCoinReward, getEquippedCosmetic, getSelectedHeroStats } from "./economy.js?v=chaos5";
-import { PET_BULLET_LIFE, PET_BULLET_RADIUS, PET_BULLET_SPEED, PET_COOLDOWN, PET_DAMAGE, PET_RANGE, createPetCooldowns, getPetDefinitions, getPetPositions } from "./companion-pets.js?v=cats1";
+import { PET_BULLET_LIFE, PET_BULLET_RADIUS, PET_BULLET_SPEED, PET_DAMAGE, PET_MUZZLE_OFFSET, PET_RANGE, advancePetShot, createPetShotSchedule, getPetDefinitions, getPetPositions } from "./companion-pets.js?v=cats2";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard7";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
 import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos5";
@@ -281,7 +281,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       updateHud();
       return;
     }
-    updateCompanionPets(dt);
+    updateCompanionPets();
     updateBullets(dt, state.bullets, true);
     updateBullets(dt, state.enemyBullets, false);
     updateBossLasers(dt);
@@ -333,7 +333,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       updateHud();
       return;
     }
-    updateCompanionPets(dt);
+    updateCompanionPets();
     advanceGuestProjectiles(dt);
     updateGuestDamage(dt);
     updateGuestPickups();
@@ -1377,38 +1377,36 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
   //
   // Die Wesen selbst existieren absichtlich NICHT als Spielobjekte: es gibt
   // keinen Eintrag in state.robots o.ae., keinen Radius und keine Lebens-
-  // punkte. Gespeichert wird ausschliesslich je eine Abklingzeit pro Wesen,
-  // und zwar auf dem Spieler. Daraus folgt der komplette Lebenszyklus von
-  // selbst: startGame() legt state.player neu an, also gibt es nach einem
-  // Neustart garantiert keine doppelten Wesen und nach Game Over keine
-  // Reste. Ein Begleiterwechsel wirkt sofort, weil die Definition jeden
+  // punkte. Gespeichert wird ausschliesslich je ein naechster Feuerzeitpunkt
+  // pro Wesen, und zwar auf dem Spieler. Daraus folgt der komplette Lebens-
+  // zyklus von selbst: startGame() legt state.player neu an, also gibt es
+  // nach einem Neustart garantiert keine doppelten Wesen und nach Game Over
+  // keine Reste. Ein Begleiterwechsel wirkt sofort, weil die Definition jeden
   // Frame frisch aus dem ausgeruesteten Begleiter gelesen wird.
-  function updateCompanionPets(dt) {
+  function updateCompanionPets() {
     const player = state.player;
     const companion = getEquippedCosmetic(state);
     const pets = getPetDefinitions(companion);
 
     if (!player || !pets.length) {
-      if (player) player.petCooldowns = null;
+      if (player) player.petShotAt = null;
       return;
     }
     if (player.dead) return;
 
-    if (!Array.isArray(player.petCooldowns) || player.petCooldowns.length !== pets.length) {
-      player.petCooldowns = createPetCooldowns(pets.length);
+    if (!Array.isArray(player.petShotAt) || player.petShotAt.length !== pets.length) {
+      player.petShotAt = createPetShotSchedule(pets.length, state.time);
     }
 
     for (const spot of getPetPositions(companion, player, state.time)) {
-      const remaining = Math.max(0, player.petCooldowns[spot.index] - dt);
-      player.petCooldowns[spot.index] = remaining;
-      if (remaining > 0) continue;
+      if (state.time < player.petShotAt[spot.index]) continue;
       const target = findPetTarget(spot.x, spot.y);
-      // Ohne Ziel wird nichts erzeugt und die Abklingzeit bleibt bei 0 —
-      // das Wesen ist damit sofort schussbereit, sobald ein Gegner kommt,
-      // erzeugt aber in der Zwischenzeit keine Projektile.
-      if (!target) continue;
-      player.petCooldowns[spot.index] = PET_COOLDOWN;
-      firePetBullet(spot, target);
+      // Ohne Ziel wird nichts erzeugt, der Feuerzeitpunkt rueckt aber
+      // trotzdem auf den naechsten Zyklus vor. Der verfallene Schuss ist
+      // gewollt: liesse man die Katze stattdessen "geladen" stehen, feuerten
+      // nach jeder Kampfpause alle drei gleichzeitig los.
+      if (target) firePetBullet(spot, target);
+      player.petShotAt[spot.index] = advancePetShot(player.petShotAt[spot.index], state.time);
     }
   }
 
@@ -1433,9 +1431,9 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
     // ohne dass ein zweites Projektilsystem noetig waere.
     const bullet = addBullet(spot.x, spot.y, angle, PET_BULLET_SPEED, PET_DAMAGE, spot.pet.accent, false);
     // addBullet setzt einen Muendungsversatz von 24 px, der fuer die kleinen
-    // Wesen zu weit vorne liegt — zurueck auf die Katze selbst.
-    bullet.x = spot.x;
-    bullet.y = spot.y;
+    // Wesen zu weit vorne liegt — auf PET_MUZZLE_OFFSET zurueckziehen.
+    bullet.x = spot.x + Math.cos(angle) * PET_MUZZLE_OFFSET;
+    bullet.y = spot.y + Math.sin(angle) * PET_MUZZLE_OFFSET;
     bullet.radius = PET_BULLET_RADIUS;
     bullet.life = PET_BULLET_LIFE;
     // Im Koop ist der Host fuer Treffer zustaendig. Gaeste melden ihren

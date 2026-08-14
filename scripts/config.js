@@ -175,7 +175,7 @@ export const companions = {
   cats: {
     id: "cats",
     name: "Katzentrio",
-    description: "Drei Katzen umkreisen dich und feuern automatisch",
+    description: "Drei Katzen umkreisen dich, je alle 3 Sek. ein Schuss",
     // shape "pets": dieser Begleiter besteht aus mehreren umkreisenden Wesen
     // statt aus einer einzelnen Figur neben dem Spieler. Umlaufbahn und
     // Feuerlogik liegen gemeinsam in companion-pets.js, gezeichnet wird in
