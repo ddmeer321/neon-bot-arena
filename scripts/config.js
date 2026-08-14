@@ -190,14 +190,20 @@ export const companions = {
       // Ein Eintrag je Katze. Alle drei nutzen dieselbe Zeichenroutine und
       // unterscheiden sich ausschliesslich ueber diese Fellwerte.
       //
-      // accent = Augen und Geschossfarbe. Bewusst alle drei aus der
-      // Violett-Familie: kein Held nutzt Violett (volt/frost cyan, titan gelb,
-      // nova pink, ember orange, pulse gruen, warden hellgrau), dadurch bleibt
-      // Katzenfeuer immer vom Spielerfeuer unterscheidbar — unabhaengig davon,
-      // welcher Held gerade gespielt wird.
-      { id: "grey", fur: "#8e99a8", furDark: "#69727f", belly: "#c6ccd6", accent: "#8b9cff", pattern: "solid" },
-      { id: "white", fur: "#eceff5", furDark: "#c2c9d4", belly: "#ffffff", accent: "#c9b6ff", pattern: "solid" },
-      { id: "tabby", fur: "#a2825f", furDark: "#6b563d", belly: "#d9c4a6", accent: "#a06bff", pattern: "striped" }
+      // Vorlage sind drei grau-weisse Tabbys. Sie unterscheiden sich deshalb
+      // NICHT in der Grundfarbe, sondern in zwei Groessen:
+      //   white   = Anteil der weissen Partien (Brust, Bauch, Beine, Gesicht)
+      //   stripes = Anzahl der Streifen auf dem Ruecken (0 = ohne)
+      //
+      // accent = Geschossfarbe und dezenter Schimmer. Bewusst alle drei aus
+      // der Violett-Familie: kein Held nutzt Violett (volt/frost cyan, titan
+      // gelb, nova pink, ember orange, pulse gruen, warden hellgrau), dadurch
+      // bleibt Katzenfeuer immer vom Spielerfeuer unterscheidbar — unabhaengig
+      // davon, welcher Held gerade gespielt wird.
+      // Die Augen bleiben bei allen gruen wie bei den Vorlagen.
+      { id: "snow", fur: "#a3acb8", furDark: "#7d8794", white: 0.78, stripes: 2, accent: "#8b9cff" },
+      { id: "tabby", fur: "#8d959f", furDark: "#5c646e", white: 0.5, stripes: 4, accent: "#c9b6ff" },
+      { id: "smoke", fur: "#79818b", furDark: "#565d66", white: 0.26, stripes: 3, accent: "#a06bff" }
     ],
     price: 2600
   },

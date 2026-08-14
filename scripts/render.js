@@ -300,18 +300,29 @@ function drawCompanionPets(ctx, state, companion, player) {
 }
 
 // Eine einzige Zeichenroutine fuer alle Katzen. Unterschieden wird nur ueber
-// die Fellwerte aus config.js (fur/furDark/belly/accent/pattern), damit eine
-// vierte Fellvariante spaeter reine Datenarbeit waere.
+// die Fellwerte aus config.js (fur/furDark/white/stripes), damit eine vierte
+// Fellvariante spaeter reine Datenarbeit waere.
 //
-// Die Silhouette ist bewusst auf Erkennbarkeit bei ~22 px ausgelegt: runder
-// Koerper, klar abgesetzter Kopf, zwei spitze Ohren und ein geschwungener
-// Schwanz. Ohren und Schwanz tragen die Katzenlesbarkeit, alles andere ist
-// Beiwerk.
+// Vorlage sind grau-weisse Tabbys: graues, leicht gestreiftes Deckfell mit
+// weisser Brust, weissem Bauch, weissen Pfoten und weisser Schnauzenpartie.
+// Die drei Katzen unterscheiden sich deshalb im Weissanteil (pet.white) und
+// in der Streifenzahl (pet.stripes), nicht in der Grundfarbe.
+//
+// Die Silhouette ist auf Erkennbarkeit bei ~22 px ausgelegt: runder Koerper,
+// abgesetzter Kopf, zwei spitze Ohren, geschwungener Schwanz. Ohren und
+// Schwanz tragen die Katzenlesbarkeit, alles andere ist Beiwerk.
+const PET_WHITE = "#f2f5f9";
+const PET_EYE = "#9fd08a";      // gruene Augen wie bei den Vorlagen
+const PET_EAR_INNER = "#e6b9bd"; // rosa Innenohr
+const PET_NOSE = "#e59aa4";
+
 function drawPetCat(ctx, pet, size, time) {
   const fur = pet.fur || "#9aa4b2";
   const furDark = pet.furDark || fur;
+  const white = Math.min(1, Math.max(0, Number(pet.white) ?? 0.5));
+  const stripes = Math.max(0, Math.round(Number(pet.stripes) || 0));
 
-  // Schwanz: schwingt leicht, damit die Katze lebendig wirkt.
+  // Schwanz: graue Basis mit weisser Spitze bei hohem Weissanteil.
   const tailWave = Math.sin(time * 3) * 0.18;
   ctx.strokeStyle = furDark;
   ctx.lineWidth = Math.max(2, size * 0.22);
@@ -324,32 +335,42 @@ function drawPetCat(ctx, pet, size, time) {
   );
   ctx.stroke();
 
-  // Koerper
+  // Koerper (graues Deckfell)
   ctx.fillStyle = fur;
   ctx.beginPath();
   ctx.ellipse(-size * 0.12, size * 0.16, size * 0.82, size * 0.55, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Hellere Bauchpartie
-  ctx.fillStyle = pet.belly || fur;
-  ctx.beginPath();
-  ctx.ellipse(-size * 0.05, size * 0.34, size * 0.55, size * 0.26, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  if (pet.pattern === "striped") {
-    // Getigert: wenige kurze Striche quer ueber den Ruecken plus ein Ring am
-    // Schwanzansatz. Bewusst sparsam — bei dieser Groesse wuerde mehr nur
-    // matschen.
+  // Streifen auf dem Ruecken, vor der weissen Partie gezeichnet, damit sie
+  // nur das graue Deckfell zeichnen.
+  if (stripes > 0) {
     ctx.strokeStyle = furDark;
-    ctx.lineWidth = Math.max(1, size * 0.13);
-    for (let i = 0; i < 3; i++) {
-      const x = -size * 0.5 + i * size * 0.42;
+    ctx.lineWidth = Math.max(1, size * 0.1);
+    for (let i = 0; i < stripes; i++) {
+      const x = -size * 0.62 + (i * size * 1.15) / Math.max(1, stripes - 0.15);
       ctx.beginPath();
-      ctx.moveTo(x, -size * 0.24);
-      ctx.lineTo(x + size * 0.1, size * 0.1);
+      ctx.moveTo(x, -size * 0.3);
+      ctx.lineTo(x + size * 0.12, size * 0.02);
       ctx.stroke();
     }
   }
+
+  // Weisse Partien: Brust, Bauch und Pfoten. Ihre Groesse macht den
+  // sichtbaren Unterschied zwischen den drei Katzen.
+  ctx.fillStyle = PET_WHITE;
+  ctx.beginPath();
+  ctx.ellipse(
+    -size * 0.02 + white * size * 0.1,
+    size * 0.3 - white * size * 0.08,
+    size * (0.34 + white * 0.44),
+    size * (0.16 + white * 0.26),
+    0, 0, Math.PI * 2
+  );
+  ctx.fill();
+  // Weisse Vorderpfote
+  ctx.beginPath();
+  ctx.ellipse(size * 0.4, size * 0.56, size * 0.2, size * 0.13, 0, 0, Math.PI * 2);
+  ctx.fill();
 
   // Kopf
   ctx.fillStyle = fur;
@@ -369,22 +390,42 @@ function drawPetCat(ctx, pet, size, time) {
   ctx.closePath();
   ctx.fill();
 
-  // Innenohr
-  ctx.fillStyle = pet.belly || "#ffffff";
-  ctx.globalAlpha = 0.55;
+  // Rosa Innenohr
+  ctx.fillStyle = PET_EAR_INNER;
   ctx.beginPath();
   ctx.moveTo(size * 0.47, -size * 0.66);
   ctx.lineTo(size * 0.5, -size * 0.98);
   ctx.lineTo(size * 0.72, -size * 0.68);
   ctx.closePath();
   ctx.fill();
-  ctx.globalAlpha = 1;
 
-  // Augen in der Akzentfarbe — der einzige echte Neon-Anteil.
-  ctx.fillStyle = pet.accent || "#ffffff";
+  // Weisse Schnauzen-/Wangenpartie — bei den Vorlagen immer vorhanden, mit
+  // dem Weissanteil zusaetzlich als Blesse bis zur Stirn.
+  ctx.fillStyle = PET_WHITE;
   ctx.beginPath();
-  ctx.arc(size * 0.62, -size * 0.28, size * 0.13, 0, Math.PI * 2);
-  ctx.arc(size * 0.98, -size * 0.28, size * 0.13, 0, Math.PI * 2);
+  ctx.ellipse(size * 0.95, -size * 0.06, size * 0.3, size * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  if (white > 0.6) {
+    ctx.beginPath();
+    ctx.ellipse(size * 0.86, -size * 0.4, size * 0.14, size * 0.34, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Gruene Augen
+  ctx.fillStyle = PET_EYE;
+  ctx.beginPath();
+  ctx.arc(size * 0.62, -size * 0.3, size * 0.12, 0, Math.PI * 2);
+  ctx.arc(size * 0.98, -size * 0.3, size * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  // Schmale Pupille
+  ctx.fillStyle = "rgba(20,26,20,0.75)";
+  ctx.fillRect(size * 0.59, -size * 0.4, size * 0.05, size * 0.2);
+  ctx.fillRect(size * 0.95, -size * 0.4, size * 0.05, size * 0.2);
+
+  // Rosa Naeschen
+  ctx.fillStyle = PET_NOSE;
+  ctx.beginPath();
+  ctx.arc(size * 1.15, -size * 0.06, size * 0.07, 0, Math.PI * 2);
   ctx.fill();
 }
 
