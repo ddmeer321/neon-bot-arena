@@ -195,15 +195,23 @@ export const companions = {
       //   white   = Anteil der weissen Partien (Brust, Bauch, Beine, Gesicht)
       //   stripes = Anzahl der Streifen auf dem Ruecken (0 = ohne)
       //
-      // accent = Geschossfarbe und dezenter Schimmer. Bewusst alle drei aus
-      // der Violett-Familie: kein Held nutzt Violett (volt/frost cyan, titan
-      // gelb, nova pink, ember orange, pulse gruen, warden hellgrau), dadurch
-      // bleibt Katzenfeuer immer vom Spielerfeuer unterscheidbar — unabhaengig
-      // davon, welcher Held gerade gespielt wird.
+      // accent = Geschossfarbe und dezenter Schimmer. Alle drei aus der
+      // Magenta-Familie (Farbton ~290-310°). Diese Ecke des Farbkreises ist
+      // die einzige, die im Spiel noch frei ist, und sie ist gleichzeitig die
+      // hellste Wahl vor dem dunkelblauen Arenaboden (#05070a / #07121b):
+      //   - Helden belegen Cyan (#38d8ff, #8ee7ff), Gelb (#ffc857),
+      //     Orange (#ff7a3d), Gruen (#b7ff4a), Hellgrau (#d8dde8)
+      //     und Rosa (#ff4f92, nova)
+      //   - Gegnerfeuer belegt Rosa/Rot (#ff4f92, #ff2d55, #b11226)
+      //   - Violett (#a855f7, #c084fc) ist bereits die Farbe des
+      //     Respawn-Schutzschilds an Gegnern
+      // Deshalb ausdruecklich KEIN reines Pink oder Rot: Katzenfeuer waere
+      // sonst nicht mehr von einfliegendem Gegnerbeschuss zu unterscheiden.
+      // Magenta liest sich wie Pink, kollidiert aber mit nichts davon.
       // Die Augen bleiben bei allen gruen wie bei den Vorlagen.
-      { id: "snow", fur: "#a3acb8", furDark: "#7d8794", white: 0.78, stripes: 2, accent: "#8b9cff" },
-      { id: "tabby", fur: "#8d959f", furDark: "#5c646e", white: 0.5, stripes: 4, accent: "#c9b6ff" },
-      { id: "smoke", fur: "#79818b", furDark: "#565d66", white: 0.26, stripes: 3, accent: "#a06bff" }
+      { id: "snow", fur: "#a3acb8", furDark: "#7d8794", white: 0.78, stripes: 2, accent: "#ff9bf0" },
+      { id: "tabby", fur: "#8d959f", furDark: "#5c646e", white: 0.5, stripes: 4, accent: "#f56bff" },
+      { id: "smoke", fur: "#79818b", furDark: "#565d66", white: 0.26, stripes: 3, accent: "#d94dff" }
     ],
     price: 2600
   },

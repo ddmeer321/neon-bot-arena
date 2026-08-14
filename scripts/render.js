@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic } from "./config.js?v=cats1";
+import { companions, defaultCosmetic } from "./config.js?v=cats2";
 import { PET_DRAW_SIZE, getPetPositions } from "./companion-pets.js?v=cats1";
 import { drawArenaBackground, t } from "./settings.js?v=settings10";
 import { CHAOS_BLINDNESS_RADIUS, isChaosEventActive } from "./chaos-mode.js?v=chaos4";

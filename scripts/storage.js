@@ -1,4 +1,4 @@
-import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=cats1";
+import { coinKey, defaultCosmetic, highScoreKey, leaderboardKey, progressionKey, starterHeroes } from "./config.js?v=cats2";
 import { cleanName } from "./utils.js";
 
 const GAME_MODES = new Set(["normal", "chaos", "hardcore"]);
