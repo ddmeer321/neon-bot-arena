@@ -1,4 +1,5 @@
-import { companions, defaultCosmetic } from "./config.js?v=musicvolume1";
+import { companions, defaultCosmetic } from "./config.js?v=cats1";
+import { PET_DRAW_SIZE, getPetPositions } from "./companion-pets.js?v=cats1";
 import { drawArenaBackground, t } from "./settings.js?v=settings10";
 import { CHAOS_BLINDNESS_RADIUS, isChaosEventActive } from "./chaos-mode.js?v=chaos4";
 
@@ -203,6 +204,11 @@ function drawCompanion(ctx, state) {
   const companion = companions[state.equippedCosmetic] || companions[defaultCosmetic];
   if (!player || !companion || companion.id === defaultCosmetic || companion.shape === "none") return;
 
+  if (companion.shape === "pets") {
+    drawCompanionPets(ctx, state, companion, player);
+    return;
+  }
+
   const bob = Math.sin(state.time * 5) * 5;
   const orbit = state.time * 1.8;
   const side = Math.sin(orbit) * 8;
@@ -271,6 +277,115 @@ function drawCompanion(ctx, state) {
     ctx.stroke();
   }
   ctx.restore();
+}
+
+// Zeichnet alle umkreisenden Begleiter-Wesen. Die Positionen kommen aus
+// derselben Funktion, mit der gameplay.js den Abschussort bestimmt — dadurch
+// koennen Darstellung und Schuss nicht auseinanderlaufen.
+function drawCompanionPets(ctx, state, companion, player) {
+  for (const spot of getPetPositions(companion, player, state.time)) {
+    // Blickrichtung ist die Laufrichtung auf der Kreisbahn (Tangente). Die
+    // Katze wird dafuer nur gespiegelt, nicht gedreht — eine gekippte Katze
+    // wuerde beim Umlauf oben und unten auf dem Kopf stehen.
+    const facingRight = -Math.sin(spot.angle) >= 0;
+    const bob = Math.sin(state.time * 6 + spot.index * 2.1) * 1.4;
+    ctx.save();
+    ctx.translate(spot.x, spot.y + bob);
+    // Sehr dezenter Neon-Schimmer in der Akzentfarbe der jeweiligen Katze.
+    glowCircle(ctx, 0, 0, PET_DRAW_SIZE * 2.1, spot.pet.accent, 0.16);
+    ctx.scale(facingRight ? 1 : -1, 1);
+    drawPetCat(ctx, spot.pet, PET_DRAW_SIZE, state.time + spot.index);
+    ctx.restore();
+  }
+}
+
+// Eine einzige Zeichenroutine fuer alle Katzen. Unterschieden wird nur ueber
+// die Fellwerte aus config.js (fur/furDark/belly/accent/pattern), damit eine
+// vierte Fellvariante spaeter reine Datenarbeit waere.
+//
+// Die Silhouette ist bewusst auf Erkennbarkeit bei ~22 px ausgelegt: runder
+// Koerper, klar abgesetzter Kopf, zwei spitze Ohren und ein geschwungener
+// Schwanz. Ohren und Schwanz tragen die Katzenlesbarkeit, alles andere ist
+// Beiwerk.
+function drawPetCat(ctx, pet, size, time) {
+  const fur = pet.fur || "#9aa4b2";
+  const furDark = pet.furDark || fur;
+
+  // Schwanz: schwingt leicht, damit die Katze lebendig wirkt.
+  const tailWave = Math.sin(time * 3) * 0.18;
+  ctx.strokeStyle = furDark;
+  ctx.lineWidth = Math.max(2, size * 0.22);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.78, size * 0.12);
+  ctx.quadraticCurveTo(
+    -size * 1.5, size * 0.1 + tailWave * size,
+    -size * 1.32, -size * 0.62 + tailWave * size
+  );
+  ctx.stroke();
+
+  // Koerper
+  ctx.fillStyle = fur;
+  ctx.beginPath();
+  ctx.ellipse(-size * 0.12, size * 0.16, size * 0.82, size * 0.55, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hellere Bauchpartie
+  ctx.fillStyle = pet.belly || fur;
+  ctx.beginPath();
+  ctx.ellipse(-size * 0.05, size * 0.34, size * 0.55, size * 0.26, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (pet.pattern === "striped") {
+    // Getigert: wenige kurze Striche quer ueber den Ruecken plus ein Ring am
+    // Schwanzansatz. Bewusst sparsam — bei dieser Groesse wuerde mehr nur
+    // matschen.
+    ctx.strokeStyle = furDark;
+    ctx.lineWidth = Math.max(1, size * 0.13);
+    for (let i = 0; i < 3; i++) {
+      const x = -size * 0.5 + i * size * 0.42;
+      ctx.beginPath();
+      ctx.moveTo(x, -size * 0.24);
+      ctx.lineTo(x + size * 0.1, size * 0.1);
+      ctx.stroke();
+    }
+  }
+
+  // Kopf
+  ctx.fillStyle = fur;
+  ctx.beginPath();
+  ctx.arc(size * 0.72, -size * 0.24, size * 0.52, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ohren — das deutlichste Katzenmerkmal, deshalb betont spitz.
+  ctx.beginPath();
+  ctx.moveTo(size * 0.36, -size * 0.6);
+  ctx.lineTo(size * 0.42, -size * 1.16);
+  ctx.lineTo(size * 0.82, -size * 0.66);
+  ctx.closePath();
+  ctx.moveTo(size * 0.86, -size * 0.66);
+  ctx.lineTo(size * 1.2, -size * 1.06);
+  ctx.lineTo(size * 1.18, -size * 0.48);
+  ctx.closePath();
+  ctx.fill();
+
+  // Innenohr
+  ctx.fillStyle = pet.belly || "#ffffff";
+  ctx.globalAlpha = 0.55;
+  ctx.beginPath();
+  ctx.moveTo(size * 0.47, -size * 0.66);
+  ctx.lineTo(size * 0.5, -size * 0.98);
+  ctx.lineTo(size * 0.72, -size * 0.68);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Augen in der Akzentfarbe — der einzige echte Neon-Anteil.
+  ctx.fillStyle = pet.accent || "#ffffff";
+  ctx.beginPath();
+  ctx.arc(size * 0.62, -size * 0.28, size * 0.13, 0, Math.PI * 2);
+  ctx.arc(size * 0.98, -size * 0.28, size * 0.13, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawRobots(ctx, state) {

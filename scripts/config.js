@@ -172,6 +172,35 @@ export const companions = {
     ability: { name: "Dunkelschild", type: "guard", duration: 5, multiplier: 0.65 },
     price: 2200
   },
+  cats: {
+    id: "cats",
+    name: "Katzentrio",
+    description: "Drei Katzen umkreisen dich und feuern automatisch",
+    // shape "pets": dieser Begleiter besteht aus mehreren umkreisenden Wesen
+    // statt aus einer einzelnen Figur neben dem Spieler. Umlaufbahn und
+    // Feuerlogik liegen gemeinsam in companion-pets.js, gezeichnet wird in
+    // render.js — beide nutzen dieselbe Positionsberechnung.
+    shape: "pets",
+    color: "#c9d2e0",
+    glow: "#38d8ff",
+    // Bewusst KEINE "ability": das Trio wirkt dauerhaft statt als
+    // Spezial-Boost. Dadurch taucht es nicht in companionAbilities auf und
+    // der Spezialangriff der Helden bleibt unveraendert.
+    pets: [
+      // Ein Eintrag je Katze. Alle drei nutzen dieselbe Zeichenroutine und
+      // unterscheiden sich ausschliesslich ueber diese Fellwerte.
+      //
+      // accent = Augen und Geschossfarbe. Bewusst alle drei aus der
+      // Violett-Familie: kein Held nutzt Violett (volt/frost cyan, titan gelb,
+      // nova pink, ember orange, pulse gruen, warden hellgrau), dadurch bleibt
+      // Katzenfeuer immer vom Spielerfeuer unterscheidbar — unabhaengig davon,
+      // welcher Held gerade gespielt wird.
+      { id: "grey", fur: "#8e99a8", furDark: "#69727f", belly: "#c6ccd6", accent: "#8b9cff", pattern: "solid" },
+      { id: "white", fur: "#eceff5", furDark: "#c2c9d4", belly: "#ffffff", accent: "#c9b6ff", pattern: "solid" },
+      { id: "tabby", fur: "#a2825f", furDark: "#6b563d", belly: "#d9c4a6", accent: "#a06bff", pattern: "striped" }
+    ],
+    price: 2600
+  },
   "scipios-mask": {
     id: "scipios-mask",
     name: "Scipios Maske",

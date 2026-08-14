@@ -1,4 +1,4 @@
-import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=musicvolume1";
+import { companions, defaultCosmetic, getHeroStats, getUpgradeCost, heroes, maxUpgradeLevel, starterHeroes } from "./config.js?v=cats1";
 import { escapeHtml } from "./utils.js";
 import { saveCoins, saveProgression } from "./storage.js?v=musicvolume1";
 import { t } from "./settings.js?v=settings10";

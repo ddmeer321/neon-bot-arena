@@ -1,6 +1,7 @@
 import { clamp, cleanName, distance } from "./utils.js";
 import { saveHighScore, saveLeaderboardEntry, saveProgression } from "./storage.js?v=chaos4";
-import { addCoins, calculateCoinReward, getSelectedHeroStats } from "./economy.js?v=chaos5";
+import { addCoins, calculateCoinReward, getEquippedCosmetic, getSelectedHeroStats } from "./economy.js?v=chaos5";
+import { PET_BULLET_LIFE, PET_BULLET_RADIUS, PET_BULLET_SPEED, PET_COOLDOWN, PET_DAMAGE, PET_RANGE, createPetCooldowns, getPetDefinitions, getPetPositions } from "./companion-pets.js?v=cats1";
 import { loadOnlineScores, submitOnlineScore } from "./online-leaderboard.js?v=leaderboard7";
 import { playShoot, setMusicPaused, startMusic, stopMusic } from "./audio.js?v=musicvolume1";
 import { sendMultiplayerAction, sendMultiplayerEndbossResult, sendMultiplayerGameOver, sendMultiplayerPlayerState, updateMultiplayerInterpolation } from "./multiplayer-test.js?v=chaos5";
@@ -280,6 +281,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       updateHud();
       return;
     }
+    updateCompanionPets(dt);
     updateBullets(dt, state.bullets, true);
     updateBullets(dt, state.enemyBullets, false);
     updateBossLasers(dt);
@@ -331,6 +333,7 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
       updateHud();
       return;
     }
+    updateCompanionPets(dt);
     advanceGuestProjectiles(dt);
     updateGuestDamage(dt);
     updateGuestPickups();
@@ -1368,6 +1371,78 @@ export function createGameplay({ dom, state, renderLeaderboard }) {
 
   function canDamageRobot(robot) {
     return Boolean(robot) && (Number(robot.respawnProtection) || 0) <= 0;
+  }
+
+  // --- Umlaufende Begleiter-Wesen (Katzentrio) -------------------------
+  //
+  // Die Wesen selbst existieren absichtlich NICHT als Spielobjekte: es gibt
+  // keinen Eintrag in state.robots o.ae., keinen Radius und keine Lebens-
+  // punkte. Gespeichert wird ausschliesslich je eine Abklingzeit pro Wesen,
+  // und zwar auf dem Spieler. Daraus folgt der komplette Lebenszyklus von
+  // selbst: startGame() legt state.player neu an, also gibt es nach einem
+  // Neustart garantiert keine doppelten Wesen und nach Game Over keine
+  // Reste. Ein Begleiterwechsel wirkt sofort, weil die Definition jeden
+  // Frame frisch aus dem ausgeruesteten Begleiter gelesen wird.
+  function updateCompanionPets(dt) {
+    const player = state.player;
+    const companion = getEquippedCosmetic(state);
+    const pets = getPetDefinitions(companion);
+
+    if (!player || !pets.length) {
+      if (player) player.petCooldowns = null;
+      return;
+    }
+    if (player.dead) return;
+
+    if (!Array.isArray(player.petCooldowns) || player.petCooldowns.length !== pets.length) {
+      player.petCooldowns = createPetCooldowns(pets.length);
+    }
+
+    for (const spot of getPetPositions(companion, player, state.time)) {
+      const remaining = Math.max(0, player.petCooldowns[spot.index] - dt);
+      player.petCooldowns[spot.index] = remaining;
+      if (remaining > 0) continue;
+      const target = findPetTarget(spot.x, spot.y);
+      // Ohne Ziel wird nichts erzeugt und die Abklingzeit bleibt bei 0 —
+      // das Wesen ist damit sofort schussbereit, sobald ein Gegner kommt,
+      // erzeugt aber in der Zwischenzeit keine Projektile.
+      if (!target) continue;
+      player.petCooldowns[spot.index] = PET_COOLDOWN;
+      firePetBullet(spot, target);
+    }
+  }
+
+  function findPetTarget(x, y) {
+    let best = null;
+    let bestDistance = PET_RANGE;
+    for (const robot of state.robots) {
+      if (!canDamageRobot(robot)) continue;
+      const dist = Math.hypot(robot.x - x, robot.y - y);
+      if (dist < bestDistance) {
+        bestDistance = dist;
+        best = robot;
+      }
+    }
+    return best;
+  }
+
+  function firePetBullet(spot, target) {
+    const angle = Math.atan2(target.y - spot.y, target.x - spot.x);
+    // Bewusst dieselbe Kugelliste wie beim Spieler: dadurch gelten Flug,
+    // Trefferpruefung gegen Gegner und der Multiplayer-Abgleich unveraendert,
+    // ohne dass ein zweites Projektilsystem noetig waere.
+    const bullet = addBullet(spot.x, spot.y, angle, PET_BULLET_SPEED, PET_DAMAGE, spot.pet.accent, false);
+    // addBullet setzt einen Muendungsversatz von 24 px, der fuer die kleinen
+    // Wesen zu weit vorne liegt — zurueck auf die Katze selbst.
+    bullet.x = spot.x;
+    bullet.y = spot.y;
+    bullet.radius = PET_BULLET_RADIUS;
+    bullet.life = PET_BULLET_LIFE;
+    // Im Koop ist der Host fuer Treffer zustaendig. Gaeste melden ihren
+    // Schuss ueber denselben Weg wie normales Spielerfeuer; weil die id
+    // mitgeschickt wird, erkennt der Abgleich beim Gast die eigene Kugel
+    // wieder und sie wird nicht doppelt dargestellt.
+    sendGuestAction({ kind: "shot", bullets: [cloneBullet(bullet)] });
   }
 
   function updateParticles(dt) {
