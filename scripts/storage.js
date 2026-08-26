@@ -5,6 +5,23 @@ const GAME_MODES = new Set(["normal", "chaos", "hardcore"]);
 const DIFFICULTIES = new Set(["easy", "normal", "hard"]);
 const LEADERBOARD_LIMIT_PER_MODE = 10;
 
+// Cloud-Sync fuer den persoenlichen Spielstand (Coins/Freischaltungen/
+// Highscore) - NICHT die oeffentliche Rangliste, die laeuft schon eigenstaendig
+// ueber die submit-score Edge Function ab (siehe SUPABASE_SECURE_LEADERBOARD.md).
+const CLOUD_GAME_ID = "neon-bot-arena";
+let cloudSyncTimer = null;
+function scheduleCloudSync() {
+  if (!window.CloudSave) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => {
+    window.CloudSave.save(CLOUD_GAME_ID, {
+      coins: loadCoins(),
+      highScore: loadHighScore(),
+      progression: loadProgression()
+    });
+  }, 800);
+}
+
 export function loadHighScore() {
   if (testSiteBuild) return 0;
   return Number(localStorage.getItem(highScoreKey)) || 0;
@@ -16,6 +33,7 @@ export function loadCoins() {
 
 export function saveCoins(coins) {
   localStorage.setItem(coinKey, String(coins));
+  scheduleCloudSync();
 }
 
 export function loadProgression() {
@@ -46,6 +64,7 @@ export function saveProgression(state) {
       equippedCosmetic: state.equippedCosmetic
     })
   );
+  scheduleCloudSync();
 }
 
 export function saveHighScore(state, dom) {
@@ -55,7 +74,36 @@ export function saveHighScore(state, dom) {
   localStorage.setItem(highScoreKey, String(state.highScore));
   if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = state.highScore;
   if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
+  scheduleCloudSync();
   return true;
+}
+
+// Hintergrund-Abgleich nach dem synchronen lokalen Start (siehe
+// scripts/main.js:bootGame() - laeuft bewusst NICHT blockierend, damit das
+// Spiel nicht auf einen Netzwerk-Request warten muss). Persistiert einen
+// gefundenen Cloud-Stand direkt lokal (ueber die bestehenden save*-Funktionen,
+// die dabei jeweils erneut synchronisieren - harmlos, das ist derselbe Stand)
+// und gibt die abgeglichenen Werte zurueck, damit main.js das schon erzeugte
+// state-Objekt + die UI aktualisieren kann. highScore wird nie verringert:
+// es ist ein persoenlicher Rekord, kein reiner Spiegelwert wie Coins/Freischaltungen.
+export async function syncProgressFromCloud() {
+  if (!window.CloudSave) return null;
+  const cloud = await window.CloudSave.load(CLOUD_GAME_ID);
+  if (!cloud) {
+    await window.CloudSave.migrateLocalOnce(CLOUD_GAME_ID, () => ({
+      coins: loadCoins(),
+      highScore: loadHighScore(),
+      progression: loadProgression()
+    }));
+    return null;
+  }
+  const coins = typeof cloud.coins === "number" ? cloud.coins : loadCoins();
+  const highScore = Math.max(loadHighScore(), Number(cloud.highScore) || 0);
+  const progression = cloud.progression || loadProgression();
+  saveCoins(coins);
+  localStorage.setItem(highScoreKey, String(highScore));
+  saveProgression(progression);
+  return { coins, highScore, progression };
 }
 
 export function loadLeaderboard() {

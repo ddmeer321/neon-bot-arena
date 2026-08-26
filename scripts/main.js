@@ -1,7 +1,7 @@
 import { getDom } from "./dom.js?v=chaos4";
 import { createState } from "./state.js?v=chaos4";
 import { escapeHtml } from "./utils.js";
-import { filterLeaderboard } from "./storage.js?v=chaos4";
+import { filterLeaderboard, syncProgressFromCloud } from "./storage.js?v=chaos4";
 import { loadOnlineScores } from "./online-leaderboard.js?v=testids1";
 import { setupInput } from "./input.js?v=musicvolume1";
 import { createGameplay } from "./gameplay.js?v=chaos4";
@@ -83,6 +83,29 @@ export function bootGame() {
   renderHeroMenu(state, dom);
   renderShop(state, dom);
   setupEconomyInput(state, dom);
+
+  // Nicht blockierend: das Spiel startet sofort mit dem lokalen Stand, ein
+  // vorhandener Cloud-Spielstand (angemeldeter Account, Cloud-Speichern nicht
+  // ausgeschaltet) ueberschreibt kurz danach state + die betroffenen
+  // UI-Bereiche. syncProgressFromCloud() persistiert die abgeglichenen Werte
+  // bereits lokal, hier geht es nur noch um das schon erzeugte state-Objekt
+  // und die schon gerenderte UI.
+  syncProgressFromCloud().then((cloud) => {
+    if (!cloud) return;
+    state.coins = cloud.coins;
+    state.highScore = cloud.highScore;
+    state.startHighScore = cloud.highScore;
+    state.unlockedHeroes = cloud.progression.unlockedHeroes;
+    state.upgrades = cloud.progression.upgrades;
+    state.ownedCosmetics = cloud.progression.ownedCosmetics;
+    state.equippedCosmetic = cloud.progression.equippedCosmetic;
+
+    if (dom.menuHighScoreText) dom.menuHighScoreText.textContent = state.highScore;
+    if (dom.highScoreText) dom.highScoreText.textContent = state.highScore;
+    updateCoinDisplay(state, dom);
+    renderHeroMenu(state, dom);
+    renderShop(state, dom);
+  });
   dom.rewardEquipBtn?.addEventListener("click", () => {
     equipCompanion(state, dom, "scipios-mask");
     dom.companionReward?.classList.add("hidden");
